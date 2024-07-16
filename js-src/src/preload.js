@@ -62,4 +62,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   importTerms: () => ipcRenderer.invoke('import-terms'),
   exportTerms: () => ipcRenderer.invoke('export-terms'),
   resetSettings: () => ipcRenderer.invoke('reset-settings'),
+  openLogsFolder: () => ipcRenderer.invoke('open-logs-folder'),
 });

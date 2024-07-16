@@ -130,6 +130,10 @@ const GlobalOptionsView = () => {
     await MainGateway.openFontsFolder();
   };
 
+  const handleOpenLogsFolder = async () => {
+    await MainGateway.openLogsFolder();
+  };
+
   const handleResetSettings = async () => {
     await MainGateway.resetSettings();
 
@@ -489,6 +493,15 @@ const GlobalOptionsView = () => {
                   if using a random translation algorithm such as MBR Sampling.
                   No effect otherwise.
                 </Typography>
+                <Button
+                  sx={{ mt: 8 }}
+                  variant="outlined"
+                  color="info"
+                  fullWidth
+                  onClick={handleOpenLogsFolder}
+                >
+                  Open Logs Folder
+                </Button>
                 <Button
                   sx={{ mt: 32 }}
                   variant="outlined"

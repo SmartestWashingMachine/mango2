@@ -6,6 +6,7 @@ import {
   APP_FONTS_PATH,
   APP_MODELS_PATH,
   DOWNLOADS_PATH,
+  APP_LOGS_PATH,
 } from "../../constants";
 import ElectronChannels from "../../types/ElectronChannels";
 import ElectronCommands from "../../types/ElectronCommands";
@@ -160,6 +161,14 @@ const openFontsAction: GatewayAction = {
   },
 };
 
+const openLogsFolder: GatewayAction = {
+  command: ElectronCommands.OPEN_LOGS_FOLDER,
+  commandType: "handle",
+  fn: async () => {
+    shell.showItemInFolder(APP_LOGS_PATH);
+  },
+};
+
 const importTermsAction: GatewayAction = {
   command: ElectronCommands.IMPORT_TERMS,
   commandType: "handle",
@@ -215,6 +224,7 @@ export default [
   showFileAction,
   openModelsAction,
   openFontsAction,
+  openLogsFolder,
   importTermsAction,
   exportTermsAction,
 ];
