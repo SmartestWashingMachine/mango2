@@ -1,0 +1,433 @@
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.appContainer {
+  padding: 12px;
+}
+
+.appRootContainer {
+  display: grid;
+  padding: 0;
+  padding-bottom: 0;
+}
+
+.appFullRoot {
+  display: flex;
+}
+
+.appContainerLeft {
+  display: grid;
+  padding: 8px;
+  row-gap: 24px;
+  min-height: calc(100vh - 72px);
+  justify-items: center;
+}
+
+.appContainerRight {
+  row-gap: 24px;
+  display: block;
+}
+
+.inputBox {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 12px;
+}
+
+html,
+body {
+  width: 100%;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background-color: rgba(255, 255, 255, 0.0);
+}
+
+body,
+.react-app {
+  display: grid;
+  overflow-x: hidden;
+}
+
+.fullWidth {
+  display: grid;
+}
+
+.invisibleInput {
+  display: none;
+}
+
+.imageInputPromptContainer {
+  grid-template-rows: auto auto auto;
+  row-gap: 12px;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  padding: 64px 128px;
+}
+
+.emptyHistoryImage {
+  grid-template-rows: auto auto;
+  row-gap: 12px;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.emptyHistoryImageInner {
+  width: 100% !important;
+  height: 200px !important;
+}
+
+.imageInputButton {
+  margin-top: auto !important;
+  margin-bottom: 12px !important;
+}
+
+.dragActive {
+  border: 2px solid #7c4dff;
+  opacity: 0.5;
+}
+
+.twoPaneContainer {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  column-gap: 36px;
+}
+
+.filesList {
+  overflow-y: auto;
+  max-width: none !important;
+}
+
+.filesListContainer {
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  flex: 1;
+}
+
+.imageInputIcon {
+  display: grid;
+  width: 100% !important;
+  height: 200px !important;
+}
+
+.boxApp {
+  background-color: #212121;
+  padding: 0;
+  display: grid;
+  padding: 8px;
+  row-gap: 24px;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 3px;
+}
+
+.fullBoxApp {
+  padding: 0;
+  display: grid;
+  overflow: hidden;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.0);
+}
+
+.boxAppHandleTopLeft,
+.boxAppHandleBottomRight,
+.boxAppHandleTopRight,
+.boxAppHandleBottomLeft {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  -webkit-app-region: drag;
+  overflow: hidden;
+}
+
+.boxAppHandleBottomRight {
+  bottom: 0;
+  right: 0;
+}
+
+.boxAppHandleBottomLeft {
+  bottom: 0;
+  left: 0;
+}
+
+.boxAppHandleTopLeft {
+  top: 0;
+  left: 0;
+}
+
+.boxAppHandleTopRight {
+  top: 0;
+  right: 0;
+}
+
+.boxAppHandleIcon {
+  color: rgb(255, 255, 255) !important;
+  opacity: 0.1;
+  transform: rotate(120deg);
+}
+
+.boxText {
+  margin-top: 12px;
+  margin-left: 12px;
+  color: white !important;
+}
+
+.imagePreviewRoot {
+  display: flex;
+  flex-direction: column;
+}
+
+.imagePreviewBox {
+  max-height: 75vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.imagePreviewBoxOuter {
+  height: 75vh;
+  display: grid;
+  align-content: center;
+}
+
+.imageEditorBox {
+  position: relative;
+  max-height: 90vh;
+}
+
+.imageEditorBoxProcessing {
+  display: flex;
+  position: relative;
+  height: fit-content;
+}
+
+.editImagePreview {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.imagePreview {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.imagePreviewContainer {
+  display: grid;
+  position: relative;
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+.imageViewerControls {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.imageViewerPagination {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.filesListControls {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.imageInputText {
+  position: absolute;
+  font-weight: normal !important;
+  color: white !important;
+  top: 50%;
+  width: 100%;
+  text-align: center !important;
+}
+
+.fileItem {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileItemRoot {
+  font-size: 24px !important;
+}
+
+.fileItemSelected>div {}
+
+.imageLoading {
+  opacity: 0.5;
+}
+
+.viewNavigatorItem {
+  padding-right: 12px;
+}
+
+.imagePreviewTitle {
+  margin-bottom: 12px;
+}
+
+.textViewRoot {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  row-gap: 12px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #47404f;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #2e2930;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.historyList {
+  overflow: auto;
+  flex: 1;
+  max-width: 97.5vw;
+  flex-basis: 20px;
+}
+
+.page-enter {
+  opacity: 0;
+  transform: translateX(-10%);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transition: all 200ms ease-out;
+  transition-delay: 100ms;
+  transform: translateX(0);
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transition: all 300ms ease-in;
+  transform: translateX(20%);
+}
+
+.appRootInnerContainer {
+  display: grid;
+  padding: 0;
+  padding-bottom: 0;
+}
+
+.annotation {
+  border: 1.5px solid black;
+  border-radius: 0.1px;
+  position: absolute;
+}
+
+.custom-annotation {
+  position: absolute;
+}
+
+.custom-annotation:focus-within {
+  outline: 1.25px solid orange;
+}
+
+[contenteditable] {
+  outline: 0px solid transparent;
+}
+
+.logoImg {
+  width: 100%;
+  height: 100%;
+}
+
+.logoImgContainer {
+  width: 120px;
+  height: 22px;
+}
+
+.imageViewerPageField {
+  margin-top: 24px;
+  left: 0;
+  position: absolute !important;
+}
+
+.imageViewerPageField>.MuiInputBase-root {
+  width: 64px !important;
+  height: 34px !important;
+  left: 16px;
+}
+
+.header {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-app-region: drag;
+}
+
+.header button {
+  -webkit-app-region: no-drag;
+}
+
+.small-color-picker .react-colorful {
+  width: 100%;
+}
+
+.small-color-picker {
+  width: 100%;
+}
+
+.react-resizable {
+  position: absolute !important;
+}
+
+.imageEditorOptions {
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  flex: 1;
+  max-height: 60vh;
+}
+
+.react-resizable-handle {
+  background-image: none !important;
+}
+
+.react-draggable-handle {
+  top: 0;
+  left: 0;
+  cursor: se-resize;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+}
+
+.editorText {
+  display: flex;
+  align-items: center;
+}

@@ -1,0 +1,84 @@
+__version__ = "2.0.0"
+
+# Eventlet must monkey patch BEFORE the other imports.
+import eventlet
+
+eventlet.monkey_patch()
+
+from time import strftime
+import logging
+from flask import Flask, request
+from gandy.model_apps import (
+    TEXT_DETECTION_APP,
+    TEXT_RECOGNITION_APP,
+    TRANSLATION_APP,
+    SPELL_CORRECTION_APP,
+    IMAGE_CLEANING_APP,
+    IMAGE_REDRAWING_APP,
+    RERANKING_MODEL_APP,
+    TEXT_LINE_MODEL_APP,
+    translate_pipeline,
+)
+from gandy.get_envs import ENABLE_WEB_UI
+from flask_socketio import SocketIO
+import os
+import eventlet
+from eliot.stdlib import EliotHandler
+from gandy.utils.fancy_logger import logger
+
+eventlet.monkey_patch()
+
+app = Flask(__name__)
+
+# ONNX seems to be funky with asynchronous logick magick. With the default ping timeout (5000ms), it's likely that the client will drop the connection midway through the process.
+# Of course, a long ping timeout is not ideal either.
+# socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True, ping_timeout=100000)
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    ping_timeout=100000,
+    # logger=True,
+    # engineio_logger=True,
+)
+
+
+legacy_logger = logging.getLogger("Gandy")
+legacy_logger.setLevel(logging.DEBUG)
+
+console = logging.StreamHandler()
+legacy_logger.addHandler(console)
+
+legacy_logger.addHandler(EliotHandler())
+
+legacy_logger.info("Running app.")
+
+if ENABLE_WEB_UI:
+
+    @app.before_request
+    def before_request():
+        timestamp = strftime("[%Y-%b-%d %H:%M]")
+        logger.error(
+            f"{timestamp} {request.remote_addr} {request.method} {request.scheme} {request.full_path}"
+        )
+
+
+def run_server():
+    if True:  # Only really needed for the web UI.
+        socketio.run(app, host="0.0.0.0", debug=False, log_output=ENABLE_WEB_UI)
+    else:
+        socketio.run(app)
+
+
+import gandy.book_routes
+import gandy.tasks.task1.task1_routes
+import gandy.tasks.task2.task2_routes
+import gandy.tasks.task3.task3_routes
+import gandy.tasks.task4.task4_routes
+import gandy.tasks.task5.task5_routes
+import gandy.tasks.task6.task6_routes
+import gandy.tasks.task7.task7_routes
+import gandy.web_routes
+import gandy.config_routes
+import gandy.dev_routes
+
+import gandy.webui.load_html

@@ -1,0 +1,80 @@
+.imageOptions {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: rgb(42, 42, 42);
+    padding: 4px 16px;
+    align-content: center;
+    align-items: center;
+}
+
+.searchOptions {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: rgb(42, 42, 42);
+    padding: 12px 16px;
+    align-content: center;
+    width: 100%;
+}
+
+.imageContainer {
+    position: relative;
+    height: 80vh;
+    transition: height 0.2s ease-in-out;
+}
+
+.imageContainerExpanded {
+    position: relative;
+    height: 90vh;
+    transition: height 0.2s ease-in-out;
+    transition-delay: 0.2s;
+}
+
+.imageInner {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    position: absolute;
+}
+
+.imageInnerInfinite {
+    width: 100%;
+    max-height: 80vh;
+    display: block;
+    object-fit: contain;
+}
+
+.imageLeft {
+    position: absolute;
+    height: 100%;
+    width: 40%;
+    display: block;
+    left: 0;
+}
+
+.imageMiddle {
+    position: absolute;
+    height: 100%;
+    width: 20%;
+    display: block;
+    left: 40%;
+    right: 40%;
+}
+
+.imageRight {
+    position: absolute;
+    height: 100%;
+    width: 40%;
+    display: block;
+    right: 0;
+}
+
+img {
+    -khtml-user-select: none;
+    -o-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
