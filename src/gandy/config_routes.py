@@ -9,20 +9,30 @@ from typing import List
 
 @app.route("/changecleaning", methods=["POST"])
 def change_cleaning_route():
-    data = request.json
-    new_mode = data["mode"]
+    with logger.begin_event('Change cleaning mode') as ctx:
+        data = request.json
+        new_mode = data["mode"]
 
-    new_mode = translate_pipeline.switch_cleaning_app(new_mode)
+        ctx.log('New requested mode', new_mode=new_mode)
+
+        new_mode = translate_pipeline.switch_cleaning_app(new_mode)
+
+        translate_pipeline.log_app_usage(ctx)
 
     return {}, 200
 
 
 @app.route("/changeredrawing", methods=["POST"])
 def change_redrawing_route():
-    data = request.json
-    new_mode = data["mode"]
+    with logger.begin_event('Change redrawing mode') as ctx:
+        data = request.json
+        new_mode = data["mode"]
 
-    new_mode = translate_pipeline.switch_redrawing_app(new_mode)
+        ctx.log('New requested mode', new_mode=new_mode)
+
+        new_mode = translate_pipeline.switch_redrawing_app(new_mode)
+
+        translate_pipeline.log_app_usage(ctx)
 
     return {}, 200
 

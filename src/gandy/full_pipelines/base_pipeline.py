@@ -250,6 +250,7 @@ class BasePipeline:
                 rgb_image = cleaning_output[0]
                 text_colors = cleaning_output[1]
             else:
+                rgb_image = cleaning_output
                 text_colors = None
 
             if progress_cb is not None:
