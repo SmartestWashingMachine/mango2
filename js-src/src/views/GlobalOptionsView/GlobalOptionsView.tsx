@@ -38,6 +38,7 @@ const GlobalOptionsView = () => {
 
       if (!didCancel) {
         setLoadedData(data);
+        setTerms(data.terms);
 
         setIsLoading(false);
       }
