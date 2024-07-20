@@ -71,7 +71,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
    * Open/close the OCR box(es).
    */
   const handleOpenBoxClick = useCallback(() => {
-    setOcrBoxesOpen((o) => !o);
+    setOcrBoxesOpen(true);
     MainGateway.createOcrBox();
   }, []);
 
@@ -149,7 +149,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
 
     startTranslating(); // Ensure the client is loading.
     await pollTranslateTextStatus(
-      () => {},
+      () => { },
       doneTranslatingOne,
       doneTranslatingAll
     ); // Create a websocket to listen to the server for progress and the end result.

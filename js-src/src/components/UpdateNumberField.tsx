@@ -51,6 +51,7 @@ export type UpdateNumberFieldProps = {
   maxValue?: number;
   safeValue?: number;
   valueType: "float" | "int";
+  disabled?: boolean;
 };
 
 const UpdateNumberField = (props: UpdateNumberFieldProps) => {
@@ -87,6 +88,7 @@ const UpdateNumberField = (props: UpdateNumberFieldProps) => {
       defaultValue={props.defaultValue}
       helperText={props.helperText}
       placeholder={props.placeholder}
+      disabled={props.disabled}
     />
   );
 };

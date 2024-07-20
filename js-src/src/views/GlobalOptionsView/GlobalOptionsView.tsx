@@ -167,6 +167,8 @@ const GlobalOptionsView = () => {
 
   const { textLineModelName, textDetectionModelName, textRecognitionModelName, translationModelName, rerankingModelName, spellCorrectionModelName, enableCuda, forceTranslationCPU, forceTdCpu, contextAmount, autoOpenOcrWindow, decodingMode, numBeams, topK, topP, epsilonCutoff, lengthPenalty, noRepeatNgramSize, temperature, repetitionPenalty, maxLengthA } = loadedData;
 
+  const decodingParamsIgnored = decodingMode === 'beam';
+
   return (
     <BaseView>
       <PaginatedTabs
@@ -299,7 +301,7 @@ const GlobalOptionsView = () => {
                 changeValue={setStoreValue}
                 keyName="autoOpenOcrWindow"
                 defaultValue={autoOpenOcrWindow}
-                tooltip="Automatically open the OCR window when the Text page is selected."
+                tooltip="Automatically open the OCR window when the Text tab is selected."
                 label="Auto Open OCR Window"
               />
             ),
@@ -334,6 +336,7 @@ const GlobalOptionsView = () => {
                 safeValue={2}
                 minValue={1}
                 maxValue={50}
+                disabled={decodingParamsIgnored}
               />
             ),
             "Top K": (
@@ -346,6 +349,7 @@ const GlobalOptionsView = () => {
                 valueType="int"
                 safeValue={0}
                 minValue={0}
+                disabled={decodingParamsIgnored}
               />
             ),
             "Top P": (
@@ -357,6 +361,7 @@ const GlobalOptionsView = () => {
                 helperText="Every decoding step, only the smallest set of tokens with probs adding up to P or higher can be sampled. Set this between [0, 1)."
                 valueType="float"
                 safeValue={0}
+                disabled={decodingParamsIgnored}
               />
             ),
             "Epsilon Cutoff": (
@@ -368,6 +373,19 @@ const GlobalOptionsView = () => {
                 helperText="Every decoding step, tokens with a probability lower than this are cut off. Set this between [0, 1). A good starter value may be 0.03."
                 valueType="float"
                 safeValue={0.0}
+                disabled={decodingParamsIgnored}
+              />
+            ),
+            Temperature: (
+              <UpdateNumberField
+                label="Temperature"
+                changeValue={setStoreValue}
+                keyName="temperature"
+                defaultValue={temperature}
+                helperText="Setting this greater than 0 may increase translation diversity, and vice versa as it goes towards 0."
+                valueType="float"
+                safeValue={1.0}
+                disabled={decodingParamsIgnored}
               />
             ),
             "Length Penalty": (
@@ -403,17 +421,6 @@ const GlobalOptionsView = () => {
                 helperText="Setting this greater than 1.0 discourages repeated words."
                 valueType="float"
                 safeValue={1.2}
-              />
-            ),
-            Temperature: (
-              <UpdateNumberField
-                label="Temperature"
-                changeValue={setStoreValue}
-                keyName="temperature"
-                defaultValue={temperature}
-                helperText="Setting this greater than 0 may increase translation diversity, and vice versa as it goes towards 0."
-                valueType="float"
-                safeValue={1.0}
               />
             ),
             "Max Length A": (
