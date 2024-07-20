@@ -28,6 +28,11 @@ export const createOcrWindow = (opts: CreateOcrWindowOpts) => {
     title: "Text Window",
   });
 
+  // Prevent electron-builder from rechanging title to "Mango"
+  ocrWindow.on('page-title-updated', (e) => {
+    e.preventDefault();
+  });
+
   const htmlPath = isDev ? "index.html" : path.join(__dirname, "./index.html");
   console.log(`Loading OCR box HTML from path: ${htmlPath}`);
 

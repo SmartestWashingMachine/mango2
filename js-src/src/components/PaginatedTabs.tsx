@@ -106,6 +106,7 @@ const PaginatedTabs = (props: PaginatedTabsProps) => {
         onChange={(e) => setSearch(e.currentTarget.value)}
         value={search}
         fullWidth
+        size="small"
       />
       <Grid container spacing={2} sx={{ minHeight: "90%" }}>
         <Grid item xs={3}>

@@ -17,6 +17,11 @@ import { OcrBoxManager } from "./electron/ocrUtils/ocrBox";
 import { createEssentialFolders } from "./electron/fileUtils/createEssentialFolders";
 import { OPTIONS_PRESETS } from "./utils/boxPresets";
 
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+
+app.disableHardwareAcceleration();
+
 makeLogs();
 
 const store = initializeStore();
@@ -40,6 +45,7 @@ const createWindow = () => {
     frame: isDev, // No menu bars nor top bar.
     resizable: true,
     titleBarStyle: isDev ? "default" : "hidden",
+    backgroundColor: '#FFF',
   });
 
   console.log("Window created.");
