@@ -20,10 +20,11 @@ from gandy.model_apps import (
     translate_pipeline,
 )
 from gandy.get_envs import ENABLE_WEB_UI
-from flask_socketio import SocketIO
 import os
 from eliot.stdlib import EliotHandler
 from gandy.utils.fancy_logger import logger
+import socketio as socketio_pkg
+from time import sleep
 
 # eventlet.monkey_patch()
 
@@ -32,16 +33,20 @@ app = Flask(__name__)
 # ONNX seems to be funky with asynchronous logick magick. With the default ping timeout (5000ms), it's likely that the client will drop the connection midway through the process.
 # Of course, a long ping timeout is not ideal either.
 # socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True, ping_timeout=100000)
-socketio = SocketIO(
-    app,
-    cors_allowed_origins="*",
-    ping_timeout=100000,
-    async_mode='threading',
-    # logger=True,
-    # engineio_logger=True,
-)
-socketio.sleep = lambda *args, **kwargs: None
 
+socketio = socketio_pkg.Client()
+
+while True:
+    try:
+        # By default SocketIO client does not reconnect on the initial connection attempt...
+        socketio.connect('ws://127.0.0.1:5100')
+        sleep(1)
+        break
+    except:
+        continue
+
+socketio.sleep = lambda *args, **kwargs: None
+socketio.start_background_task = lambda fn, *args: fn(*args)
 
 legacy_logger = logging.getLogger("Gandy")
 legacy_logger.setLevel(logging.DEBUG)
@@ -64,10 +69,7 @@ if ENABLE_WEB_UI:
 
 
 def run_server():
-    if True:  # Only really needed for the web UI.
-        socketio.run(app, host="0.0.0.0", debug=False, log_output=ENABLE_WEB_UI)
-    else:
-        socketio.run(app)
+    app.run(host="0.0.0.0", debug=False)
 
 
 import gandy.book_routes

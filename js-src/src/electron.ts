@@ -17,6 +17,9 @@ import { OcrBoxManager } from "./electron/ocrUtils/ocrBox";
 import { createEssentialFolders } from "./electron/fileUtils/createEssentialFolders";
 import { OPTIONS_PRESETS } from "./utils/boxPresets";
 
+import http from 'http';
+import { Server } from 'socket.io';
+
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 
@@ -64,9 +67,6 @@ app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
   });
 
-  // API call.
-  await initializeModelNames(store.store);
-
   // Emit store data changes to client.
   store.onDidAnyChange((s, oldState) => {
     mainWindow.webContents.send(ElectronChannels.EMIT_STORE_DATA, s, oldState);
@@ -93,6 +93,32 @@ app.whenReady().then(async () => {
     ...windowActions,
   ];
   createGatewayActions(electronState, mainWindow, store, ALL_ACTIONS);
+
+  const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    // Step 4: Send the response body
+    res.end('Hello, World!');
+  });
+
+  // TODO: Do I need expressJS? I hope not.
+
+  const io = new Server(server);
+  io.on('connection', (socket) => {
+    console.log('a user connected');
+
+    // Act as a bridge. Cybersecurity says what?
+    socket.onAny((evName, ...args) => {
+      console.log(`Emitting ${evName}`);
+      socket.broadcast.emit(evName, ...args);
+    });
+  });
+
+  server.listen(5100, () => {
+    console.log('Experimental NodeJS server listening on port 5100.');
+  });
+
+  // API call.
+  await initializeModelNames(store.store);
 
   mainWindow.setOpacity(1);
   mainWindow.loadFile(path.join(__dirname, "./index.html"));
