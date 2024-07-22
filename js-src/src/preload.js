@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   listenOcrPauseChange: (cb) => initializeListener('ocr-paused', cb),
   newOcrBox: () => ipcRenderer.invoke('new-ocr-box'),
   deleteOcrBox: (boxId) => ipcRenderer.invoke('delete-ocr-box', boxId),
+  connectedOcrBox: (boxId, didConnect) => ipcRenderer.invoke('connected-ocr-box', boxId, didConnect),
   addToTextHistory: (targetTextStrings, sourceTextStrings, newId) => ipcRenderer.invoke('add-to-text-history', targetTextStrings, sourceTextStrings, newId),
   retrieveTextHistory: () => ipcRenderer.invoke('retrieve-text-history'),
   clearTextHistory: () => ipcRenderer.invoke('clear-text-history'),

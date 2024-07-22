@@ -4,9 +4,21 @@ export const listenTask3Updates = (
   boxId: string,
   beginCb: () => void,
   doneCb: (sourceText: string[], targetText: string[]) => void,
-  streamCb?: (targetText: string) => void
+  streamCb?: (targetText: string) => void,
+  connectCb?: () => void,
+  disconnectCb?: () => void,
 ) => {
-  const socket = makeSocket({ transports: ["websocket"] }); // Disable long polling fallback, as SocketIO does not force a re-upgrade on failure.
+  const socket = makeSocket({ transports: ["websocket"], upgrade: false, }); // Disable long polling fallback, as SocketIO does not force a re-upgrade on failure.
+
+  socket.on('connect', () => {
+    if (!connectCb) return;
+    connectCb();
+  });
+
+  socket.on('disconnect', () => {
+    if (!disconnectCb) return;
+    disconnectCb();
+  });
 
   socket.on("begin_translating_task3", (data) => {
     if (!data || data.boxId !== boxId) return;

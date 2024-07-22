@@ -32,6 +32,7 @@ enum ElectronCommands {
   IMPORT_TERMS = 'import-terms',
   EXPORT_TERMS = 'export-terms',
   RESET_SETTINGS = 'reset-settings',
+  CONNECTED_OCR_BOX = 'connected-ocr-box',
 }
 
 export default ElectronCommands;

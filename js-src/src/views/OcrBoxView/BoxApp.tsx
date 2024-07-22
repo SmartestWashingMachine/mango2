@@ -57,7 +57,15 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
       setText(values);
     };
 
-    const socket = listenTask3Updates(boxId, beginCb, doneCb, streamCb);
+    const connectCb = async () => {
+      await MainGateway.connectedOcrBox(boxId, true);
+    };
+
+    const disconnectCb = async () => {
+      await MainGateway.connectedOcrBox(boxId, false);
+    };
+
+    const socket = listenTask3Updates(boxId, beginCb, doneCb, streamCb, connectCb, disconnectCb);
 
     const cleanup = () => {
       socket.disconnect();
@@ -69,7 +77,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
       window.removeEventListener("beforeunload", cleanup);
       cleanup();
     };
-  }, [removeSpeaker, useStream]);
+  }, [removeSpeaker, useStream, boxId]);
 
   /**
    * Retrieve initial box data from the electron backend.

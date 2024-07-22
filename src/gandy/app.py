@@ -1,9 +1,9 @@
 __version__ = "2.0.0"
 
 # Eventlet must monkey patch BEFORE the other imports.
-import eventlet
+#import eventlet
 
-eventlet.monkey_patch()
+#eventlet.monkey_patch()
 
 from time import strftime
 import logging
@@ -22,11 +22,10 @@ from gandy.model_apps import (
 from gandy.get_envs import ENABLE_WEB_UI
 from flask_socketio import SocketIO
 import os
-import eventlet
 from eliot.stdlib import EliotHandler
 from gandy.utils.fancy_logger import logger
 
-eventlet.monkey_patch()
+# eventlet.monkey_patch()
 
 app = Flask(__name__)
 
@@ -37,9 +36,11 @@ socketio = SocketIO(
     app,
     cors_allowed_origins="*",
     ping_timeout=100000,
+    async_mode='threading',
     # logger=True,
     # engineio_logger=True,
 )
+socketio.sleep = lambda *args, **kwargs: None
 
 
 legacy_logger = logging.getLogger("Gandy")

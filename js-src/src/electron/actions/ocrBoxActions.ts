@@ -84,4 +84,15 @@ const deleteOcrBox: GatewayAction = {
   },
 };
 
-export default [createOcrBox, setBoxValue, newOcrBox, deleteOcrBox];
+const connectedOcrBox: GatewayAction = {
+  command: ElectronCommands.CONNECTED_OCR_BOX,
+  commandType: "handle",
+  fn: (e, w, state, store, boxId: string, didConnect: boolean) => {
+    const found = state.managers.find((m) => m.boxId === boxId);
+    if (found) found._websocketLoaded = didConnect;
+
+    return;
+  },
+};
+
+export default [createOcrBox, setBoxValue, newOcrBox, deleteOcrBox, connectedOcrBox];

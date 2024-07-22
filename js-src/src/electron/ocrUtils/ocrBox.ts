@@ -44,6 +44,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
   _hide?: boolean;
   _stateTexts: any[];
 
+  _websocketLoaded: boolean;
+
   _speakerCallback: () => Promise<string>;
   _last_scanned_text: string | null;
 
@@ -82,6 +84,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     this._last_scanned_text = null;
     this._stateTexts = stateTexts;
+
+    this._websocketLoaded = false;
   }
 
   // This FN must be called before calling createBoxWindow.
@@ -175,7 +179,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   /* Scan and translate. */
   async scanAndTranslateBoxContents() {
     const finalImgBuffer = await this.takeImageCheck();
-    if (finalImgBuffer) {
+    if (finalImgBuffer && this._websocketLoaded) {
       await translateImageGiveText(
         [finalImgBuffer],
         this.boxId,
@@ -194,6 +198,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
       return this._last_scanned_text;
     }
 
+    // This is done wihtout websockets.
     const text: string = await scanImageGiveText(
       [finalImgBuffer],
       this.boxId,
@@ -259,7 +264,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     if (this.spellingCorrectionKey !== DISABLED_KEY_VALUE) {
       globalShortcut.register(this.spellingCorrectionKey, async () => {
         // TODO: Make this work with the OCR mode - not just clipboard.
-        if (this.prevText) {
+        if (this.prevText && this._websocketLoaded) {
           //await clipboardCb(this.prevText, opts);
 
           const newTexts = this._stateTexts;
@@ -311,6 +316,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
       const CHECK_CLIPBOARD_MS = 20;
 
       const cb = async () => {
+        if (!this._websocketLoaded) return;
+
         const opts = {
           prevText: this.prevText,
           paused: this._paused,
