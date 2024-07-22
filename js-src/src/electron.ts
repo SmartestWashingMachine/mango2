@@ -104,17 +104,21 @@ app.whenReady().then(async () => {
 
   const io = new Server(server);
   io.on('connection', (socket) => {
-    console.log('a user connected');
-
     // Act as a bridge. Cybersecurity says what?
     socket.onAny((evName, ...args) => {
-      console.log(`Emitting ${evName}`);
-      socket.broadcast.emit(evName, ...args);
+      // console.log(`Emitting ${evName}`);
+
+      const browWindows: BrowserWindow[] = [mainWindow, ...electronState.managers.map(x => x.ocrWindow)];
+      for (const win of browWindows) {
+        if (win) {
+          win.webContents.send(`bridge_${evName}`, ...args);
+        }
+      }
     });
   });
 
   server.listen(5100, () => {
-    console.log('Experimental NodeJS server listening on port 5100.');
+    console.log('Experimental WS server listening on port 5100.');
   });
 
   // API call.
