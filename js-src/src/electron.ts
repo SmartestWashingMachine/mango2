@@ -94,15 +94,11 @@ app.whenReady().then(async () => {
   ];
   createGatewayActions(electronState, mainWindow, store, ALL_ACTIONS);
 
-  const server = http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    // Step 4: Send the response body
-    res.end('Hello, World!');
-  });
+  const server = http.createServer();
 
   // TODO: Do I need expressJS? I hope not.
 
-  const io = new Server(server);
+  const io = new Server(server, { pingTimeout: 100000, });
   io.on('connection', (socket) => {
     // Act as a bridge. Cybersecurity says what?
     socket.onAny((evName, ...args) => {

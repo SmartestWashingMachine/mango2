@@ -5,6 +5,7 @@ __version__ = "2.0.0"
 
 #eventlet.monkey_patch()
 
+from waitress import serve
 from time import strftime
 import logging
 from flask import Flask, request
@@ -39,7 +40,7 @@ socketio = socketio_pkg.Client()
 while True:
     try:
         # By default SocketIO client does not reconnect on the initial connection attempt...
-        socketio.connect('ws://127.0.0.1:5100')
+        socketio.connect('ws://127.0.0.1:5100', transports=['websocket'])
         sleep(1)
         break
     except:
@@ -69,7 +70,8 @@ if ENABLE_WEB_UI:
 
 
 def run_server():
-    app.run(host="0.0.0.0", debug=False)
+    serve(app, host='0.0.0.0', port=5000)
+    # app.run(host="0.0.0.0", debug=False)
 
 
 import gandy.book_routes

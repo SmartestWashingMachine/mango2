@@ -34,7 +34,9 @@ module.exports = [
       extensions: ['.ts', '.tsx', '.js']
     },
     externals: {
-      'sharp': 'commonjs sharp'
+      'sharp': 'commonjs sharp',
+      bufferutil: "bufferutil",
+      "utf-8-validate": "utf-8-validate",
     }
   },
 
