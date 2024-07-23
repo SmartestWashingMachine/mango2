@@ -40,35 +40,21 @@ const OcrBoxPane = ({
   const [visible, setVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
 
+  const [background, setBackground] = useState(hexWithAlpha(backgroundColor, backgroundOpacity));
+
   const timer = useRef<any>(null);
 
-  let textOpacity = pause ? 0.6 : 1;
-  if (loading) textOpacity = loadingOpacity;
-
-  const extraTextStyles: SxProps = {
-    opacity: textOpacity,
-    textAlign,
-    color: `${fontColor} !important`,
-    fontSize,
-    WebkitTextStrokeWidth: `${strokeSize}px`,
-    WebkitTextStrokeColor: strokeColor,
-    fontFamily: '"ocrbox.otf", "ocrbox.ttf", Roboto, "Roboto", Arial',
-  };
-
-  const extraBoxStyles: SxProps = {
-    //backgroundColor: `${backgroundColor}${Math.round(backgroundOpacity * 100)}`,
-    //// backgroundColor,
-    background: hexWithAlpha(backgroundColor, backgroundOpacity),
-    //opacity: `${backgroundOpacity} !important`,
-  };
-
-  const onHoverEnter = () => {
+  const onHoverEnter = useCallback(() => {
     setIsHovering(true);
-  };
+  }, []);
 
-  const onHoverLeave = () => {
+  const onHoverLeave = useCallback(() => {
     setIsHovering(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    setBackground(hexWithAlpha(backgroundColor, backgroundOpacity));
+  }, [backgroundColor, backgroundOpacity]);
 
   useEffect(() => {
     // When text changes, briefly show the faded box if fade is enabled.
@@ -110,6 +96,23 @@ const OcrBoxPane = ({
       </>
     );
   }, [text, pause]);
+
+  let textOpacity = pause ? 0.6 : 1;
+  if (loading) textOpacity = loadingOpacity;
+
+  const extraTextStyles: SxProps = {
+    opacity: textOpacity,
+    textAlign,
+    color: `${fontColor} !important`,
+    fontSize,
+    WebkitTextStrokeWidth: `${strokeSize}px`,
+    WebkitTextStrokeColor: strokeColor,
+    fontFamily: '"ocrbox.otf", "ocrbox.ttf", Roboto, "Roboto", Arial',
+  };
+
+  const extraBoxStyles: SxProps = {
+    background,
+  };
 
   const timeoutMs = msToSecs(fadeAwayTime);
 
