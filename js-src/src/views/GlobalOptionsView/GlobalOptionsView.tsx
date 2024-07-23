@@ -336,7 +336,6 @@ const GlobalOptionsView = () => {
                 safeValue={2}
                 minValue={1}
                 maxValue={50}
-                disabled={decodingParamsIgnored}
               />
             ),
             "Top K": (
