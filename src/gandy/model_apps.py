@@ -48,10 +48,11 @@ from gandy.onnx_models.ebr import (
     QualityRerankerONNX,
 )
 from gandy.reranking.generic_reranker import GenericRerankerApp, BaseRerankingApp
-from transformers import NllbTokenizer
+from transformers import NllbTokenizer, T5Tokenizer
 from gandy.utils.set_tokenizer_langs import (
     set_lang_as_j,
     prepend_qual,
+    prepend_mad_qual,
     remove_unnecessary_eng_tokens,
 )
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
@@ -84,15 +85,16 @@ TEXT_RECOGNITION_APP = SwitchApp(
         ),
         TrOCRTextRecognitionApp(model_sub_path="_ko/"),
         TrOCRTextRecognitionApp(model_sub_path="_zh/"),
-        TrOCRTextRecognitionApp(model_sub_path="_jmassive/"),
+        TrOCRTextRecognitionApp(
+            model_sub_path="_jmassive/",
+            do_resize=False,
+            gen_kwargs={
+                "num_beams": 5,
+                "no_repeat_ngram_size": 7,
+            },
+        ),
     ],
-    app_names=[
-        "trocr",
-        "trocr_jbig",
-        "k_trocr",
-        "zh_trocr",
-        "trocr_jmassive"
-    ],
+    app_names=["trocr", "trocr_jbig", "k_trocr", "zh_trocr", "trocr_jmassive"],
 )
 
 TRANSLATION_APP = SwitchApp(
@@ -129,12 +131,19 @@ TRANSLATION_APP = SwitchApp(
             on_source_encode=set_lang_as_j,
             target_decode_lang="eng_Latn",
         ),
+        Seq2SeqTranslationApp(
+            model_sub_path="_jmad/",
+            encoder_tokenizer_cls=T5Tokenizer,
+            extra_preprocess=prepend_mad_qual,
+            extra_postprocess=remove_unnecessary_eng_tokens,
+        ),
     ],
     app_names=[
         "nllb_jq",
         "nllb_ko",
         "nllb_zh",
         "nllb_jqrot",
+        "nllb_jmad",
     ],
 )
 

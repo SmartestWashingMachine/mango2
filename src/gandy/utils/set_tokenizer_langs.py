@@ -12,6 +12,9 @@ def set_lang_as_k(tokenizer):
 def prepend_qual(s: str):
     return f"<Q9>{clean_text_vq(s)}"
 
+def prepend_mad_qual(s: str):
+    return f"<2en> {prepend_qual(s)}"
+
 
 def remove_unnecessary_eng_tokens(s: str):
     return s.replace("eng_Latn", "").replace(

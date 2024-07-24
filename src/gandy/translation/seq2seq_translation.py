@@ -146,6 +146,11 @@ class Seq2SeqTranslationApp(BaseTranslation):
             pref = torch.tensor(pref, dtype=torch.int64).to(x_dict["input_ids"].device)
         """
 
+        if self.target_decode_lang is not None:
+            extra_kwargs['forced_bos_token_id'] = self.source_tokenizer.lang_code_to_id[
+                self.target_decode_lang
+            ],
+
         gen_kwargs = {
             "max_length": 476
             if config_state.max_length_a == 0
@@ -177,9 +182,6 @@ class Seq2SeqTranslationApp(BaseTranslation):
             "temperature": config_state.temperature,
             "renormalize_logits": config_state.decoding_mode != "beam",
             "epsilon_cutoff": config_state.epsilon_cutoff,
-            "forced_bos_token_id": self.source_tokenizer.lang_code_to_id[
-                self.target_decode_lang
-            ],
             **extra_kwargs,
         }
 
