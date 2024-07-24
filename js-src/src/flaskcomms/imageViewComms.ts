@@ -30,14 +30,14 @@ export const translateImages = async (
     formData.append("tgt_context_memory", tgtContextMemory);
   }
 
-  const output = await fetch(apiUrl, {
+  // We don't actually await here. We don't care about the output as the data is transmitted via websockets.
+  const output = fetch(apiUrl, {
     method: "POST",
     body: formData,
     headers: {
       Accept: "application/json",
     },
   });
-  if (output.status !== 202) throw Error("Invalid status code.");
 
   return sortedFiles.map((f: any, idx: number) => `File ${idx + 1}`) || [];
 };
