@@ -256,7 +256,7 @@ class YOLOTDImageDetectionApp(YOLOImageDetectionApp):
 
     def load_model(self):
         if not self.loaded:
-            can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+            can_cuda = config_state.use_cuda and not config_state.force_td_cpu
 
             logger.info(
                 f"Loading object detection model ({self.model_name})... CUDA: {config_state.use_cuda} FORCE CPU: {config_state.force_td_cpu}"
