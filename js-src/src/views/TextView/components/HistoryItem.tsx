@@ -59,6 +59,7 @@ type HistoryItemProps = {
   sourceTokens: string[];
   targetTokens: string[];
   otherTargetTexts: string[];
+  isBrief?: boolean;
 };
 
 const HistoryItem = ({
@@ -72,6 +73,7 @@ const HistoryItem = ({
   sourceTokens,
   targetTokens,
   otherTargetTexts,
+  isBrief,
 }: HistoryItemProps) => {
   const targetText = targetTextList[0];
 
@@ -80,7 +82,7 @@ const HistoryItem = ({
   };
 
   return (
-    <ListItem dense divider={!isLast}>
+    <ListItem dense divider={!isLast && !isBrief}>
       <ListItemButton onClick={onClick} onContextMenu={handleContextMenu}>
         <ListItemText
           secondaryTypographyProps={{
@@ -90,7 +92,7 @@ const HistoryItem = ({
           }}
           sx={{ overflowWrap: "break-word" }}
           primary={<>{targetText}</>}
-          secondary={<>{sourceText}</>}
+          secondary={isBrief ? undefined : <>{sourceText}</>}
         />
       </ListItemButton>
     </ListItem>

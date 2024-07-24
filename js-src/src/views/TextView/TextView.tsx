@@ -24,16 +24,20 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import SettingsIcon from "@mui/icons-material/SettingsOutlined";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
+import ReorderIcon from "@mui/icons-material/Reorder";
 import { useLoader } from "../../components/LoaderContext";
 import { pTransformerJoin } from "../../utils/pTransformerJoin";
 import { debugListeners } from "../../flaskcomms/debugListeners";
 import { MainGateway } from "../../utils/mainGateway";
+import { useAlerts } from "../../components/AlertProvider";
 
 type TextViewProps = {
   onOpenOcrSettings: () => void;
 };
 
 const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
+  const pushAlert = useAlerts();
+
   // Side view mode is more user-friendly for big text, or users who don't care for the backlog.
   const [isSideView, setIsSideView] = useState(false);
 
@@ -58,8 +62,8 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   */
   const [contextEnabled, setContextEnabled] = useState(false);
 
-  // While the OCR box(es) are open, the settings can not be changed.
-  const [ocrBoxesOpen, setOcrBoxesOpen] = useState(false);
+  // Users can make the history list smaller for easier navigation.
+  const [briefHistory, setBriefHistory] = useState(false);
 
   const handleSearchChange = (e: any) => setSearch(e.currentTarget.value);
 
@@ -71,7 +75,6 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
    * Open/close the OCR box(es).
    */
   const handleOpenBoxClick = useCallback(() => {
-    setOcrBoxesOpen(true);
     MainGateway.createOcrBox();
   }, []);
 
@@ -84,6 +87,8 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
 
     const csvRows = texts.map((t) => [t.sourceText, t.targetText]);
     await w.electronAPI.saveCsvFile(csvRows, ["SourceText", "TargetText"]);
+
+    pushAlert('Saved in documents.');
   };
 
   const pushContext = useCallback(
@@ -279,6 +284,16 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
           </IconButton>
         </Paper>
       </Tooltip>
+      <Tooltip title={briefHistory ? "Expand History" : "Minimize History"}>
+        <Paper elevation={2}>
+          <IconButton
+            onClick={() => setBriefHistory(h => !h)}
+            sx={{ borderRadius: 0 }}
+          >
+            <ReorderIcon />
+          </IconButton>
+        </Paper>
+      </Tooltip>
       <Tooltip title="Download Translated Backlog">
         <Paper elevation={2}>
           <IconButton
@@ -380,6 +395,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
             }))}
             selectedIds={contextIds}
             onSelectItem={addContext}
+            isBrief={briefHistory}
           />
           <Stack spacing={1}>
             {controlsPane}

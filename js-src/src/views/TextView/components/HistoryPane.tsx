@@ -11,6 +11,7 @@ type HistoryPaneProps = {
   selectedIds: string[];
   onSelectItem: (uuid: string) => void;
   initialItemCount?: number;
+  isBrief?: boolean;
 };
 
 const HistoryPane = ({
@@ -18,6 +19,7 @@ const HistoryPane = ({
   onSelectItem,
   selectedIds,
   initialItemCount,
+  isBrief,
 }: HistoryPaneProps) => {
   // These values are for the context menu.
   const [isOpen, setIsOpen] = useState(false);
@@ -106,7 +108,7 @@ const HistoryPane = ({
           <Virtuoso
             style={{ height: "100%" }}
             totalCount={textItemsData.length}
-            itemContent={(index) => <HistoryItem {...textItemsData[index]} />}
+            itemContent={(index) => <HistoryItem {...textItemsData[index]} isBrief={isBrief} />}
             ref={ref}
             initialItemCount={initialItemCount || undefined}
           />
@@ -114,7 +116,7 @@ const HistoryPane = ({
           <Virtuoso
             style={{ height: "100%" }}
             totalCount={textItemsData.length}
-            itemContent={(index) => <HistoryItem {...textItemsData[index]} />}
+            itemContent={(index) => <HistoryItem {...textItemsData[index]} isBrief={isBrief} />}
             ref={ref}
           />
         ) // React virtuoso still sets initialItemCount if undefined... very annoying.
