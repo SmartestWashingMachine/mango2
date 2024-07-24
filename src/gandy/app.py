@@ -21,7 +21,6 @@ from eliot.stdlib import EliotHandler
 from gandy.utils.fancy_logger import logger
 import socketio as socketio_pkg
 from time import sleep
-from gandy.utils.upgrade_cpu_priority import upgrade_cpu_priority
 
 app = Flask(__name__)
 
@@ -52,8 +51,6 @@ legacy_logger.addHandler(console)
 legacy_logger.addHandler(EliotHandler())
 
 legacy_logger.info("Running app.")
-
-upgrade_cpu_priority()
 
 if ENABLE_WEB_UI:
 

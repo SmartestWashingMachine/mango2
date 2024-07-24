@@ -1,3 +1,12 @@
+import os
+os.environ["EVENTLET_NO_GREENDNS"] = 'yes'
+
+import eventlet
+eventlet.monkey_patch(socket=True, select=True)
+
+import os
+os.environ["EVENTLET_NO_GREENDNS"] = 'yes'
+
 import tqdm
 from time import strftime
 import logging
