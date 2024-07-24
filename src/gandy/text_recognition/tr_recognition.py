@@ -17,19 +17,34 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         model_sub_path="/",
         gen_kwargs={},
         feature_extractor_cls=ViTFeatureExtractor,
-        do_resize=False,
+        do_resize=True,
     ):
         super().__init__()
 
-        self.transform = A.Compose(
-            [
-                # NOTE: Currently worse with these two, but may do well in the future.
-                # NOTE: Default border mode of reflect101 is VERY bad. CONSTANT border performs way better.
-                ## A.LongestMaxSize(224, always_apply=True),
-                ## A.PadIfNeeded(224, 224, border_mode=cv2.BORDER_CONSTANT),
-                A.ToGray(always_apply=True),
-            ]
-        )
+        self.do_resize = do_resize
+
+        if self.do_resize:
+            self.transform = A.Compose(
+                [
+                    A.ToGray(always_apply=True),
+                ]
+            )
+        else:
+            self.transform = A.Compose(
+                [
+                    # In theory Massive OCR should be able to extrapolate rather well. Perhaps LongestMaxSize is unnecessary?
+                    A.LongestMaxSize(512, always_apply=True),
+                    A.PadIfNeeded(
+                        None,
+                        None,
+                        pad_width_divisor=16,
+                        pad_height_divisor=16,
+                        border_mode=cv2.BORDER_CONSTANT,
+                        value=0,
+                    ),
+                    A.ToGray(always_apply=True),
+                ]
+            )
 
         self.model_sub_path = model_sub_path
 
@@ -77,7 +92,9 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         return super().unload_model()
 
     def preprocess(self, inp):
-        pixel_values = self.feature_extractor(inp, return_tensors="pt").pixel_values
+        pixel_values = self.feature_extractor(
+            inp, return_tensors="pt", do_resize=self.do_resize
+        ).pixel_values
 
         if config_state.use_cuda:
             pixel_values = pixel_values.to("cuda:0")
