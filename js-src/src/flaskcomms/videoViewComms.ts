@@ -8,14 +8,13 @@ export const translateVideo = async (
   const formData = new FormData() as any;
   formData.append("videoFilePath", file);
 
-  const output = await fetch(apiUrl, {
+  const output = fetch(apiUrl, {
     method: "POST",
     body: formData,
     headers: {
       Accept: "application/json",
     },
   });
-  if (output.status !== 202) throw Error("Invalid status code.");
 };
 
 export const pollTranslateVideoStatus = (

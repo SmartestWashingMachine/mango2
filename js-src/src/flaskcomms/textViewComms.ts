@@ -45,7 +45,7 @@ export const translateText = async (
   // TODO: Make this configurable since it affects performance ever so slightly.
   body["output_attentions"] = true;
 
-  const output = await fetch(apiUrl, {
+  const output = fetch(apiUrl, {
     method: "POST",
     body: JSON.stringify(body),
     headers: {
@@ -53,12 +53,6 @@ export const translateText = async (
       Accept: "application/json",
     },
   });
-  if (output.status !== 202) throw Error("Invalid status code.");
-  if (!output.ok) {
-    console.log("Failed fetch:");
-    console.log(output.status);
-    console.log(output.statusText);
-  }
 };
 
 export const pollTranslateTextStatus = (

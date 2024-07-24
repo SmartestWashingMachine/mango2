@@ -13,14 +13,13 @@ export const translateBook = async (
     formData.append("tgt_context_memory", tgtContextMemory);
   }
 
-  const output = await fetch(apiUrl, {
+  const output = fetch(apiUrl, {
     method: "POST",
     body: formData,
     headers: {
       Accept: "application/json",
     },
   });
-  if (output.status !== 202) throw Error("Invalid status code.");
 };
 
 export const pollTranslateBookStatus = (
