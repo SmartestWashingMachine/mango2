@@ -1,10 +1,5 @@
 __version__ = "2.0.0"
 
-# Eventlet must monkey patch BEFORE the other imports.
-#import eventlet
-
-#eventlet.monkey_patch()
-
 from waitress import serve
 from time import strftime
 import logging
@@ -26,8 +21,7 @@ from eliot.stdlib import EliotHandler
 from gandy.utils.fancy_logger import logger
 import socketio as socketio_pkg
 from time import sleep
-
-# eventlet.monkey_patch()
+from gandy.utils.upgrade_cpu_priority import upgrade_cpu_priority
 
 app = Flask(__name__)
 
@@ -58,6 +52,8 @@ legacy_logger.addHandler(console)
 legacy_logger.addHandler(EliotHandler())
 
 legacy_logger.info("Running app.")
+
+upgrade_cpu_priority()
 
 if ENABLE_WEB_UI:
 
