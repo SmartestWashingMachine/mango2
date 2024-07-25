@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import BaseView from "./BaseView";
 import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import ArrowCircleRightIcon from "@mui/icons-material/ArrowRight";
 import {
   Button,
   FormControlLabel,
   FormGroup,
+  IconButton,
   List,
   ListItemButton,
   ListItemText,
@@ -12,7 +15,7 @@ import {
   Switch,
   Typography,
 } from "@mui/material";
-import { translateWeb } from "../flaskcomms/webViewComms";
+import { pollTranslateWebStatus, translateWeb } from "../flaskcomms/webViewComms";
 import { useLoader } from "../components/LoaderContext";
 
 const WebView = () => {
@@ -31,22 +34,34 @@ const WebView = () => {
 
   const handlePreviewChange = (e: any) => setPreview(e.target.checked);
 
+  const doneTranslatingItem = useCallback(
+    async (newOutput: string) => {
+      setOutput(newOutput);
+    },
+    []
+  );
+
+  const doneTranslatingPage = useCallback(async () => {
+    setLoading(false);
+  }, []);
+
+  const processWeb = async () => {
+    if (loading) return;
+
+    setLoading(true);
+
+    await pollTranslateWebStatus(
+      doneTranslatingItem,
+      doneTranslatingPage,
+    ); // Create a websocket to listen to the server for progress and the end result.
+    await translateWeb(text, contentFilter, preview);
+  };
+
   const handleProcessTextEnter = async (e: any) => {
     if (e.key === "Enter") {
-      if (loading) return;
       e.preventDefault();
 
-      setLoading(true);
-
-      try {
-        const newOutput = await translateWeb(text, contentFilter, preview);
-
-        setOutput(newOutput);
-      } catch (err) {
-        console.log(err);
-      }
-
-      setLoading(false);
+      await processWeb();
     }
   };
 
@@ -65,6 +80,20 @@ const WebView = () => {
             onKeyDown={handleProcessTextEnter}
             fullWidth
             helperText="Enter a webpage link. The model will attempt to translate all text in the selected elements."
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={processWeb}
+                    disabled={loading}
+                    color="primary"
+                    edge="end"
+                  >
+                    <ArrowCircleRightIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <TextField
             onChange={handleContentFilterChange}

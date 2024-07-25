@@ -1,3 +1,5 @@
+import { makeSocket } from "./makeSocket";
+
 /**
  * This function is called when translating a web page.
  */
@@ -8,7 +10,7 @@ export const translateWeb = async (
 ) => {
   const apiUrl = "http://localhost:5000/processweb";
 
-  const output = await fetch(apiUrl, {
+  const output = fetch(apiUrl, {
     method: "POST",
     body: JSON.stringify({
       weblink: weblink,
@@ -20,8 +22,32 @@ export const translateWeb = async (
       "Content-Type": "application/json",
     },
   });
-  if (output.status !== 202) throw Error("Invalid status code.");
-
-  const data: any = await output.json();
-  return data?.output as string;
 };
+
+export const pollTranslateWebStatus = (
+  itemCb: (targetText: string) => void,
+  doneCb: () => void
+) =>
+  new Promise<void>((resolve) => {
+    const socket = makeSocket();
+
+    socket.on("connect", () => {
+      resolve();
+    });
+
+    socket.on("item_taskweb", (data) => {
+      if (data && data.text) {
+        itemCb(data.text);
+      }
+    });
+
+    socket.on("done_taskweb", (data) => {
+      if (data && data.text) {
+        itemCb(data.text);
+      }
+
+      doneCb();
+
+      socket.disconnect();
+    });
+  });

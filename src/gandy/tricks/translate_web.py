@@ -5,6 +5,7 @@ from gandy.state.context_state import context_state
 from gandy.utils.text_processing import add_seps
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
+from gandy.app import socketio
 
 # The previous few requests are cached in case the user wants to make quick edits to the CSS selector field.
 class WebCache:
@@ -89,6 +90,8 @@ def retrieve_texts(link, content_filter=None):
 
     return output
 
+def map_texts(texts):
+    return "\n\n".join(texts).strip()
 
 def translate_web(link, app_pipeline, content_filter=None, do_preview=False):
     """
@@ -128,4 +131,7 @@ def translate_web(link, app_pipeline, content_filter=None, do_preview=False):
         else:
             translated_texts.append(t)
 
-    return "\n\n".join(translated_texts).strip()
+        socketio.emit('item_taskweb', { 'text': map_texts(translated_texts) })
+
+    socketio.emit('done_taskweb', { 'text': map_texts(translated_texts) })
+    return map_texts(translated_texts)
