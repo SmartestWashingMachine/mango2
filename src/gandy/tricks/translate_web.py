@@ -4,7 +4,7 @@ import requests
 from gandy.state.context_state import context_state
 from gandy.utils.text_processing import add_seps
 from gandy.utils.fancy_logger import logger
-
+from gandy.state.config_state import config_state
 
 # The previous few requests are cached in case the user wants to make quick edits to the CSS selector field.
 class WebCache:
@@ -108,19 +108,20 @@ def translate_web(link, app_pipeline, content_filter=None, do_preview=False):
 
         if not do_preview:
             text = add_seps(context_state.prev_source_text_list + [t])
-            context_state.update_source_list(
-                t,
-                app_pipeline.n_context,
-            )  # text initially has no context.
 
-            (new_text,) = app_pipeline.text_to_text(
+            (new_text, processed_src) = app_pipeline.text_to_text(
                 text,
                 use_stream=None,
+                return_source_text=True,
+            )
+
+            context_state.update_source_list(
+                processed_src[0], config_state.n_context,
             )
 
             context_state.update_target_list(
                 new_text[0],
-                app_pipeline.n_context,
+                config_state.n_context,
             )
 
             translated_texts.extend(new_text)  # Should only be one element.

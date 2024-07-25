@@ -6,6 +6,7 @@ import uuid
 from flask_socketio import SocketIO
 from gandy.full_pipelines.base_pipeline import BasePipeline
 from gandy.state.context_state import ContextState
+from gandy.state.config_state import config_state
 from gandy.utils.text_processing import add_seps
 from gandy.utils.fancy_logger import logger
 
@@ -68,13 +69,13 @@ def translate_one_sentence(
     translated_text = re.sub(sent_regex, r"\1 \2", translated_text)
 
     context_state.update_source_list(
-        processed_source_text,
-        app_pipeline.n_context,
+        processed_source_text[0],
+        config_state.n_context,
     )
     # Add current sentence to contextual outputs for future sentences.
     context_state.update_target_list(
         translated_text,
-        app_pipeline.n_context,
+        config_state.n_context,
     )
 
     return translated_text
