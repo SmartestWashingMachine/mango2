@@ -258,7 +258,7 @@ const GlobalOptionsView = () => {
                 defaultValue={forceTdCpu}
                 tooltip="Has no effect if CUDA is disabled."
                 label="Force TDs on CPU"
-                helperText="The text and text line detection models will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
+                helperText="The text box and text line detection models will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
               />
             ),
             "Force MT on CPU": (
