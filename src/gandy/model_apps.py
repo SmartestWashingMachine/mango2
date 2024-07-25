@@ -54,6 +54,7 @@ from gandy.utils.set_tokenizer_langs import (
     prepend_qual,
     prepend_mad_qual,
     remove_unnecessary_eng_tokens,
+    remove_unnecessary_eng_tokens_mad,
 )
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
 
@@ -135,7 +136,8 @@ TRANSLATION_APP = SwitchApp(
             model_sub_path="_jmad/",
             encoder_tokenizer_cls=T5Tokenizer,
             extra_preprocess=prepend_mad_qual,
-            extra_postprocess=remove_unnecessary_eng_tokens,
+            extra_postprocess=remove_unnecessary_eng_tokens_mad,
+            target_decode_lang=None,
         ),
     ],
     app_names=[

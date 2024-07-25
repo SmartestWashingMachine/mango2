@@ -95,6 +95,9 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         pixel_values = self.feature_extractor(
             inp, return_tensors="pt", do_resize=self.do_resize
         ).pixel_values
+        
+        if not self.do_resize:
+            logger.info(f'Using variable TrOCR variant - input shape: {pixel_values.shape}')
 
         if config_state.use_cuda:
             pixel_values = pixel_values.to("cuda:0")

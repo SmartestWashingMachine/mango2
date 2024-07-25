@@ -21,3 +21,9 @@ def remove_unnecessary_eng_tokens(s: str):
         "<TSOS>",
         "",
     )
+
+def remove_unnecessary_eng_tokens_mad(s: str):
+    return s.replace("<unk>", "").replace(
+        "<TSOS>",
+        "",
+    ).strip()
