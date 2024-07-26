@@ -56,7 +56,9 @@ const createWindow = () => {
   return win;
 };
 
-const subprocess = isDev ? null : loadPython();
+const openShellArg = app.commandLine.hasSwitch("showpy");
+
+const subprocess = isDev ? null : loadPython(openShellArg);
 
 app.whenReady().then(async () => {
   await createEssentialFolders();

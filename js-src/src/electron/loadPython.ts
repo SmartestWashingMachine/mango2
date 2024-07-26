@@ -3,14 +3,22 @@ const cp = require("child_process");
 import path from "path";
 import { BACKEND_PATH } from "../constants";
 
-export const loadPython = () => {
+const getBackendProcess = (backend: string, openShell = false) => {
+  if (openShell) {
+    return cp.spawn(backend, { shell: true, detached: true, });
+  }
+
+  return cp.spawn(backend);
+};
+
+export const loadPython = (openShell = false) => {
   // const backend = path.join(process.cwd(), BACKEND_PATH);
   const backend = BACKEND_PATH;
 
   console.log("Loading backend from path:");
   console.log(backend);
 
-  const subprocess = cp.spawn(backend);
+  const subprocess = getBackendProcess(backend, openShell);
 
   subprocess.stdout.on("data", (data: any) => {
     console.log(data.toString());
