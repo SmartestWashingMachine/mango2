@@ -98,7 +98,7 @@ app.whenReady().then(async () => {
 
   // TODO: Do I need expressJS? I hope not.
 
-  const io = new Server(server, { pingTimeout: 100000, });
+  const io = new Server(server, { pingTimeout: 100000, maxHttpBufferSize: 1e10 });
   io.on('connection', (socket) => {
     // Act as a bridge. Cybersecurity says what?
     socket.onAny((evName, ...args) => {

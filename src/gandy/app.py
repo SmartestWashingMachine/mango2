@@ -30,7 +30,7 @@ app = Flask(__name__)
 
 socketio = socketio_pkg.Client()
 
-def try_socket_conn():
+def try_socket_conn(is_reconn = False):
     while True:
         try:
             print('Connecting...')
@@ -42,6 +42,9 @@ def try_socket_conn():
             print('Gonna retry connection.')
             sleep(1)
             continue
+
+    if is_reconn:
+        sleep(2) # In case of reconnection BS. Actually, this turned out to be buffer size limit - maybe we don't need this reconnection stuff.
 
 try_socket_conn()
 
@@ -67,7 +70,7 @@ def patched_emit(*args, **kwargs):
         logger.info('Socket error (reconnecting?):')
         logger.error(e)
 
-        try_socket_conn()
+        try_socket_conn(is_reconn=True)
         patched_emit(*args, **kwargs)
 
 socketio.patched_emit = patched_emit
