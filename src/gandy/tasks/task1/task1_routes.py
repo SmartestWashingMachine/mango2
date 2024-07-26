@@ -19,7 +19,7 @@ def encode_image(new_image):
 
 
 def on_progress(progress: int, socketio):
-    socketio.emit(f"progress_task1", progress)
+    socketio.patched_emit(f"progress_task1", progress)
     socketio.sleep()
 
 
@@ -51,7 +51,7 @@ def translate_task1_background_job(
 
             for img, img_name in images_data:
                 # The client really only uses progress for task1 anyways. The other progress_tasks aren't used... yet.
-                socketio.emit("progress_task1", 5)
+                socketio.patched_emit("progress_task1", 5)
                 socketio.sleep()
 
                 ctx.log(f"Task1 processing image", img_name=img_name)
@@ -73,7 +73,7 @@ def translate_task1_background_job(
 
                     new_img_name = f"{img_name_no_ext}.png"
 
-                socketio.emit(
+                socketio.patched_emit(
                     "item_task1",
                     {
                         "image": new_image_base64,
@@ -83,12 +83,12 @@ def translate_task1_background_job(
                 )
                 socketio.sleep()
 
-            socketio.emit("done_translating_task1", {})
+            socketio.patched_emit("done_translating_task1", {})
             socketio.sleep()
         except Exception:
             logger.event_exception(ctx)
 
-            socketio.emit("done_translating_task1", {})
+            socketio.patched_emit("done_translating_task1", {})
             socketio.sleep()
 
 

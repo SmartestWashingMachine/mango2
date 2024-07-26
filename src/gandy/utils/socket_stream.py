@@ -49,7 +49,7 @@ class SocketStreamer(TextStreamer):
         self.old_text = text
 
         # This is where the "magic" happens.
-        socketio.emit(
+        socketio.patched_emit(
             "item_stream",
             {
                 "text": text,

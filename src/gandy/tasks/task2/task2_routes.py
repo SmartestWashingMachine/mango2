@@ -45,11 +45,11 @@ def translate_task2_background_job(
                     new_text[0], processed_source_text[0], box_id
                 )
 
-            socketio.emit("done_translating_task2", output)
+            socketio.patched_emit("done_translating_task2", output)
         except Exception:
             logger.event_exception(ctx)
 
-            socketio.emit("done_translating_task2", {})
+            socketio.patched_emit("done_translating_task2", {})
 
 
 @app.route("/processtask2", methods=["POST"])

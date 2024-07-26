@@ -41,7 +41,7 @@ def emit_progress(socketio: SocketIO, j, sentences_len: int):
         "sentsTotal": sentences_len,
         "sentsDone": j,
     }
-    socketio.emit("progress_epub", data)
+    socketio.patched_emit("progress_epub", data)
 
 
 sent_regex = re.compile(r"([.?!])([a-zA-Z0-9_])")

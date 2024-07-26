@@ -7,7 +7,7 @@ from gandy.utils.fancy_logger import logger
 
 
 def emit_progress(true_progress: float):
-    socketio.emit(f"progress_task5", true_progress)
+    socketio.patched_emit(f"progress_task5", true_progress)
     socketio.sleep()
 
 
@@ -40,7 +40,7 @@ def process_task5_background_job(video_file_path: str, every_secs: float):
     except Exception as e:
         logger.log(e)
 
-    socketio.emit("done_translating_task5", out.replace("\\", "/"))
+    socketio.patched_emit("done_translating_task5", out.replace("\\", "/"))
 
 
 @app.route("/processtask5", methods=["POST"])

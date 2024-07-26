@@ -131,7 +131,7 @@ def translate_web(link, app_pipeline, content_filter=None, do_preview=False):
         else:
             translated_texts.append(t)
 
-        socketio.emit('item_taskweb', { 'text': map_texts(translated_texts) })
+        socketio.patched_emit('item_taskweb', { 'text': map_texts(translated_texts) })
 
-    socketio.emit('done_taskweb', { 'text': map_texts(translated_texts) })
+    socketio.patched_emit('done_taskweb', { 'text': map_texts(translated_texts) })
     return map_texts(translated_texts)

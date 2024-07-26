@@ -24,7 +24,7 @@ def load_images(images):
 
 
 def emit_begin(box_id):
-    socketio.emit(
+    socketio.patched_emit(
         "begin_translating_task3",
         {
             "boxId": box_id,
@@ -71,16 +71,16 @@ def translate_task3_background_job(
                     "boxId": box_id,
                     "sourceText": [last_source],
                 }
-                socketio.emit(
+                socketio.patched_emit(
                     "item_task3",
                     output,
                 )
 
-            socketio.emit("done_translating_task3", {})
+            socketio.patched_emit("done_translating_task3", {})
         except Exception:
             logger.event_exception(ctx)
 
-            socketio.emit("done_translating_task3", {})
+            socketio.patched_emit("done_translating_task3", {})
 
 
 @app.route("/processtask3", methods=["POST"])

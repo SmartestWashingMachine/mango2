@@ -9,7 +9,7 @@ def use_context_state_for_box(text: str, box_id, ctx):
     ctx.log(f"Using box context", box_id=box_id)
     text = add_seps(context_state.prev_source_text_list + [text])
 
-    socketio.emit(
+    socketio.patched_emit(
         "begin_translating_task2",
         {
             "boxId": box_id,

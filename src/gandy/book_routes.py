@@ -13,7 +13,7 @@ def process_task2_book_background_job(file):
         socketio=socketio,
     )
 
-    socketio.emit("done_translating_epub", {})
+    socketio.patched_emit("done_translating_epub", {})
 
 
 @app.route("/processbookb64", methods=["POST"])

@@ -30,17 +30,20 @@ app = Flask(__name__)
 
 socketio = socketio_pkg.Client()
 
-while True:
-    try:
-        # By default SocketIO client does not reconnect on the initial connection attempt...
-        socketio.connect('ws://127.0.0.1:5100', transports=['websocket'])
-        sleep(1)
-        break
-    except:
-        continue
+def try_socket_conn():
+    while True:
+        try:
+            print('Connecting...')
+            # By default SocketIO client does not reconnect on the initial connection attempt...
+            socketio.connect('ws://127.0.0.1:5100', transports=['websocket'])
+            break
+        except Exception as e:
+            print(e)
+            print('Gonna retry connection.')
+            sleep(1)
+            continue
 
-socketio.sleep = lambda *args, **kwargs: None
-socketio.start_background_task = lambda fn, *args: fn(*args)
+try_socket_conn()
 
 legacy_logger = logging.getLogger("Gandy")
 legacy_logger.setLevel(logging.DEBUG)
@@ -51,6 +54,26 @@ legacy_logger.addHandler(console)
 legacy_logger.addHandler(EliotHandler())
 
 legacy_logger.info("Running app.")
+
+def patched_emit(*args, **kwargs):
+    try:
+        socketio.emit(*args, **kwargs)
+    except Exception as e:
+        try:
+            socketio.disconnect()
+        except Exception as ee:
+            print(ee)
+
+        logger.info('Socket error (reconnecting?):')
+        logger.error(e)
+
+        try_socket_conn()
+        patched_emit(*args, **kwargs)
+
+socketio.patched_emit = patched_emit
+
+socketio.sleep = lambda *args, **kwargs: None
+socketio.start_background_task = lambda fn, *args: fn(*args)
 
 if ENABLE_WEB_UI:
 

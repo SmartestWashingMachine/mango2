@@ -27,14 +27,14 @@ def translate_task6_background_job(
 
             output["text"] = new_text
 
-            socketio.emit(
+            socketio.patched_emit(
                 "done_translating_task2",
                 output,
             )  # Keep this at task2 to make it easier for the client WSS
         except Exception:
             logger.event_exception(ctx)
 
-            socketio.emit(
+            socketio.patched_emit(
                 "done_translating_task2",
                 {},
             )
