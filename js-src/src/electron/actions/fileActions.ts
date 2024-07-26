@@ -139,8 +139,7 @@ const showFileAction: GatewayAction = {
   fn: async (e, _, __, ___, fullPath) => {
     // Only show items in library folder.
     const rel = path.relative(APP_LIBRARY_PATH, fullPath);
-    console.log("REL:");
-    console.log(rel);
+
     if (rel && !rel.startsWith("..") && !path.isAbsolute(rel))
       shell.showItemInFolder(fullPath);
   },
