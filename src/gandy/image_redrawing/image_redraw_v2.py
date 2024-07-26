@@ -4,7 +4,7 @@ from math import floor
 from string import ascii_letters
 from gandy.image_redrawing.base_image_redraw import BaseImageRedraw
 from gandy.image_redrawing.image_redraw_global import compute_min_max_font_sizes
-
+from gandy.utils.compute_stroke_size import compute_stroke_size
 
 # "What happened to V1?" We don't talk about V1.
 class ImageRedrawV2App(BaseImageRedraw):
@@ -162,7 +162,7 @@ class ImageRedrawV2App(BaseImageRedraw):
                 font,
                 align="center",
                 stroke_fill=self.get_stroke_color(text_colors, i),
-                stroke_width=max(2, best_font_size // 7),
+                stroke_width=compute_stroke_size(best_font_size),
             )
 
         return new_image

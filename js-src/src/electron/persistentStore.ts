@@ -32,6 +32,7 @@ const storeDefaults: IStore = {
   currentView: "Text",
   autoOpenOcrWindow: false,
   spellCorrectionSeparate: false, // TODO: Unused. Probably don't need it either.
+  strokeSize: 1.5,
 };
 
 export const initializeStore = () => {

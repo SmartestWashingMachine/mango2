@@ -165,7 +165,7 @@ const GlobalOptionsView = () => {
 
   if (isLoading) return <div></div>;
 
-  const { textLineModelName, textDetectionModelName, textRecognitionModelName, translationModelName, rerankingModelName, spellCorrectionModelName, enableCuda, forceTranslationCPU, forceTdCpu, contextAmount, autoOpenOcrWindow, decodingMode, numBeams, topK, topP, epsilonCutoff, lengthPenalty, noRepeatNgramSize, temperature, repetitionPenalty, maxLengthA } = loadedData;
+  const { textLineModelName, textDetectionModelName, textRecognitionModelName, translationModelName, rerankingModelName, spellCorrectionModelName, enableCuda, forceTranslationCPU, forceTdCpu, contextAmount, strokeSize, autoOpenOcrWindow, decodingMode, numBeams, topK, topP, epsilonCutoff, lengthPenalty, noRepeatNgramSize, temperature, repetitionPenalty, maxLengthA } = loadedData;
 
   const decodingParamsIgnored = decodingMode === 'beam';
 
@@ -296,6 +296,17 @@ const GlobalOptionsView = () => {
                 </MenuItem>
               </UpdateListField>
             ),
+            "Redrawing Edge Size": (<UpdateNumberField
+              label="Redrawing Edge Size"
+              changeValue={setStoreValue}
+              keyName="strokeSize"
+              defaultValue={strokeSize}
+              helperText="The size of the edge of the text when automatically redrawing translated images."
+              valueType="float"
+              safeValue={0.5}
+              minValue={0.1}
+              maxValue={150}
+            />),
             "Auto Open OCR Window": (
               <UpdateCheckbox
                 changeValue={setStoreValue}

@@ -18,6 +18,8 @@ class ConfigState:
         self.use_cuda = False
         self.terms = []
 
+        self.stroke_size = 8
+
     def set_decoding_params(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)

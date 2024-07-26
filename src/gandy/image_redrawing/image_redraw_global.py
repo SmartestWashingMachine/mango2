@@ -4,6 +4,7 @@ import textwrap
 from math import floor
 from string import ascii_letters
 from gandy.image_redrawing.base_image_redraw import BaseImageRedraw
+from gandy.utils.compute_stroke_size import compute_stroke_size
 
 """
 
@@ -290,7 +291,7 @@ class ImageRedrawGlobalApp(BaseImageRedraw):
                 font,
                 align="center",
                 stroke_fill=self.get_stroke_color(text_colors, idx),
-                stroke_width=max(2, best_font_size // 7),
+                stroke_width=compute_stroke_size(best_font_size),
             )
 
         return new_image

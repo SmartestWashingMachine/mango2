@@ -110,6 +110,7 @@ def change_multiple_models_route():
             use_cuda=data["enableCuda"],
             n_context=c_amount,
             no_repeat_ngram_size=int(data["noRepeatNgramSize"]),
+            stroke_size=float(data["strokeSize"]),
         )
 
         config_state.update_terms(terms=data["terms"])

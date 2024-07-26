@@ -35,6 +35,7 @@ export type IStoreClientToServer = {
   forceTranslationCPU: boolean;
   forceTdCpu: boolean;
   spellCorrectionSeparate: boolean;
+  strokeSize: number;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;

@@ -3,7 +3,7 @@ from gandy.image_redrawing.image_redraw_global_smart import (
     load_font,
 )
 from random import choices
-
+from gandy.utils.compute_stroke_size import compute_stroke_size
 
 def add_padding(box, img):
     padding_pct = 0.15
@@ -67,7 +67,7 @@ class ImageRedrawGlobalSmartBackgroundApp(ImageRedrawGlobalSmartApp):
                 font,
                 align="center",
                 stroke_fill=self.get_stroke_color(text_colors, idx),
-                stroke_width=max(2, best_font_size // 7),
+                stroke_width=compute_stroke_size(best_font_size),
             )
 
         return image

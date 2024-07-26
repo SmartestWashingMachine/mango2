@@ -27,7 +27,7 @@ from gandy.image_redrawing.smart.utils.compute_max_chars_per_line import (
     compute_max_chars_per_line,
 )
 from gandy.image_redrawing.smart.utils.wrap_text import wrap_text
-from gandy.image_redrawing.smart.utils.get_stroke_width import get_stroke_width
+from gandy.utils.compute_stroke_size import compute_stroke_size
 from gandy.image_redrawing.smart.utils.get_vertical_spacing import get_vertical_spacing
 from gandy.image_redrawing.smart.utils.compute_min_max_font_sizes import (
     compute_min_max_font_sizes,
@@ -265,16 +265,16 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
         while (
             total_text_area / image_area
         ) >= CLUTTER_THRESHOLD and best_font_size > 1:
-            print(
-                f"Text cluttered! ({total_text_area / image_area}) - cutting down font size."
-            )
+            #print(
+                #f"Text cluttered! ({total_text_area / image_area}) - cutting down font size."
+            #)
 
             best_font_size = max(1, int(best_font_size * 0.8))
             total_text_area = _compute_text_area(best_font_size)
 
-        print(
-            f"Done decluttering text! TextArea=({total_text_area / image_area}) FontSize={best_font_size}"
-        )
+        #print(
+            #f"Done decluttering text! TextArea=({total_text_area / image_area}) FontSize={best_font_size}"
+        #)
 
         # best_font_size is used to draw the texts later on in case one of the texts is smaller than the others before it.
         return best_font_size
@@ -317,10 +317,10 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
             did_succeed = not box_is_bad(
                 min_font_size, text, populated_box, "center", draw, img, other_boxes
             )
-            if did_succeed:
-                print(f'Box "{text}" IS VALID. No further actions being performed.')
-            else:
-                print(f'Box "{text}" IS BAD. Actions will be performed.')
+            #if did_succeed:
+                #print(f'Box "{text}" IS VALID. No further actions being performed.')
+            #else:
+                #print(f'Box "{text}" IS BAD. Actions will be performed.')
 
             proceeding_to_later_steps = not did_succeed
 
@@ -339,7 +339,7 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
 
             using_last_ditch_font_size = not did_succeed
             if not did_succeed:
-                print(f'Box "{text}" is going for a last ditch run!')
+                #print(f'Box "{text}" is going for a last ditch run!')
                 # Last ditch effort!
                 populated_box.can_change_font_size = True
 
@@ -416,7 +416,7 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
                 font = load_font(best_font_size)
 
             print(
-                f"Drawing SBB: {td[-3]} with True X1,Y1 == {(td[1], td[2])} IsUsingLastDitch == {td_is_using_last_ditch_font_size}"
+                f"Drawing SBB: {td[-3]} with True X1,Y1 == {(td[1], td[2])} IsUsingLastDitch == {td_is_using_last_ditch_font_size} BFS={best_font_size}"
             )
 
             draw.multiline_text(
@@ -426,7 +426,7 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
                 font,
                 align="center",
                 stroke_fill=self.get_stroke_color(text_colors, idx),
-                stroke_width=get_stroke_width(best_font_size),
+                stroke_width=compute_stroke_size(best_font_size),
                 spacing=get_vertical_spacing(best_font_size),
             )
 
