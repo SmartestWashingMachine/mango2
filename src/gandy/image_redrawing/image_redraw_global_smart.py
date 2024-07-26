@@ -34,6 +34,16 @@ from gandy.image_redrawing.smart.utils.compute_min_max_font_sizes import (
 )
 from gandy.image_redrawing.smart.utils.text_overflows import text_overflows
 
+SCALE_FACTOR = 4 # Scale image up then down for sharper looking texts. Ridiculous, isn't it? Thanks PIL...
+
+def upscale_items(image: Image.Image, bboxes):
+    mapped_bboxes = [[b[0] * SCALE_FACTOR, b[1] * SCALE_FACTOR, b[2] * SCALE_FACTOR, b[3] * SCALE_FACTOR] for b in bboxes]
+
+    return image.resize((int(image.width * SCALE_FACTOR), int(image.height * SCALE_FACTOR)), resample=Image.LANCZOS), mapped_bboxes
+
+def downscale_items(image: Image.Image):
+    return image.resize((int(image.width // SCALE_FACTOR), int(image.height // SCALE_FACTOR)), resample=Image.LANCZOS)
+
 
 class ImageRedrawGlobalSmartApp(BaseImageRedraw):
     def __init__(self):
@@ -230,6 +240,7 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
         best_font_size = max_font_size
 
         # First get the smallest font size that is acceptable for the text boxes.
+        """
         for unpopulated_speechbox, text in self.iterate_over_boxes(
             bboxes,
             texts,
@@ -244,6 +255,7 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
                 min_font_size=min_font_size,
                 draw=draw,
             )
+        """
 
         def _compute_text_area(font_size):
             total_text_area = 0
@@ -265,16 +277,16 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
         while (
             total_text_area / image_area
         ) >= CLUTTER_THRESHOLD and best_font_size > 1:
-            #print(
-                #f"Text cluttered! ({total_text_area / image_area}) - cutting down font size."
-            #)
+            print(
+                f"Text cluttered! ({total_text_area / image_area}) - cutting down font size."
+            )
 
             best_font_size = max(1, int(best_font_size * 0.8))
             total_text_area = _compute_text_area(best_font_size)
 
-        #print(
-            #f"Done decluttering text! TextArea=({total_text_area / image_area}) FontSize={best_font_size}"
-        #)
+        print(
+            f"Done decluttering text! TextArea=({total_text_area / image_area}) FontSize={best_font_size}"
+        )
 
         # best_font_size is used to draw the texts later on in case one of the texts is smaller than the others before it.
         return best_font_size
@@ -317,10 +329,10 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
             did_succeed = not box_is_bad(
                 min_font_size, text, populated_box, "center", draw, img, other_boxes
             )
-            #if did_succeed:
-                #print(f'Box "{text}" IS VALID. No further actions being performed.')
-            #else:
-                #print(f'Box "{text}" IS BAD. Actions will be performed.')
+            if did_succeed:
+                print(f'Box "{text}" IS VALID. No further actions being performed.')
+            else:
+                print(f'Box "{text}" IS BAD. Actions will be performed.')
 
             proceeding_to_later_steps = not did_succeed
 
@@ -339,7 +351,7 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
 
             using_last_ditch_font_size = not did_succeed
             if not did_succeed:
-                #print(f'Box "{text}" is going for a last ditch run!')
+                print(f'Box "{text}" is going for a last ditch run!')
                 # Last ditch effort!
                 populated_box.can_change_font_size = True
 
@@ -432,8 +444,11 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
 
     def process(self, image, bboxes, target_texts, text_colors):
         new_image = image.copy()
+
         if len(bboxes) == 0:
             return new_image
+        
+        new_image, bboxes = upscale_items(new_image, bboxes)
 
         draw = ImageDraw.Draw(new_image)
         # draw.fontmode = "L"
@@ -442,6 +457,9 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
         min_font_size, max_font_size = compute_min_max_font_sizes(
             new_image.width, new_image.height
         )
+
+        print('Min/Max FontSize:')
+        print((min_font_size, max_font_size))
 
         # Step -1
         best_font_size = self.declutter_font_size(
@@ -470,4 +488,5 @@ class ImageRedrawGlobalSmartApp(BaseImageRedraw):
             text_colors=text_colors,
         )
 
+        new_image = downscale_items(new_image)
         return new_image
