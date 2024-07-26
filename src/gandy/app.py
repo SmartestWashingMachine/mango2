@@ -30,7 +30,7 @@ app = Flask(__name__)
 
 socketio = socketio_pkg.Client()
 
-def try_socket_conn(is_reconn = False):
+def try_socket_conn():
     while True:
         try:
             print('Connecting...')
@@ -42,9 +42,6 @@ def try_socket_conn(is_reconn = False):
             print('Gonna retry connection.')
             sleep(1)
             continue
-
-    if is_reconn:
-        sleep(2) # In case of reconnection BS. Actually, this turned out to be buffer size limit - maybe we don't need this reconnection stuff.
 
 try_socket_conn()
 
@@ -58,23 +55,7 @@ legacy_logger.addHandler(EliotHandler())
 
 legacy_logger.info("Running app.")
 
-def patched_emit(*args, **kwargs):
-    try:
-        socketio.emit(*args, **kwargs)
-    except Exception as e:
-        try:
-            socketio.disconnect()
-        except Exception as ee:
-            print(ee)
-
-        logger.info('Socket error (reconnecting?):')
-        logger.error(e)
-
-        try_socket_conn(is_reconn=True)
-        patched_emit(*args, **kwargs)
-
-socketio.patched_emit = patched_emit
-
+socketio.patched_emit = socketio.emit
 socketio.sleep = lambda *args, **kwargs: None
 socketio.start_background_task = lambda fn, *args: fn(*args)
 
