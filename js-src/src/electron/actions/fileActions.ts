@@ -16,6 +16,7 @@ import { getI, saveBase64Images } from "../fileUtils/saveBase64Image";
 import { retrieveFilesInLibrary } from "../fileUtils/retrieveFilesInLibrary";
 import { retrieveFilesInFolder } from "../fileUtils/retrieveFilesInFolder";
 import { shell, dialog } from "electron";
+import { initializeModelNames } from "../../flaskcomms/setFlaskSettings";
 
 const retrieveFilesAction: GatewayAction = {
   command: ElectronCommands.RETRIEVE_FILES,
@@ -184,6 +185,8 @@ const importTermsAction: GatewayAction = {
 
       console.log(`Importing terms as: ${result.filePaths[0]}`);
       store.set('terms', jsonData);
+
+      await initializeModelNames(store.store);
     }
     catch (err) {
       console.log(err);
