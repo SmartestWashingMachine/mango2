@@ -12,7 +12,8 @@ from gandy.utils.fancy_logger import logger
 
 def encode_image(new_image):
     buffer = BytesIO()
-    new_image.save(buffer, format="JPEG")
+    # Poor quality: new_image.save(buffer, format="JPEG")
+    new_image.save(buffer, format="PNG")
     new_image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
     return new_image_base64

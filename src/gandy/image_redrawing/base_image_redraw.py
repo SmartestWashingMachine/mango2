@@ -12,7 +12,7 @@ class BaseImageRedraw(BaseApp):
         return text.upper()
 
     def get_text_color(
-        self, text_colors: Union[List[str], None], idx, default_color="white"
+        self, text_colors: Union[List[str], None], idx, default_color="black"
     ):
         return text_colors[idx] if text_colors is not None else default_color
 
@@ -23,7 +23,7 @@ class BaseImageRedraw(BaseApp):
             else:
                 return "white"
 
-        return "black"
+        return "white"
 
     def process(
         self,
