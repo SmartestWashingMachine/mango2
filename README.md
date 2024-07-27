@@ -13,7 +13,7 @@ These models are still in the process of tuning - results not final.
 
 ### Images
 
-<table width="50%">
+<table width="10%">
   <thead>
     <tr>
       <th width="50%">Source</th>
@@ -22,16 +22,16 @@ These models are still in the process of tuning - results not final.
   </thead>
   <tbody>
     <tr>
-      <td width="50%"><img src="examples/ma1_src.jpg"/></td>
-      <td width="50%"><img src="examples/ma1.jpg"/></td>
+      <td width="50%"><img src="examples/ma1_src.jpg" width="200"/></td>
+      <td width="50%"><img src="examples/ma1.jpg" width="200"/></td>
     </tr>
     <tr>
-      <td width="50%"><img src="examples/ma2_src.jpg"/></td>
-      <td width="50%"><img src="examples/ma2.jpg"/></td>
+      <td width="50%"><img src="examples/ma2_src.jpg" width="200"/></td>
+      <td width="50%"><img src="examples/ma2.jpg" width="200"/></td>
     </tr>
     <tr>
-      <td width="50%"><img src="examples/ma3_src.jpg"/></td>
-      <td width="50%"><img src="examples/ma3.jpg"/></td>
+      <td width="50%"><img src="examples/ma3_src.jpg" width="200"/></td>
+      <td width="50%"><img src="examples/ma3.jpg"width="200"/></td>
     </tr>
   </tbody>
 </table>
