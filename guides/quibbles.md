@@ -21,7 +21,17 @@ Observations and Quibbles
 - [YOLO doesn't detect small objects with abnormal aspect ratios (like text lines) well.](#yolo-doesnt-detect-small-objects-with-abnormal-aspect-ratios-like-text-lines-well)
 - [For object detection models: Use CIoU over DIoU over GIoU over L1/L2.](#for-object-detection-models-use-ciou-over-diou-over-giou-over-l1l2)
 - [MT models can learn to use certain tokens as "garbage cans" or "attention sinks".](#mt-models-can-learn-to-use-certain-tokens-as-garbage-cans-or-attention-sinks)
-- [LLMs (decoder-only models) aren't as good encoder-decoder translation models usually.](#llms-decoder-only-models-arent-as-good-encoder-decoder-translation-models-usually)
+- [LoRAs can teach models new tricks and knowledge.](#loras-can-teach-models-new-tricks-and-knowledge)
+  - [LoRA Rank](#lora-rank)
+  - [LoRA Alpha](#lora-alpha)
+  - [Rank stabilized LoRA](#rank-stabilized-lora)
+  - [LoRA dropout](#lora-dropout)
+  - [NEFT noise](#neft-noise)
+  - [Apply LoRA to all linear layers](#apply-lora-to-all-linear-layers)
+  - [Train the input and output embeddings too](#train-the-input-and-output-embeddings-too)
+- [RMSNorm, GeGLU, and other architectural tricks are flaky.](#rmsnorm-geglu-and-other-architectural-tricks-are-flaky)
+- [Looking for fast results? Use pre-trained models.](#looking-for-fast-results-use-pre-trained-models)
+- [LLMs (decoder-only models) aren't as good as encoder-decoder translation models usually.](#llms-decoder-only-models-arent-as-good-as-encoder-decoder-translation-models-usually)
     - [1. Attention degeneration](#1-attention-degeneration)
     - [2. Poor vocabulary](#2-poor-vocabulary)
   - [But ChatGPT blows a bunch of MT models out of the water!](#but-chatgpt-blows-a-bunch-of-mt-models-out-of-the-water)
@@ -151,7 +161,9 @@ There was a paper by Deepmind that goes into this, among some others. Following 
 
 ## Don't train GANs.
 
-Just don't. Waking up and seeing your GAN collapse is like getting punched in the gut. And this will happen every day.
+Just don't. Waking up and seeing your GAN collapsed in the middle of the night is like getting punched in the gut. And this will happen every day.
+
+If your friend tries to trick you into training this "awesome" new GAN they found, walk away. That person is not your friend anymore.
 
 Diffusion models are a headache to learn, but they're less likely to give you nightmares. If speed is an issue consider latent consistency adapters.
 
@@ -195,7 +207,90 @@ CIoU is the best loss function I've found that works on pretty much all object d
 
 When the MT model generates a basic token such as a quote `"` I've found that cross attention modules don't bother attending to most tokens - instead it "focuses" almost all of its attention on one or two pointless tokens, such as the beginning of sentence (BOS) token.
 
-## LLMs (decoder-only models) aren't as good encoder-decoder translation models usually.
+## LoRAs can teach models new tricks and knowledge.
+
+It's an uncommon belief that LoRAs can only be used to further guide an already trained model, to "refine" its knowledge rather than have it learn new concepts - that LoRAs can not teach the model anything truly new.
+
+I have no idea where this belief came about but from my experiments this seems totally wrong. I've used LoRAs to teach models new concepts numerous times. Some of my experiments included:
+
+1. Successfully trained a 600 million parameter MT model from scratch using LoRAs (albeit weaker than full finetuning obviously).
+2. Finetuned an existing 300 million parameter MT model to use document context (doc2sent).
+3. Made image models generate new images of a completely different domain.
+4. Finetuned an existing 3 billion parameter MT model to use document context.
+5. Tuned LLMs on specific tasks that they definitely would never have seen before (no one/few-shots or anything - just LoRA training).
+6. Converted an existing 600 million parameter MT model to use relative rather than absolute positional embeddings (albeit weakly).
+
+LoRAs are just parameters. And like anything in machine learning more parameters means more learning. Scale is king. 
+
+When people say their LoRAs couldn't teach their models anything new, I suspect what's actually happening is that their LoRA setups are too weak or under-parametrized or over-regularized to actually learn anything "complex" with.
+
+So what's a proper LoRA setup? I have no idea - it all depends. In machine learning the only constant is that nothing is constant. But that's probably not what you want to hear, so here's a "safe" (but likely not 100% optimal) starter setup:
+
+### LoRA Rank
+
+Make the rank as high as you can without running out of memory and while still training at an acceptable speed. 
+
+When testing the maximum memory used, make sure that your inputs to the model are exactly at the maximum sequence length or the longest sequence length in your dataset (as training memory increases depending on the longest sequence seen during training). 
+
+So test the LoRA rank at say, 512. Failed? Maybe try 256. Failed again? Try 128.
+
+### LoRA Alpha
+
+Just set it equal to your LoRA rank if you're not sure. Alpha either won't affect the training much or it will completely break the training, so it's easy to know when to adjust it.
+
+
+### Rank stabilized LoRA
+
+Supposedly RS-LoRA helps larger-rank LoRAs generalize better. I've never *needed* it to make larger-rank LoRAs work, but it usually does help.
+
+Apparently Ada-LoRA can also boost your model even more (and it works with RS-LoRA) - there are a lot of papers cheering for it. I have never tried it so I won't say anything there.
+
+### LoRA dropout
+
+Set it to 0. If overfitting is a big concern get more data or just train for less time. *Some* projects may need dropout but those are very specific cases.
+
+### NEFT noise
+
+This is a fairly new trick which injects noise into the model's embeddings. Ideally this noise helps the models learn to separate each embedding token better, similar to how label smoothing encourages models to form better clusters per embedding token.
+
+However, I've found this noise to brick most of my models when used. Use this with caution - unless you're desperate for that possible 1% boost I would keep this off completely.
+
+### Apply LoRA to all linear layers
+
+The "default" LoRA setups in many libraries only applies LoRA to the attention modules. But a lot of papers report better results by applying LoRA to all linear layers (such as the gated linear units used in certain activations, the FFN blocks, and so on).
+
+My experiments agree with them - plus more LoRAs means more parameters so what's not to like?
+
+### Train the input and output embeddings too
+
+If you've added new tokens to the model's vocabulary this is a no-brainer. But even if not, unfreezing the input and output embeddings will usually give a substantial improvement in whatever metric you're using to evaluate your model. Of course, unfreezing these embeddings will drastically increase the trainable parameter count, and therefore the memory cost as well.
+
+## RMSNorm, GeGLU, and other architectural tricks are flaky.
+
+There are dozens upon dozens of little architectural tweaks that supposedly help transformers converge better.
+
+Sadly they're all pretty flaky:
+
+1. GeGLU instead of ReLU / Swish sometimes gives an improvement. Sometimes it doesn't do anything (well, at least it doesn't hurt...)
+2. RMSNorm seems to work better with LLMs. But for moderate-sized models the difference is insignificant. Worse yet, for tiny MT models (100m parameters) it seems to be worse than LayerNorm, and it makes relative-positional tiny MT models explode almost immediately, rather than die a slow death over time.
+3. Removing all biases in linear layers sometimes improves generalizatiion. Sometimes not. Weird.
+4. ReZero usually does worse than other normalization schemes. Every now and then it does something though.
+5. Partial convolutions usually don't do anything - but this is for GANs and you should **never ever ever ever** train a GAN. **DO NOT USE GANS.**
+
+I'm not saying we shouldn't keep tweaking our model - I'm sure there is some magical lego block that will make our models do better for some bizarre reason. But if you want something trained in a reasonable amount of time that won't explode, don't bother with architectural modifications.
+
+If you're looking for more neat tricks, this repository has tons of them:
+https://github.com/lucidrains/x-transformers
+
+## Looking for fast results? Use pre-trained models.
+
+If you can use a pre-trained model (that was trained on the same modality as yours i.e: text) to accomplish your task - do it. It doesn't matter if it's for an entirely different textual language, or generates anime images when you want car images, **pre-trained models will generalize much faster.** They almost always do.
+
+(But if it's for a different text language, make sure it can tokenize your desired language texts without unknown tokens popping up)
+
+If you can't use a pre-trained model, at least consider if your model has a "backbone" and if that backbone can be swapped out for a pre-trained model, such as the case of using a pre-trained DINO model as the backbone in DETR.
+
+## LLMs (decoder-only models) aren't as good as encoder-decoder translation models usually.
 
 There are exceptions to this observation (see the section at the bottom). But usually if you finetune a 7b LLama and a ~3b encoder-decoder model, the 3b model will win. Even when you finetune the Llama with special translation prompts, to encourage catastrophic forgetting of all other non-translation tasks, it still underperforms.
 

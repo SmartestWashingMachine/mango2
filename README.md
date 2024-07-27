@@ -48,7 +48,7 @@ These models are still in the process of tuning - results not final.
 
 # Installation
 
-1. Download MangoBase.ZIP.
+1. [Download MangoBase.ZIP.](https://drive.google.com/file/d/1JQ2L5WAU8c54LQRUZm7EZMt9uDMrC37o/view?usp=sharing)
 2. Unzip the file.
 3. Open "mango.exe"
 
