@@ -13,7 +13,7 @@ const storeDefaults: IStore = {
   enableCuda: false,
   maxLengthA: 0,
   terms: [],
-  cacheTargetContext: false,
+  cacheTargetContext: false, // TODO: remove
   temperature: 1,
   topP: 0,
   topK: 0,
@@ -24,15 +24,15 @@ const storeDefaults: IStore = {
   decodingMode: "beam",
   presets: [],
   numBeams: 3,
-  translationThreads: 2,
+  translationThreads: 2, // TODO: remove
   forceTranslationCPU: true,
   forceTdCpu: false,
-  cleaningMode: "adaptive_clean",
+  cleaningMode: "simple",
   redrawingMode: "smart",
   currentView: "Text",
   autoOpenOcrWindow: false,
   spellCorrectionSeparate: false, // TODO: Unused. Probably don't need it either.
-  strokeSize: 1.5,
+  strokeSize: 1.0,
 };
 
 export const initializeStore = () => {
