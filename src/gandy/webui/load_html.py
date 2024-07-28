@@ -7,6 +7,9 @@ from gandy.utils.natsort import natsort
 
 if ENABLE_WEB_UI:
 
+    print('CWD:')
+    print(os.getcwd())
+
     @app.route("/webui", methods=["GET"])
     def webui_route():
         return render_template("index.html")

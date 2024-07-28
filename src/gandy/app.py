@@ -22,7 +22,7 @@ from gandy.utils.fancy_logger import logger
 import socketio as socketio_pkg
 from time import sleep
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=os.getcwd() + '/templates', static_folder=os.getcwd() + '/static')
 
 # ONNX seems to be funky with asynchronous logick magick. With the default ping timeout (5000ms), it's likely that the client will drop the connection midway through the process.
 # Of course, a long ping timeout is not ideal either.

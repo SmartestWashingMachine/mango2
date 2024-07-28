@@ -6,6 +6,13 @@ if __name__ == '__main__':
 
     shutil.copytree('.\\..\js-src\\resources\\fonts', '.\\..\js-src\\dist\\win-unpacked\\resources\\fonts')
 
+    try:
+        shutil.copytree('.\\..\src\\templates', '.\\..\js-src\\dist\\win-unpacked\\templates')
+        shutil.copytree('.\\..\src\\static', '.\\..\js-src\\dist\\win-unpacked\\static')
+    except Exception as e:
+        print(e)
+        print('--- No web ui built. Ignoring.')
+
     import os
     import shutil
 
