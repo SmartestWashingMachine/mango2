@@ -215,9 +215,8 @@ class BasePipeline:
             if progress_cb is not None:
                 progress_cb(progress=50)
 
-            source_texts = pack_context(source_texts, config_state.n_context)
-
-            # This AND task5 are the only task fns that can merge nearby lines if a certain text line model variant is used (YOLO Ex).
+            # This is the only task fn that can merge nearby lines if a certain text line model variant is used (YOLO Ex).
+            # Task5 merges all texts into one regardless of the model being used.
             if (
                 self.text_line_app.get_sel_app_name() == "yolo_line_e"
                 and self.text_detection_app.get_sel_app_name() == "none"
@@ -234,6 +233,8 @@ class BasePipeline:
                     n_text_regions=n_before,
                     n_after=len(speech_bboxes),
                 )
+
+            source_texts = pack_context(source_texts, config_state.n_context)
 
             target_texts = self.get_target_texts_from_str(
                 source_texts=source_texts, use_stream=None
