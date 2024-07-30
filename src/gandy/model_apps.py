@@ -31,6 +31,7 @@ from gandy.text_detection.rtdetr_image_detection import (
     RTDetrLineImageDetectionApp,
 )
 from gandy.text_detection.none_image_detection import NoneImageDetectionApp
+from gandy.text_detection.union_image_detection import UnionImageDetectionApp
 from gandy.text_recognition.tr_recognition import TrOCRTextRecognitionApp
 from gandy.translation.seq2seq_translation import (
     Seq2SeqTranslationApp,
@@ -65,11 +66,20 @@ TEXT_DETECTION_APP = SwitchApp(
         YOLOTDImageDetectionApp(
             model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
         ),
+        UnionImageDetectionApp(
+            td_model_app=YOLOTDImageDetectionApp(
+                model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
+            ),
+            line_model_app=RTDetrLineImageDetectionApp(
+                model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15
+            ),
+        ),
         NoneImageDetectionApp(),
     ],
     app_names=[
         "yolo_td",
         "yolo_xl",
+        "union",
         "none",
     ],
 )

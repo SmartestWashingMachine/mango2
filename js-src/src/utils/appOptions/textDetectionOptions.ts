@@ -3,15 +3,21 @@ export const TEXT_DETECTION_OPTIONS = [
     name: "YOLO-TD",
     value: "yolo_td",
     desc: `
-    Faster and usually outperforms DETR-G. Recommended for basic
-    usage.
+    Fast but inaccurate.
     `,
   },
   {
     name: "YOLO-XL",
     value: "yolo_xl",
     desc: `
-    Best performing variant. Slower than YOLO-TD.
+    Best performing variant. Slower than YOLO-TD. Recommended for general use.
+    `,
+  },
+  {
+    name: "Union",
+    value: "union",
+    desc: `
+    Merges results from YOLO-XL and DETR Line EX to give even better results. Slow.
     `,
   },
   {
