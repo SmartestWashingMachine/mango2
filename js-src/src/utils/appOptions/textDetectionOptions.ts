@@ -21,6 +21,13 @@ export const TEXT_DETECTION_OPTIONS = [
     `,
   },
   {
+    name: "Union Massive",
+    value: "union_massive",
+    desc: `
+    Merges results from YOLO-XL and DETR Line EX-Massive to give even better results. Slowest.
+    `,
+  },
+  {
     name: "None",
     value: "none",
     desc: `

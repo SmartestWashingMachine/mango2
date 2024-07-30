@@ -74,12 +74,21 @@ TEXT_DETECTION_APP = SwitchApp(
                 model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15
             ),
         ),
+        UnionImageDetectionApp(
+            td_model_app=YOLOTDImageDetectionApp(
+                model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
+            ),
+            line_model_app=RTDetrLineImageDetectionApp(
+                model_name="yolo_line_emassive", confidence_threshold=0.38, iou_thr=0.15
+            ),
+        ),
         NoneImageDetectionApp(),
     ],
     app_names=[
         "yolo_td",
         "yolo_xl",
         "union",
+        "union_massive",
         "none",
     ],
 )
@@ -253,8 +262,11 @@ TEXT_LINE_MODEL_APP = SwitchApp(
         RTDetrLineImageDetectionApp(
             model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15
         ),
+        RTDetrLineImageDetectionApp(
+            model_name="yolo_line_emassive", confidence_threshold=0.38, iou_thr=0.15, image_size=1280,
+        ),
     ],
-    app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e"],
+    app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive"],
 )
 
 # disable for debug

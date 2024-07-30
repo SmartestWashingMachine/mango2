@@ -95,9 +95,11 @@ class YOLOImageDetectionApp(BaseImageDetection):
         self.confidence_threshold = 0
         self.iou_thr = 0.25
 
+        self.image_size = 640
+
     # The code for this method is from ultralytics YOLO with a bit of tweaks (keeping stride and new_shape fixed).
     def resize_np_img(self, img):
-        new_shape = [640, 640]
+        new_shape = [self.image_size, self.image_size]
 
         shape = img.shape[:2]  # current shape [height, width]
 
@@ -241,7 +243,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
 
 
 class YOLOTDImageDetectionApp(YOLOImageDetectionApp):
-    def __init__(self, confidence_threshold=0.5, iou_thr=0.25, model_name="yolo_td"):
+    def __init__(self, confidence_threshold=0.5, iou_thr=0.25, model_name="yolo_td", image_size = 640):
         """
         Slower than the RCNNImageDetectionApp, but more precise.
         """
@@ -250,6 +252,8 @@ class YOLOTDImageDetectionApp(YOLOImageDetectionApp):
         self.confidence_threshold = confidence_threshold
         self.model_name = model_name
         self.iou_thr = iou_thr
+
+        self.image_size = image_size
 
     def can_load(self):
         return super().can_load(f"models/yolo/{self.model_name}.onnx")
@@ -281,7 +285,7 @@ class YOLOTDImageDetectionApp(YOLOImageDetectionApp):
 
 
 class YOLOLineImageDetectionApp(YOLOImageDetectionApp, LineMixin):
-    def __init__(self, confidence_threshold=0.25, iou_thr=0.4, model_name="yolo_line"):
+    def __init__(self, confidence_threshold=0.25, iou_thr=0.4, model_name="yolo_line", image_size = 640):
         """
         Detects text lines in speech bubbles.
         """
@@ -290,6 +294,8 @@ class YOLOLineImageDetectionApp(YOLOImageDetectionApp, LineMixin):
         self.confidence_threshold = confidence_threshold
         self.model_name = model_name
         self.iou_thr = iou_thr
+
+        self.image_size = image_size
 
     def load_model(self):
         if not self.loaded:

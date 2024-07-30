@@ -14,6 +14,13 @@ export const TEXT_LINE_OPTIONS = [
     `,
   },
   {
+    name: "DETR Line EX-Massive",
+    value: "yolo_line_emassive",
+    desc: `
+    Works like DETR Line EX but sometimes better for large images. Incredibly slow.
+    `,
+  },
+  {
     name: "(Legacy) YOLO Line",
     value: "yolo_line",
     desc: `
