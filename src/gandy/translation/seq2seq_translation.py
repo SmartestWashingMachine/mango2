@@ -120,8 +120,6 @@ class Seq2SeqTranslationApp(BaseTranslation):
     def strip_padding(self, prediction):
         return (
             prediction.replace("</s>", "")
-            .encode("ascii", "ignore")
-            .decode("utf-8")
             .strip()
         )
 

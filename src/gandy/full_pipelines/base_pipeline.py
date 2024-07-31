@@ -243,6 +243,9 @@ class BasePipeline:
             if progress_cb is not None:
                 progress_cb(80)
 
+            # Since most fonts don't work well with weird characters.
+            target_texts = [t.replace("―", "-").encode("ascii", "ignore").decode("utf-8") for t in target_texts]
+
             cleaning_output = self.image_cleaning_app.begin_process(
                 rgb_image, speech_bboxes
             )
