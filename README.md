@@ -43,8 +43,8 @@ These models are still in the process of tuning - results not final.
     <img src="examples/s2.jpg" width="500" style="margin-bottom: 8px" />
     <img src="examples/s3.jpg" width="500" style="margin-bottom: 8px" />
     <img src="examples/s4.jpg" width="500" />
-    <span style="font-size: 8px; font-style: italic;">(No way we can trust this guy, right?)</span>
 </p>
+<span style="font-size: 8px; font-style: italic;">(No way we can trust this guy, right?)</span>
 
 # Installation
 
@@ -74,17 +74,19 @@ Mango 2 comes preinstalled with a basic model pack. All of the model packs here 
 Unzipping a model pack will reveal a `models` folder. Drag this `models` folder to where `mango.exe` is located.
 
 - Additional text box and line models [coming soon]
-- Japanese-2-English Qualia v5.4 [on hold - busy experimenting with Radical]
-- Japanese-2-English Radical v1.2 [coming way later...? Results unsatisfactory so far]
-- Japanese-2-English Madness v1.0 [maybe coming in the future]
+- Japanese-2-English Qualia v5.4 [on hold - busy experimenting with Madness]
+- ~~Japanese-2-English Radical v1.2 [coming way later...? Results unsatisfactory so far]~~ [Thrown out - very poor]
+- Japanese-2-English Madness v1.0 [coming soon]
 - Japanese Lite OCR v0.5 + Japanese Massive OCR v1.0 [coming very soon]
 - Escalator v0.1 [coming probably never. Very hard to tune this one to a satisfactory level]
 - Reranking models v0.9 [coming soon]
 - Pronoun post editing models v0.2 [coming soon]
 - Inpainting edge model v0.1 [coming soon, but of poor quality]
 - Paintball v1.0 [coming soon... maybe? It's still speculative]
-- Korean-2-English OCR + Qualia models [coming soon]
-- Chinese-2-English OCR + Qualia models [coming soon]
+- Korean-2-English OCR + Madness models [coming soon]
+- Chinese-2-English OCR + Madness models [coming soon]
+- Korean-2-English Qualia v1.0 [coming soon maybe?]
+- Chinese-2-English Qualia v1.0 [coming soon maybe?]
 
 # Where are the benchmarks?
 
