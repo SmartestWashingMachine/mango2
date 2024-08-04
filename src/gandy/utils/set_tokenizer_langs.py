@@ -8,6 +8,9 @@ def set_lang_as_j(tokenizer):
 def set_lang_as_k(tokenizer):
     tokenizer.src_lang = "kor_Hang"
 
+def set_lang_as_c(tokenizer):
+    tokenizer.src_lang = "zho_Hans"
+
 
 def prepend_qual(s: str):
     return f"<Q9>{clean_text_vq(s)}"

@@ -52,6 +52,8 @@ from gandy.reranking.generic_reranker import GenericRerankerApp, BaseRerankingAp
 from transformers import NllbTokenizer, T5Tokenizer
 from gandy.utils.set_tokenizer_langs import (
     set_lang_as_j,
+    set_lang_as_k,
+    set_lang_as_c,
     prepend_qual,
     prepend_mad_qual,
     remove_unnecessary_eng_tokens,
@@ -132,7 +134,7 @@ TRANSLATION_APP = SwitchApp(
             encoder_tokenizer_cls=NllbTokenizer,
             extra_preprocess=prepend_qual,
             extra_postprocess=remove_unnecessary_eng_tokens,
-            ##on_source_encode=set_lang_as_ko,
+            on_source_encode=set_lang_as_k,
             target_decode_lang="eng_Latn",
         ),
         Seq2SeqTranslationApp(
@@ -140,15 +142,7 @@ TRANSLATION_APP = SwitchApp(
             encoder_tokenizer_cls=NllbTokenizer,
             extra_preprocess=prepend_qual,
             extra_postprocess=remove_unnecessary_eng_tokens,
-            ##on_source_encode=set_lang_as_zh,
-            target_decode_lang="eng_Latn",
-        ),
-        Seq2SeqTranslationApp(
-            model_sub_path="_jqrot/",
-            encoder_tokenizer_cls=NllbTokenizer,
-            extra_preprocess=prepend_qual,
-            extra_postprocess=remove_unnecessary_eng_tokens,
-            on_source_encode=set_lang_as_j,
+            on_source_encode=set_lang_as_c,
             target_decode_lang="eng_Latn",
         ),
         Seq2SeqTranslationApp(
@@ -177,7 +171,6 @@ TRANSLATION_APP = SwitchApp(
         "nllb_jq",
         "nllb_ko",
         "nllb_zh",
-        "nllb_jqrot",
         "nllb_jmad",
         "nllb_komad",
         "nllb_zhmad",
@@ -279,7 +272,7 @@ TEXT_LINE_MODEL_APP = SwitchApp(
             model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15
         ),
         RTDetrLineImageDetectionApp(
-            model_name="yolo_line_emassive", confidence_threshold=0.38, iou_thr=0.15, image_size=1280,
+            model_name="yolo_line_emassive", confidence_threshold=0.38, iou_thr=0.15, image_size=1024,
         ),
     ],
     app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive"],
