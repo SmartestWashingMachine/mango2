@@ -20,8 +20,18 @@ export const OCR_OPTIONS = [
     desc: "Moderately fast.",
   },
   {
+    name: "Korean Massive",
+    value: "k_trocr_massive",
+    desc: "Slow but sometimes more accurate.",
+  },
+  {
     name: "Chinese",
     value: "zh_trocr",
     desc: "Moderately fast.",
+  },
+  {
+    name: "Chinese Massive",
+    value: "zh_trocr_massive",
+    desc: "Slow but sometimes more accurate.",
   },
 ];

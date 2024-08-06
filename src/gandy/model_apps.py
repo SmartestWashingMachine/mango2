@@ -105,8 +105,34 @@ TEXT_RECOGNITION_APP = SwitchApp(
                 "no_repeat_ngram_size": 7,  # Use to be None
             },
         ),
-        TrOCRTextRecognitionApp(model_sub_path="_ko/"),
-        TrOCRTextRecognitionApp(model_sub_path="_zh/"),
+        TrOCRTextRecognitionApp(
+          model_sub_path="_ko/",
+            gen_kwargs={
+                "num_beams": 5,
+            },
+        ),
+        TrOCRTextRecognitionApp(
+            model_sub_path="_komassive/",
+            do_resize=False,
+            gen_kwargs={
+                "num_beams": 5,
+                "no_repeat_ngram_size": 7,
+            },
+        ),
+        TrOCRTextRecognitionApp(
+          model_sub_path="_zh/",
+            gen_kwargs={
+                "num_beams": 5,
+            },
+        ),
+        TrOCRTextRecognitionApp(
+            model_sub_path="_zhmassive/",
+            do_resize=False,
+            gen_kwargs={
+                "num_beams": 5,
+                "no_repeat_ngram_size": 7,
+            },
+        ),
         TrOCRTextRecognitionApp(
             model_sub_path="_jmassive/",
             do_resize=False,
@@ -116,7 +142,7 @@ TEXT_RECOGNITION_APP = SwitchApp(
             },
         ),
     ],
-    app_names=["trocr", "trocr_jbig", "k_trocr", "zh_trocr", "trocr_jmassive"],
+    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr", "zh_trocr_massive", "trocr_jmassive"],
 )
 
 TRANSLATION_APP = SwitchApp(
