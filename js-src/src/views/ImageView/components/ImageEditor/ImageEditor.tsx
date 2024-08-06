@@ -118,12 +118,12 @@ const ImageEditor = ({
     setSelectedIdx(localAnnotations.length);
 
     const newAnnotation: IAnnotation = {
-      text: "Text",
+      text: "Type some text here.",
       // TODO: Better position defaults.
-      x1: 25,
-      y1: 25,
-      x2: 150,
-      y2: 150,
+      x1: Math.floor(originalImageWidth / 4) || (25),
+      y1: Math.floor(originalImageHeight / 4) || (25),
+      x2: Math.floor(originalImageWidth / 2) || (150),
+      y2: Math.floor(originalImageHeight / 2) || (150),
       ...getDefaultAnnotationStyles(fontFamilies),
       uuid: v4(), // used for keys in html.
     };
@@ -288,7 +288,7 @@ const ImageEditor = ({
           Click on a text field to select it.
         </Typography>
         <Typography variant="caption" sx={{ color: "hsl(291, 3%, 74%)" }}>
-          Hold "SHIFT" and move the field using the mouse.
+          Hold "SHIFT" and drag the mouse to move the field.
         </Typography>
         <Typography variant="caption" sx={{ color: "hsl(291, 3%, 74%)" }}>
           Drag the bottom right edge to resize it.

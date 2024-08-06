@@ -91,7 +91,7 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
       height: 228,
       autoScan: false,
       listenClipboard: true,
-      backgroundOpacity: 1,
+      backgroundOpacity: 0.75,
       strokeSize: 0,
       strokeColor: "#FFFFFF",
       textDetect: false,
