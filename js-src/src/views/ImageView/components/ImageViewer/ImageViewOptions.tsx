@@ -15,6 +15,7 @@ export type ImageViewOptionsProps = {
   redrawingMode: string;
   onChangeCleaningMode: (mode: string) => void;
   onChangeRedrawingMode: (mode: string) => void;
+  installedModels: string[];
 };
 
 const ImageViewOptions = (props: ImageViewOptionsProps) => {
@@ -24,6 +25,23 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
 
   const updateRedrawingMode = (e: any) => {
     props.onChangeRedrawingMode(e.target.value);
+  };
+
+  const renderItem = (x: { name: string; value: string; desc: string }) => [
+    <MenuItem
+      value={x.value}
+      dense
+      disabled={!itemEnabled(x)}
+    >
+      {x.name}
+    </MenuItem>,
+    <MenuItem disabled value="" divider dense>
+      <em style={{ fontSize: "small" }}>{x.desc}</em>
+    </MenuItem>,
+  ];
+
+  const itemEnabled = (x: { name: string; value: string; desc: string }) => {
+    return props.installedModels.indexOf(x.value) !== -1;
   };
 
   return (
@@ -36,14 +54,7 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
             onChange={updateCleaningMode}
             value={props.cleaningMode}
           >
-            {CLEANING_OPTIONS.map((x) => [
-              <MenuItem value={x.value} dense>
-                {x.name}
-              </MenuItem>,
-              <MenuItem disabled value="" divider dense>
-                <em style={{ fontSize: "small" }}>{x.desc}</em>
-              </MenuItem>,
-            ])}
+            {CLEANING_OPTIONS.map(renderItem)}
           </Select>
         </FormControl>
         <FormControl fullWidth>
@@ -53,14 +64,7 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
             onChange={updateRedrawingMode}
             value={props.redrawingMode}
           >
-            {REDRAWING_OPTIONS.map((x) => [
-              <MenuItem value={x.value} dense>
-                {x.name}
-              </MenuItem>,
-              <MenuItem disabled value="" divider dense>
-                <em style={{ fontSize: "small" }}>{x.desc}</em>
-              </MenuItem>,
-            ])}
+            {REDRAWING_OPTIONS.map(renderItem)}
           </Select>
         </FormControl>
       </Stack>

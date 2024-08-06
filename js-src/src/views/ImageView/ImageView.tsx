@@ -15,7 +15,7 @@ import ImageViewOptions from "./components/ImageViewer/ImageViewOptions";
 import { useLoader } from "../../components/LoaderContext";
 import { useAlerts } from "../../components/AlertProvider";
 import ImageFolderInputDialog from "./components/ImageFolderInputDialog";
-import { debugListeners } from "../../flaskcomms/debugListeners";
+import { useInstalledModelsRetriever } from "../../utils/useInstalledModelsRetriever";
 
 const RightPane = memo(
   ({
@@ -28,6 +28,7 @@ const RightPane = memo(
     handleChangeRedrawingMode,
     cleaningMode,
     redrawingMode,
+    installedModels,
   }: any) => (
     <Stack spacing={2} sx={{ height: "100%" }} key="library-stack">
       <FileListPane
@@ -42,6 +43,7 @@ const RightPane = memo(
         cleaningMode={cleaningMode}
         onChangeCleaningMode={handleChangeCleaningMode}
         onChangeRedrawingMode={handleChangeRedrawingMode}
+        installedModels={installedModels}
       />
     </Stack>
   )
@@ -63,6 +65,8 @@ const ImageView = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   // If loading (processing images in the backend), then this list contains the names of images that have not been completed yet.
   const [pendingImageNames, setPendingImageNames] = useState<string[]>([]);
+
+  const installedModels = useInstalledModelsRetriever();
 
   const handleChangeSelectedPath = async (f: FileInfo) => {
     setSelectedPath(f.fullPath);
@@ -272,10 +276,9 @@ const ImageView = () => {
       handleChangeRedrawingMode={handleChangeRedrawingMode}
       cleaningMode={cleaningMode}
       redrawingMode={redrawingMode}
+      installedModels={installedModels}
     />
   );
-
-  // debugListeners();
 
   useEffect(() => {
     const cb = (e: KeyboardEvent) => {
