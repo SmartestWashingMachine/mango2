@@ -152,7 +152,7 @@ const Header = ({
               color: "hsl(291, 3%, 74%)",
             }}
             onClick={goHelpTab}
-            disabled={loading}
+            // disabled={loading}
             size={btnSize}
           >
             Help

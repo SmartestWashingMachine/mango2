@@ -5,6 +5,14 @@ from gandy.state.config_state import config_state
 from onnxruntime import SessionOptions, ExecutionMode, GraphOptimizationLevel
 import torch
 
+class BreakableORTModelForSeq2SeqLM(ORTModelForSeq2SeqLM):
+    def prepare_inputs_for_generation(self, *args, **kwargs):
+        if config_state._temp_circuit_broken:
+            config_state._temp_circuit_broken = False
+            raise RuntimeError('Circuit breaker triggered by user!')
+
+        return super().prepare_inputs_for_generation(*args, **kwargs)
+
 
 class Seq2SeqTranslationApp(BaseTranslation):
     def __init__(
@@ -49,7 +57,7 @@ class Seq2SeqTranslationApp(BaseTranslation):
             model_path = f"models/{s}/model_cpu"  # Seems acceptable for now.
 
             provider = "CUDAExecutionProvider"
-            self.translation_model = ORTModelForSeq2SeqLM.from_pretrained(
+            self.translation_model = BreakableORTModelForSeq2SeqLM.from_pretrained(
                 model_path, provider=provider, use_io_binding=can_cuda
             )
         else:

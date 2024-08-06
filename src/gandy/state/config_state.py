@@ -23,6 +23,8 @@ class ConfigState:
 
         self.stroke_size = 8
 
+        self._temp_circuit_broken = False # TODO: Use separate state for this.
+
     def set_decoding_params(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)

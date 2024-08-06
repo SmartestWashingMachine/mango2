@@ -1,7 +1,7 @@
 import { Button, MenuItem, Stack, Typography } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import ReplaceTermsList from "./components/ReplaceTermsList";
-import { setSeed } from "../../flaskcomms/optionsViewComms";
+import { setSeed, triggerCircuitBreak } from "../../flaskcomms/optionsViewComms";
 import IReplaceTerm from "../../types/ReplaceTerm";
 import BaseView from "../BaseView";
 import { TEXT_DETECTION_OPTIONS } from "../../utils/appOptions/textDetectionOptions";
@@ -18,6 +18,7 @@ import PaginatedTabs from "../../components/PaginatedTabs";
 import { OCR_OPTIONS } from "../../utils/appOptions/ocrOptions";
 import { getInstalledModels } from "../../flaskcomms/getInstalledModels";
 import { useAlerts } from "../../components/AlertProvider";
+import { useInstalledModelsRetriever } from "../../utils/useInstalledModelsRetriever";
 
 const GlobalOptionsView = () => {
   const pushAlert = useAlerts();
@@ -26,9 +27,9 @@ const GlobalOptionsView = () => {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  const [installedModels, setInstalledModels] = useState<string[]>([]);
-
   const [loadedData, setLoadedData] = useState<any>({});
+
+  const installedModels = useInstalledModelsRetriever();
 
   useEffect(() => {
     let didCancel = false;
@@ -61,29 +62,6 @@ const GlobalOptionsView = () => {
 
     return () => {
       removeCb();
-    };
-  }, []);
-
-  useEffect(() => {
-    // Retrieve allowed models from the backend API.
-    let canceled = false;
-
-    const cb = async () => {
-      if (canceled) return;
-
-      const installedMap = await getInstalledModels();
-      // Return model names only if they are truthy (installed).
-      setInstalledModels(
-        Object.entries(installedMap)
-          .filter((x) => x[1])
-          .map((x) => x[0])
-      );
-    };
-
-    cb();
-
-    return () => {
-      canceled = true;
     };
   }, []);
 
@@ -121,6 +99,10 @@ const GlobalOptionsView = () => {
 
   const handleFixSeed = async () => {
     await setSeed(42);
+  };
+
+  const handleCircuitBreak = async () => {
+    await triggerCircuitBreak();
   };
 
   const handleOpenModelsFolder = async () => {
@@ -495,6 +477,22 @@ const GlobalOptionsView = () => {
             ),
           },
           Debugging: {
+            "Trigger Force Stop": (
+              <>
+                <Button
+                  sx={{ mt: 8 }}
+                  variant="contained"
+                  color="warning"
+                  fullWidth
+                  onClick={handleCircuitBreak}
+                >
+                  Trigger Force Stop
+                </Button>
+                <Typography variant="caption" color="info">
+                  Immediately stops any active translation job.
+                </Typography>
+              </>
+            ),
             "Fix Seed": (
               <>
                 <Button
@@ -511,15 +509,21 @@ const GlobalOptionsView = () => {
                   if using a random translation algorithm such as MBR Sampling.
                   No effect otherwise.
                 </Typography>
-                <Button
-                  sx={{ mt: 8 }}
-                  variant="outlined"
-                  color="info"
-                  fullWidth
-                  onClick={handleOpenLogsFolder}
-                >
-                  Open Logs Folder
-                </Button>
+              </>
+            ),
+            "Open Logs": (
+              <Button
+                sx={{ mt: 8 }}
+                variant="outlined"
+                color="info"
+                fullWidth
+                onClick={handleOpenLogsFolder}
+              >
+                Open Logs Folder
+              </Button>
+            ),
+            "Reset Settings": (
+              <>
                 <Button
                   sx={{ mt: 32 }}
                   variant="outlined"

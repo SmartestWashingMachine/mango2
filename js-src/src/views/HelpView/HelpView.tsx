@@ -103,6 +103,12 @@ const questions = [
       'To replace the OCR box font, just name the desired font "ocrbox.ttf".',
     ],
   },
+  {
+    title: "The translator is hanging. Can I force stop it?",
+    steps: [
+      "Yes - translation jobs can be forcefully stopped. Press CRTL + ALT + Q",
+    ],
+  },
 ];
 
 const HelpView = () => {
