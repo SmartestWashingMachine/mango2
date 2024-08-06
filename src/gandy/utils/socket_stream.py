@@ -1,6 +1,7 @@
 from transformers.generation.streamers import TextStreamer
 from gandy.app import socketio
-
+from gandy.state.config_state import config_state
+from gandy.utils.replace_terms import replace_many
 
 class SocketStreamer(TextStreamer):
     def __init__(
@@ -47,6 +48,8 @@ class SocketStreamer(TextStreamer):
         if text == self.old_text:
             return
         self.old_text = text
+
+        text = replace_many(text, config_state.target_terms, ctx=None)
 
         # This is where the "magic" happens.
         socketio.patched_emit(

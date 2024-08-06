@@ -156,7 +156,7 @@ class BasePipeline:
 
             target_texts.append(translation_output)
 
-        return replace_terms_target_side(target_texts, config_state.terms)
+        return replace_terms_target_side(target_texts, config_state.target_terms)
 
     def get_source_texts_from_bboxes(
         self,
@@ -211,7 +211,7 @@ class BasePipeline:
             source_texts, line_bboxes, line_texts = self.get_source_texts_from_bboxes(
                 rgb_image, speech_bboxes, return_line_bboxes=True
             )
-            source_texts = replace_terms_source_side(source_texts, config_state.terms)
+            source_texts = replace_terms_source_side(source_texts, config_state.source_terms)
             if progress_cb is not None:
                 progress_cb(progress=50)
 
@@ -289,7 +289,7 @@ class BasePipeline:
         with logger.begin_event("Text to text") as ctx:
             # <SEP> tokens are already added from the client / context state for this task.
 
-            source_texts = replace_terms_source_side([text], config_state.terms)
+            source_texts = replace_terms_source_side([text], config_state.source_terms)
 
             target_texts = self.get_target_texts_from_str(
                 source_texts, socketio=socketio, use_stream=use_stream

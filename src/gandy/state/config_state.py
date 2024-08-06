@@ -16,7 +16,10 @@ class ConfigState:
         self.n_context = 1
 
         self.use_cuda = False
-        self.terms = []
+
+        # self.terms = []
+        self.source_terms = []
+        self.target_terms = []
 
         self.stroke_size = 8
 
@@ -24,8 +27,13 @@ class ConfigState:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+    # on_side == "source" || "target"
+    def find_terms(self, terms, on_side: str):
+        return [t for t in terms if (t.get("enabled", False) and t["onSide"] == on_side)]
+
     def update_terms(self, terms):
-        self.terms = terms
+        self.source_terms = self.find_terms(terms, on_side="source")
+        self.target_terms = self.find_terms(terms, on_side="target")
 
 
 config_state = ConfigState()
