@@ -6,12 +6,12 @@ from onnxruntime import SessionOptions, ExecutionMode, GraphOptimizationLevel
 import torch
 
 class BreakableORTModelForSeq2SeqLM(ORTModelForSeq2SeqLM):
-    def prepare_inputs_for_generation(self, *args, **kwargs):
+    def forward(self, *args, **kwargs):
         if config_state._temp_circuit_broken:
             config_state._temp_circuit_broken = False
             raise RuntimeError('Circuit breaker triggered by user!')
 
-        return super().prepare_inputs_for_generation(*args, **kwargs)
+        return super().forward(*args, **kwargs)
 
 
 class Seq2SeqTranslationApp(BaseTranslation):
@@ -79,7 +79,7 @@ class Seq2SeqTranslationApp(BaseTranslation):
             provider = "CPUExecutionProvider"
             # load_in_8bit needed even? I thought not but it makes a difference in tests according to one end user (not me)...
 
-            self.translation_model = ORTModelForSeq2SeqLM.from_pretrained(
+            self.translation_model = BreakableORTModelForSeq2SeqLM.from_pretrained(
                 model_path,
                 provider=provider,
                 use_io_binding=False,

@@ -106,7 +106,7 @@ const questions = [
   {
     title: "The translator is hanging. Can I force stop it?",
     steps: [
-      "Yes - translation jobs can be forcefully stopped. Press CRTL + ALT + Q",
+      "Yes - translation jobs can be forcefully stopped. Press CRTL + SHIFT + Q",
     ],
   },
 ];

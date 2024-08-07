@@ -15,7 +15,7 @@ export const useLoader = () => {
   // A little safety hatch!
   useEffect(() => {
     const cb = async (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'q') {
+      if (e.ctrlKey && e.shiftKey && e.key === 'Q') {
         triggerCircuitBreak();
       }
     };
