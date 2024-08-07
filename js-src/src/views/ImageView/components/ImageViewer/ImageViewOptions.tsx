@@ -41,7 +41,7 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
   ];
 
   const itemEnabled = (x: { name: string; value: string; desc: string }) => {
-    return props.installedModels.indexOf(x.value) !== -1;
+    return (props.installedModels.indexOf(x.value) !== -1) || (x.name === "None");
   };
 
   return (

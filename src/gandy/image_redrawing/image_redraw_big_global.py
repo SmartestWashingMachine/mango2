@@ -152,7 +152,7 @@ class ImageRedrawBigGlobalApp(ImageRedrawGlobalApp):
 
         return bboxes
 
-    def process(self, image: Image.Image, bboxes, target_texts, text_colors):
+    def process(self, image: Image.Image, bboxes, target_texts, text_colors, *args, **kwargs):
         new_image = image.copy()
         if len(bboxes) == 0:
             return new_image
