@@ -5,7 +5,10 @@ from gandy.utils.fancy_logger import logger
 
 def replace_many(s: str, terms: List[Dict], ctx):
     if ctx is not None:
-        ctx.log("Mapping text", pre_text=s, n_terms=len(terms))
+        if len(terms) > 0:
+            ctx.log("Mapping text", pre_text=s, n_terms=len(terms))
+        else:
+            ctx.log("No terms - skipping")
 
     for t in terms:
         s = re.sub(rf'{t["original"]}', rf'{t["replacement"]}', s)
