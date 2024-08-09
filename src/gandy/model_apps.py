@@ -95,15 +95,18 @@ TEXT_DETECTION_APP = SwitchApp(
     ],
 )
 
+j_ocr_postprocess = lambda s: s.replace(" ", "")
+
 TEXT_RECOGNITION_APP = SwitchApp(
     apps=[
-        TrOCRTextRecognitionApp(model_sub_path="_j/"),
+        TrOCRTextRecognitionApp(model_sub_path="_j/", extra_postprocess=j_ocr_postprocess),
         TrOCRTextRecognitionApp(
             model_sub_path="_jbig/",
             gen_kwargs={
                 "num_beams": 5,
                 "no_repeat_ngram_size": 7,  # Use to be None
-            },
+            }, 
+            extra_postprocess=j_ocr_postprocess
         ),
         TrOCRTextRecognitionApp(
           model_sub_path="_ko/",
@@ -140,6 +143,7 @@ TEXT_RECOGNITION_APP = SwitchApp(
                 "num_beams": 5,
                 "no_repeat_ngram_size": 7,
             },
+            extra_postprocess=j_ocr_postprocess,
         ),
     ],
     app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr", "zh_trocr_massive", "trocr_jmassive"],

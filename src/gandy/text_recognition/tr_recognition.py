@@ -18,6 +18,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         gen_kwargs={},
         feature_extractor_cls=ViTFeatureExtractor,
         do_resize=True,
+        extra_postprocess=None,
     ):
         super().__init__()
 
@@ -51,6 +52,8 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         self.gen_kwargs = gen_kwargs
 
         self.feature_extractor_cls = feature_extractor_cls
+
+        self.extra_postprocess = extra_postprocess
 
     def load_dataloader(self, tokenizer_path, feature_extractor_path):
         self.feature_extractor = self.feature_extractor_cls.from_pretrained(
@@ -107,7 +110,10 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
     def postprocess(self, outp):
         decoded = self.tokenizer.decode(outp[0, ...], skip_special_tokens=True)
 
-        decoded = decoded.replace(" ", "").strip()
+        if self.extra_postprocess is not None:
+            decoded = self.extra_postprocess(decoded)
+
+        decoded = decoded.strip()
         return decoded
 
     def do_generate(self, image):
