@@ -17,6 +17,7 @@ export type PaginatedTabsProps = {
   headers?: any;
   footers?: any;
   showItems?: boolean;
+  itemsKey?: string;
 };
 
 const PaginatedTabs = (props: PaginatedTabsProps) => {
@@ -108,7 +109,7 @@ const PaginatedTabs = (props: PaginatedTabsProps) => {
         fullWidth
         size="small"
       />
-      <Grid container spacing={2} sx={{ minHeight: "90%" }}>
+      <Grid container spacing={2} sx={{ minHeight: "90%" }} key={props.itemsKey || "items-key"}>
         <Grid item xs={3}>
           <Stack spacing={1} sx={{ padding: 2, height: "100%" }}>
             {createHeaders()}

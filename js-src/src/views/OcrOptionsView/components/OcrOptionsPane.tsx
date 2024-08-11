@@ -88,6 +88,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
         </>
       }
       showItems={!!props.boxId}
+      itemsKey={props.boxId}
       items={{
         Preset: {
           Presets: (
