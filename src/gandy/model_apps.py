@@ -61,35 +61,48 @@ from gandy.utils.set_tokenizer_langs import (
 )
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
 
+yolo_xl = YOLOTDImageDetectionApp(
+    model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
+)
+
+detr_xl = RTDetrImageDetectionApp(
+    model_name="detr_xl", confidence_threshold=0.25, iou_thr=0.5, image_size=1024,
+)
+
+yolo_line_e = RTDetrLineImageDetectionApp(
+    model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15,
+)
+
+yolo_line_emassive = RTDetrLineImageDetectionApp(
+    model_name="yolo_line_emassive", confidence_threshold=0.38, iou_thr=0.15, image_size=1024,
+)
+
 
 TEXT_DETECTION_APP = SwitchApp(
     apps=[
         YOLOTDImageDetectionApp(),
-        YOLOTDImageDetectionApp(
-            model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
+        yolo_xl,
+        detr_xl,
+        UnionImageDetectionApp(
+            td_model_app=yolo_xl,
+            line_model_app=yolo_line_e,
         ),
         UnionImageDetectionApp(
-            td_model_app=YOLOTDImageDetectionApp(
-                model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
-            ),
-            line_model_app=RTDetrLineImageDetectionApp(
-                model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15
-            ),
+            td_model_app=detr_xl,
+            line_model_app=yolo_line_e,
         ),
         UnionImageDetectionApp(
-            td_model_app=YOLOTDImageDetectionApp(
-                model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
-            ),
-            line_model_app=RTDetrLineImageDetectionApp(
-                model_name="yolo_line_emassive", confidence_threshold=0.38, iou_thr=0.15
-            ),
+            td_model_app=yolo_xl,
+            line_model_app=yolo_line_emassive,
         ),
         NoneImageDetectionApp(),
     ],
     app_names=[
         "yolo_td",
         "yolo_xl",
+        "detr_xl",
         "union",
+        "union_detr",
         "union_massive",
         "none",
     ],
@@ -298,12 +311,8 @@ TEXT_LINE_MODEL_APP = SwitchApp(
         None,
         YOLOLineImageDetectionApp(),
         YOLOLineImageDetectionApp(model_name="yolo_line_xl", confidence_threshold=0.25),
-        RTDetrLineImageDetectionApp(
-            model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15
-        ),
-        RTDetrLineImageDetectionApp(
-            model_name="yolo_line_emassive", confidence_threshold=0.38, iou_thr=0.15, image_size=1024,
-        ),
+        yolo_line_e,
+        yolo_line_emassive,
     ],
     app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive"],
 )

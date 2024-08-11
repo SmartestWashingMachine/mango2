@@ -14,14 +14,28 @@ export const TEXT_DETECTION_OPTIONS = [
     `,
   },
   {
-    name: "Union",
+    name: "DETR-XL",
+    value: "detr_xl",
+    desc: `
+    Sometimes better than YOLO-XL for smaller speech bubbles.
+    `,
+  },
+  {
+    name: "Union YOLO",
     value: "union",
     desc: `
     Merges results from YOLO-XL and DETR Line EX to give even better results. Slow.
     `,
   },
   {
-    name: "Union Massive",
+    name: "Union DETR",
+    value: "union_detr",
+    desc: `
+    Merges results from DETR-XL and DETR Line EX to give even better results. Slow.
+    `,
+  },
+  {
+    name: "(Legacy) Union Massive",
     value: "union_massive",
     desc: `
     Merges results from YOLO-XL and DETR Line EX-Massive to give even better results. Slowest.
