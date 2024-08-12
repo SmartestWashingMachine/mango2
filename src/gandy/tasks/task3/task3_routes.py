@@ -90,7 +90,8 @@ def process_task3_route():
     text_detect = data["textDetect"] if "textDetect" in data else "off"
 
     use_stream = data["useStream"] if "useStream" in data else "off"
-    use_stream = True if use_stream == "on" else "off"
+
+    use_stream = True if use_stream[0] == "on" else None
 
     if use_stream:
         use_stream = SocketStreamer(box_id=box_id)

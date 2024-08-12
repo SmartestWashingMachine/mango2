@@ -23,7 +23,7 @@ export const translateImageGiveText = async (
     formData.append("tgt_context_memory", tgtContextMemory);
   }
 
-  if (streamOutput !== null)
+  if (streamOutput)
     formData.append("useStream", streamOutput ? "on" : "off");
 
   formData.append("boxId", boxId);

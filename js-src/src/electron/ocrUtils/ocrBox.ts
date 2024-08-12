@@ -135,22 +135,27 @@ export class OcrBoxManager implements BoxOptionsBackend {
   cloakBox() {
     if (!this.ocrWindow) return;
 
-    //this.ocrWindow.hide(); - not instant
+    this.ocrWindow.hide();
     //this.ocrWindow.minimize(); - feil
-    this.ocrWindow.setOpacity(0); // seems to work. Not the prettiest solution.
+    //this.ocrWindow.setOpacity(0); // seems to work. Not the prettiest solution.
     //this.ocrWindow.setSize(0, 0, false); - feil
   }
 
   revealBox() {
     if (!this.ocrWindow) return;
 
-    this.ocrWindow.setOpacity(1);
+    this.ocrWindow.show();
   }
 
   async takeImage() {
     if (!this.ocrWindow) return;
 
-    return takeImageBehindBox(this.ocrWindow);
+    try {
+      return takeImageBehindBox(this.ocrWindow);
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
   }
 
   /* Take an image and return the resulting buffer if not paused and the image is different than the last. */

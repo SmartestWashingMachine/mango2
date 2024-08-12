@@ -4,7 +4,7 @@ import { imagesDifferent } from "./imagesDifferent";
 export type AutoScanCbOpts = {
   cloakBox: () => void;
   revealBox: () => void;
-  takeImage: () => Promise<{ finalImgBuffer: Buffer } | undefined>;
+  takeImage: () => Promise<{ finalImgBuffer: Buffer } | undefined | null>;
   prevImage: Buffer | null;
   boxId: string;
   textDetect: boolean;
