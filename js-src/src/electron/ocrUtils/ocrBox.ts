@@ -1,4 +1,4 @@
-import { BrowserWindow, globalShortcut } from "electron";
+import { BrowserWindow } from "electron";
 import { ElectronState } from "../../types/ElectronState";
 import {
   refineTranslation,
@@ -16,6 +16,7 @@ import { takeImageBehindBox } from "./takeImageBehindBox";
 import { clipboardCb, getTextFromClipboard } from "./clipboardCb";
 import { autoScanCb } from "./autoScanCb";
 import ElectronChannels from "../../types/ElectronChannels";
+import SharedGlobalShortcuts from './sharedGlobalShortcuts';
 
 export class OcrBoxManager implements BoxOptionsBackend {
   ocrWindow: BrowserWindow | null;
@@ -43,6 +44,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
   _paused?: boolean;
   _hide?: boolean;
   _stateTexts: any[];
+
+  _activationKeyCallback: string;
+  _pauseKeyCallback: string;
+  _hideKeyCallback: string;
+  _spellingCorrectionKeyCallback: string;
 
   _websocketLoaded: boolean;
 
@@ -86,6 +92,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this._stateTexts = stateTexts;
 
     this._websocketLoaded = false;
+
+    this._activationKeyCallback = "";
+    this._pauseKeyCallback = "";
+    this._hideKeyCallback = "";
+    this._spellingCorrectionKeyCallback = "";
   }
 
   // This FN must be called before calling createBoxWindow.
@@ -135,16 +146,16 @@ export class OcrBoxManager implements BoxOptionsBackend {
   cloakBox() {
     if (!this.ocrWindow) return;
 
-    this.ocrWindow.hide();
+    // this.ocrWindow.hide();
     //this.ocrWindow.minimize(); - feil
-    //this.ocrWindow.setOpacity(0); // seems to work. Not the prettiest solution.
+    this.ocrWindow.setOpacity(0); // seems to work. Not the prettiest solution.
     //this.ocrWindow.setSize(0, 0, false); - feil
   }
 
   revealBox() {
     if (!this.ocrWindow) return;
 
-    this.ocrWindow.show();
+    this.ocrWindow.setOpacity(1);
   }
 
   async takeImage() {
@@ -230,14 +241,14 @@ export class OcrBoxManager implements BoxOptionsBackend {
     // Create a listener to detect the required key to scan the box area, and retrieve the result.
     // TODO: No speaker support yet.
     if (this.activationKey !== DISABLED_KEY_VALUE) {
-      globalShortcut.register(this.activationKey, async () => {
+      this._activationKeyCallback = SharedGlobalShortcuts.register(this.activationKey, async () => {
         await this.scanAndTranslateBoxContents();
       });
     }
 
     // Toggle pause mode.
     if (this.pauseKey !== DISABLED_KEY_VALUE) {
-      globalShortcut.register(this.pauseKey, async () => {
+      this._pauseKeyCallback = SharedGlobalShortcuts.register(this.pauseKey, async () => {
         this._paused = !this._paused;
         if (this.ocrWindow) {
           this.ocrWindow.webContents.send(
@@ -251,7 +262,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     // Toggle hide mode.
     if (this.hideKey !== DISABLED_KEY_VALUE) {
-      globalShortcut.register(this.hideKey, async () => {
+      this._hideKeyCallback = SharedGlobalShortcuts.register(this.hideKey, async () => {
         this._hide = !this._hide;
         if (this.ocrWindow) {
           this.ocrWindow.setIgnoreMouseEvents(this._hide);
@@ -267,7 +278,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     // Trigger spelling correction refinement for a line of text.
     if (this.spellingCorrectionKey !== DISABLED_KEY_VALUE) {
-      globalShortcut.register(this.spellingCorrectionKey, async () => {
+      this._spellingCorrectionKeyCallback = SharedGlobalShortcuts.register(this.spellingCorrectionKey, async () => {
         // TODO: Make this work with the OCR mode - not just clipboard.
         if (this.prevText && this._websocketLoaded) {
           //await clipboardCb(this.prevText, opts);
@@ -372,13 +383,13 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     this.ocrWindow = null;
     if (this.activationKey !== DISABLED_KEY_VALUE)
-      globalShortcut.unregister(this.activationKey);
+      SharedGlobalShortcuts.unregister(this.activationKey, this._activationKeyCallback);
     if (this.pauseKey !== DISABLED_KEY_VALUE)
-      globalShortcut.unregister(this.pauseKey);
+      SharedGlobalShortcuts.unregister(this.pauseKey, this._pauseKeyCallback);
     if (this.hideKey !== DISABLED_KEY_VALUE)
-      globalShortcut.unregister(this.hideKey);
+      SharedGlobalShortcuts.unregister(this.hideKey, this._hideKeyCallback);
     if (this.spellingCorrectionKey !== DISABLED_KEY_VALUE)
-      globalShortcut.unregister(this.spellingCorrectionKey);
+      SharedGlobalShortcuts.unregister(this.spellingCorrectionKey, this._spellingCorrectionKeyCallback);
 
     if (this._timerAutoScan) clearInterval(this._timerAutoScan);
     if (this._timerClipboard) clearInterval(this._timerClipboard);

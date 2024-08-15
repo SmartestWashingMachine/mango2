@@ -23,7 +23,8 @@ import { Server } from 'socket.io';
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 
-app.disableHardwareAcceleration();
+// Bricks OCR window screenshotting. The fudge ElectronJS? Why do you have to be shady?
+// app.disableHardwareAcceleration();
 
 makeLogs();
 
