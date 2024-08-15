@@ -13,6 +13,22 @@ type OcrBoxPaneProps = BoxOptionsFrontend & {
 
 const msToSecs = (ms: number) => (ms ? ms * 1000 : 300);
 
+// Also from: https://stackoverflow.com/questions/1855884/determine-font-color-based-on-background-color
+const hexToLuma = (color: string) => {
+  const hex = color.replace(/#/, '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4), 16);
+
+  const a = 1.0 - [
+    0.299 * r,
+    0.587 * g,
+    0.114 * b
+  ].reduce((a, b) => a + b) / 255;
+
+  return a;
+};
+
 // From: https://gist.github.com/lopspower/03fb1cc0ac9f32ef38f4
 const hexWithAlpha = (color: string, percentage: number) => {
   const decimal = `0${Math.round(255 * percentage).toString(16)}`
@@ -143,7 +159,7 @@ const OcrBoxPane = ({
           <div className="boxAppHandleTopRight" />
           <div className="boxAppHandleBottomLeft" />
           <div className="boxAppHandleBottomRight">
-            <DragHandleIcon className="boxAppHandleIcon" />
+            <DragHandleIcon className={hexToLuma(backgroundColor) > 0.5 ? "boxAppHandleIcon" : "boxAppHandleIconDark"} />
           </div>
         </Box>
       </Fade>

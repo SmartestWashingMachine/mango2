@@ -115,6 +115,16 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               ])}
             </TextField>
           ),
+          Enabled: (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.enabled}
+              keyName="enabled"
+              tooltip="Disabled boxes will not show on the screen or do anything."
+              helperText="The box can be enabled or disabled for the time being if unchecked."
+              label="Enabled"
+            />
+          ),
         },
         "Text Appearance": {
           "Text Size": (
@@ -210,16 +220,6 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
                 defaultValue={props.fadeAwayTime}
               />
             </Tooltip>
-          ),
-          Enabled: (
-            <UpdateCheckbox
-              changeValue={changeValue}
-              defaultValue={props.enabled}
-              keyName="enabled"
-              tooltip="Disabled boxes will not show on the screen or do anything."
-              helperText="The box can be enabled or disabled for the time being if unchecked."
-              label="Enabled"
-            />
           ),
         },
         Actions: {
