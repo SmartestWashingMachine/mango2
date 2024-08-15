@@ -179,6 +179,12 @@ body,
   transform: rotate(120deg);
 }
 
+.boxAppHandleIconDark {
+  color: rgb(0, 0, 0) !important;
+  opacity: 0.1;
+  transform: rotate(120deg);
+}
+
 .boxText {
   margin-top: 12px;
   margin-left: 12px;
