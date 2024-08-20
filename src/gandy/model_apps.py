@@ -66,7 +66,7 @@ yolo_xl = YOLOTDImageDetectionApp(
 )
 
 detr_xl = RTDetrImageDetectionApp(
-    model_name="detr_xl", confidence_threshold=0.25, iou_thr=0.5, image_size=1024,
+    model_name="detr_xl", confidence_threshold=0.25, iou_thr=0.5, image_size=1024, filter_out_overlapping_bboxes=True,
 )
 
 yolo_line_e = RTDetrLineImageDetectionApp(

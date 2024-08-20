@@ -9,7 +9,7 @@ from gandy.text_detection.base_image_detection import BaseImageDetection
 from gandy.text_detection.line_mixin import LineMixin
 from gandy.utils.tnms import tnms
 from gandy.utils.fancy_logger import logger
-
+from gandy.utils.filter_out_overlapping_bboxes import filter_out_overlapping_bboxes
 
 def gt_min_size(box: np.ndarray):
     widths = box[:, 2] - box[:, 0]
@@ -96,6 +96,8 @@ class YOLOImageDetectionApp(BaseImageDetection):
         self.iou_thr = 0.25
 
         self.image_size = 640
+
+        self.filter_out_overlapping_bboxes = False
 
     # The code for this method is from ultralytics YOLO with a bit of tweaks (keeping stride and new_shape fixed).
     def resize_np_img(self, img):
@@ -237,13 +239,20 @@ class YOLOImageDetectionApp(BaseImageDetection):
         # EDIT: No longer needed I think. Don't let me down YOLO! bboxes = gt_min_size(bboxes)
 
         if return_list:
-            return bboxes.tolist()
+            bboxes.tolist()
+
+            if self.filter_out_overlapping_bboxes:
+                bboxes = filter_out_overlapping_bboxes(bboxes)
+
+            return bboxes
         else:
+            assert not self.filter_out_overlapping_bboxes
+
             return bboxes
 
 
 class YOLOTDImageDetectionApp(YOLOImageDetectionApp):
-    def __init__(self, confidence_threshold=0.5, iou_thr=0.25, model_name="yolo_td", image_size = 640):
+    def __init__(self, confidence_threshold=0.5, iou_thr=0.25, model_name="yolo_td", image_size = 640, filter_out_overlapping_bboxes = False):
         """
         Slower than the RCNNImageDetectionApp, but more precise.
         """
@@ -254,6 +263,7 @@ class YOLOTDImageDetectionApp(YOLOImageDetectionApp):
         self.iou_thr = iou_thr
 
         self.image_size = image_size
+        self.filter_out_overlapping_bboxes = filter_out_overlapping_bboxes
 
     def can_load(self):
         return super().can_load(f"models/yolo/{self.model_name}.onnx")
