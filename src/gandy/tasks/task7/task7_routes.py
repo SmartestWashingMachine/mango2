@@ -27,4 +27,4 @@ def process_task7_route():
             logger.log("Task7 Error")
             logger.event_exception(ctx)
 
-            return 'ERROR (search logs for "Task7 Error")', 200
+            return 'ERROR (search logs for "Task7 Error")', 201
