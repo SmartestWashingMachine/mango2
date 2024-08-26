@@ -11,7 +11,7 @@ jest.mock("../assets/Header.png", () => ({
 
 jest.mock("../utils/mainGateway", () => ({
   MainGateway: {
-    showFile: () => {},
+    showFile: () => { },
   },
 }));
 import { MainGateway } from "../utils/mainGateway";
@@ -28,6 +28,7 @@ describe("App controls", () => {
         goHelpTab={fn}
         goImageTab={fn}
         goWebTab={fn}
+        goVideoTab={fn}
         selectedView={"Image"}
       />
     );
