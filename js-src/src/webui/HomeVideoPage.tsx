@@ -88,7 +88,7 @@ const HomeVideoPage = () => {
       let canceled = false;
 
       const asyncCb = async () => {
-        const output = await fetch(`${API_URL}/webui/list`, {
+        const output = await fetch(`${API_URL}/webui/videolist`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -232,9 +232,9 @@ const HomeVideoPage = () => {
               href={`?r=${f}&i=0`}
               component="a"
             >
-              <video width="90%" height="90%">
+              <video width="90%" height="90%" preload="metadata">
                 <source
-                  src={`${API_URL}/webui/resources/${f}/${folderMap[f][0]}`}
+                  src={`${API_URL}/webui/videoresources/${f}/${folderMap[f][0]}`}
                   type="video/mp4"
                 />
               </video>
@@ -254,7 +254,7 @@ const HomeVideoPage = () => {
   // For infinite
   const getImagePath = (idxToUse: number) =>
     curFolder && curFolder.length > idxToUse
-      ? `${API_URL}/webui/resources/${selFolder}/${curFolder[idxToUse]}`
+      ? `${API_URL}/webui/videoresources/${selFolder}/${curFolder[idxToUse]}`
       : null;
 
   // For non-infinite
@@ -311,6 +311,7 @@ const HomeVideoPage = () => {
             height="90%"
             className="imageInnerInfinite"
             key={`${idx}img`}
+            controls
           >
             <source src={getImagePath(idx) || undefined} type="video/mp4" />
           </video>
