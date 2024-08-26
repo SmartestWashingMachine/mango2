@@ -74,7 +74,7 @@ yolo_line_e = RTDetrLineImageDetectionApp(
 )
 
 yolo_line_emassive = RTDetrLineImageDetectionApp(
-    model_name="yolo_line_emassive", confidence_threshold=0.38, iou_thr=0.15, image_size=1024,
+    model_name="yolo_line_emassive", confidence_threshold=0.4, iou_thr=0.15, image_size=1024,
 )
 
 
