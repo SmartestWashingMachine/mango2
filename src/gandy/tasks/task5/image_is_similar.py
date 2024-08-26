@@ -11,7 +11,7 @@ def image_is_similar(
     with logger.begin_event(log_message, cached_images=len(others)) as ctx:
         # Returns None if no image is similar to the one given, or the first index otherwise.
         if mode == "image":
-            transformed_image = imagehash.average_hash(image, hash_size=64)
+            transformed_image = imagehash.average_hash(image, hash_size=128)
         else:
             transformed_image = imagehash.dhash(image)
 
