@@ -57,9 +57,7 @@ def process_task5_route():
         if every_secs is None or not isinstance(every_secs, float):
             raise ValueError(f"every_secs must be a float, but got: {every_secs}")
     except:
-        every_secs = 2
-
-    # images = request.files.getlist("file")
+        every_secs = 1
 
     socketio.start_background_task(
         process_task5_background_job,

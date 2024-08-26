@@ -228,6 +228,7 @@ def process_task5(
 
             seconds_state = i * every_secs
             at_frame = (seconds_state) * fps
+            timestamp = str(timedelta(seconds=seconds_state))
 
             prev = frame_source_texts[i - 1]
             cur = frame_source_texts[i]
@@ -250,6 +251,7 @@ def process_task5(
         for idx, fst in enumerate(frame_source_texts):
             seconds_state = idx * every_secs
             at_frame = (seconds_state) * fps
+            timestamp = str(timedelta(seconds=seconds_state))
 
             with logger.begin_event(
                 "Translating source text in frame", seconds=seconds_state, hms=timestamp
