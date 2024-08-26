@@ -14,7 +14,7 @@
     "opack": "electron-builder --dir",
     "pack": "npm run buildprod && npm run opack",
     "pretty": "prettier --write \"./src/**/*.{ts,tsx}\"",
-    "webbuild": "webpack --config ./webpack.config.webapp.js",
+    "webbuild": "webpack --config ./webpack.config.webapp.js && copyfiles -f \"./public/web/*\" \"../src/static\"",
     "knip": "knip"
   },
   "author": "Washed Octopus",

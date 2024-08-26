@@ -197,6 +197,14 @@ const HomeVideoPage = () => {
         sx={{ padding: 4, alignContent: "center", alignItems: "center" }}
       >
         <div className="searchOptions">
+          <Button
+            href="?media=images"
+            variant="text"
+            color="info"
+            sx={{ marginRight: 16, }}
+          >
+            Images
+          </Button>
           <TextField
             placeholder="Search"
             variant="standard"
