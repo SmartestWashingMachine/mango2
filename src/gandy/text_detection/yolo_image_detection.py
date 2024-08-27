@@ -239,7 +239,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
         # EDIT: No longer needed I think. Don't let me down YOLO! bboxes = gt_min_size(bboxes)
 
         if return_list:
-            bboxes.tolist()
+            bboxes = bboxes.tolist()
 
             if self.filter_out_overlapping_bboxes:
                 bboxes = filter_out_overlapping_bboxes(bboxes)
