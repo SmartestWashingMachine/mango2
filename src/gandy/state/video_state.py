@@ -68,7 +68,7 @@ class BasicCache:
 
 
 def make_image_cache():
-    max_items = 50
+    max_items = 3 # Since images are taken frame-by-frame, second-by-second, let's assume only nearby frames should be similar.
 
     return BasicCache(
         [
