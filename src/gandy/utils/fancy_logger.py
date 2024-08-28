@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 from contextlib import contextmanager
 from datetime import datetime
-from eliot import start_action, to_file
+from eliot import start_action, to_file, log_message
 from time import strftime
 import os
 import traceback
@@ -65,8 +65,9 @@ class FancyLogger:
 
     def begin_event(self, event_name: str, **fields):
         return start_action(action_type=event_name, **fields)
-        # with start_action(action_type=event_name) as ctx:
-        # yield ctx.log()
+    
+    def log_message(self, msg: str, **fields):
+        return log_message(msg, **fields)
 
     def event_exception(self, ctx):
         return ctx.log(traceback.format_exc())

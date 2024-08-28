@@ -80,7 +80,7 @@ class UnionImageDetectionApp(BaseImageDetection):
             # if not any(box_b_in_box_a(box_a=box_a, box_b=box_b) for box_a in td_bboxes):
                 # candidate_lines.append(box_b)
 
-        logger.debug(f"Filtered line bboxes in Union variant from {n_lines_before} to {len(candidate_lines)}")
+        logger.log_message(f"Filtered line bboxes in Union variant from {n_lines_before} to {len(candidate_lines)}")
 
         n_lines_before = len(candidate_lines)
 
@@ -89,7 +89,7 @@ class UnionImageDetectionApp(BaseImageDetection):
         # candidate_lines = join_nearby_speech_bubbles_only(bboxes=candidate_lines, rgb_image=image)
         candidate_tds = [d for d in td_bboxes]
 
-        logger.debug(f"Joined nearby line bboxes in Union variant from {n_lines_before} to {len(candidate_lines)}")
+        logger.log_message(f"Joined nearby line bboxes in Union variant from {n_lines_before} to {len(candidate_lines)}")
 
         bboxes = candidate_lines + candidate_tds
 
@@ -97,7 +97,7 @@ class UnionImageDetectionApp(BaseImageDetection):
 
         bboxes = np.array(bboxes)
 
-        logger.debug("Sorting union boxes...")
+        logger.log_message("Sorting union boxes...")
         if do_sort:
             image_width, image_height = image.size
             bboxes = self.sort_bboxes(bboxes, image_width, image_height)

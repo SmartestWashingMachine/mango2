@@ -100,7 +100,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         ).pixel_values
         
         if not self.do_resize:
-            logger.info(f'Using variable TrOCR variant - input shape: {pixel_values.shape}')
+            logger.log_message(f'Using variable TrOCR variant - input shape: {pixel_values.shape}')
 
         if config_state.use_cuda:
             pixel_values = pixel_values.to("cuda:0")
@@ -122,14 +122,14 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         return self.postprocess(generated)
 
     def process_one_image(self, cropped_image):
-        logger.debug(f"Scanning a text region... - IMG SHAPE: {cropped_image.shape}")
+        logger.log_message(f"Scanning a text region... - IMG SHAPE: {cropped_image.shape}")
 
         augmented = self.transform(image=cropped_image)
         cropped_image = augmented["image"]
 
         output = self.do_generate(cropped_image)
 
-        logger.debug(f"Done scanning a text region! - IMG SHAPE: {cropped_image.shape}")
+        logger.log_message(f"Done scanning a text region! - IMG SHAPE: {cropped_image.shape}")
         return output
 
     def process(self, image: Image.Image, bboxes, text_line_app, forced_image=None):
@@ -139,14 +139,14 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                 "forced_image should never be called if bboxes > 1 (task5?)"
             )
         if forced_image is not None:
-            logger.debug("Using forced image for OCR")
+            logger.log_message("Using forced image for OCR")
 
         line_bboxes = None
         line_texts = None
 
         for bbox in bboxes:
             if text_line_app is not None:
-                logger.debug(f"Using text line model for preprocessing.")
+                logger.log_message(f"Using text line model for preprocessing.")
 
                 line_texts = []
                 text_region_image = (
@@ -162,7 +162,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                     cropped_image = np.array(cropped_image)
 
                     outp = self.process_one_image(cropped_image)
-                    logger.debug(f"Found partial text: {outp}")
+                    logger.log_message(f"Found partial text: {outp}")
                     line_texts.append(outp)
 
                 text = "".join(line_texts)
@@ -177,7 +177,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                 line_bboxes = None
                 line_texts = None
 
-            logger.debug(f"Found complete text: {text}")
+            logger.log_message(f"Found complete text: {text}")
             source_texts.append(text)
 
         return source_texts, line_bboxes, line_texts

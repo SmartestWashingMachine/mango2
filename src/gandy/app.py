@@ -64,7 +64,7 @@ if ENABLE_WEB_UI:
     @app.before_request
     def before_request():
         timestamp = strftime("[%Y-%b-%d %H:%M]")
-        logger.error(
+        logger.log(
             f"{timestamp} {request.remote_addr} {request.method} {request.scheme} {request.full_path}"
         )
 

@@ -167,7 +167,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
         return bboxes_pos, bboxes_scores
 
     def fuse_boxes(self, bboxes_data, padded_hw):
-        logger.debug(
+        logger.log_message(
             f"Using non maximum suppression to postprocess object detections..."
         )
 
@@ -199,14 +199,14 @@ class YOLOImageDetectionApp(BaseImageDetection):
         else:
             boxes = processed_boxes
 
-        logger.debug(f"Done using NMS! (Filtered Boxes #: {boxes.shape[0]})")
+        logger.log_message(f"Done using NMS! (Filtered Boxes #: {boxes.shape[0]})")
 
         return boxes
 
     def detect_bboxes(self, image):
         image = image.convert("RGB")  # Needs 3 channels.
 
-        logger.info(
+        logger.log_message(
             "Transforming image before passing it into object detection model..."
         )
 
@@ -223,13 +223,13 @@ class YOLOImageDetectionApp(BaseImageDetection):
     def process(self, image, do_sort=True, return_list=True):
         image_width, image_height = image.size
 
-        logger.debug("Detecting boxes...")
+        logger.log_message("Detecting boxes...")
         dict_output, padded_hw = self.detect_bboxes(image)
 
-        logger.debug("Fusing boxes...")
+        logger.log_message("Fusing boxes...")
         bboxes = self.fuse_boxes(dict_output, padded_hw)
 
-        logger.debug("Sorting boxes...")
+        logger.log_message("Sorting boxes...")
         if do_sort:
             bboxes = self.sort_bboxes(bboxes, image_width, image_height)
 
