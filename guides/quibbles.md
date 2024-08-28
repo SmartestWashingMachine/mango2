@@ -35,6 +35,7 @@ Observations and Quibbles
     - [1. Attention degeneration](#1-attention-degeneration)
     - [2. Poor vocabulary](#2-poor-vocabulary)
   - [But ChatGPT blows a bunch of MT models out of the water!](#but-chatgpt-blows-a-bunch-of-mt-models-out-of-the-water)
+- [RoPE can't be swapped into an Absolute Positional MT model without pain.](#rope-cant-be-swapped-into-an-absolute-positional-mt-model-without-pain)
 
 
 ## Tiny machine translation (MT) models on distant language pairs (e.g: Chinese-to-English, Japanese-to-English) fail to train without absolute positional embeddings.
@@ -333,3 +334,34 @@ All that said, LLMs likely have a place in post-editing translations.
 ### But ChatGPT blows a bunch of MT models out of the water!
 
 Yes, and so do some others. But these models have hundreds of billions of parameters. I'm all for scaling but you and I aren't made out of money. We have to consider the "low parameter" regime - around the 7 billion parameter mark (oh god).
+
+## RoPE can't be swapped into an Absolute Positional MT model without pain.
+
+It's as the title says. There is a recent paper where the authors find that they can swap out absolute positional embeddings (APE) for rotary positional embeddings (RoPE), finetuning it to regain most of the original knowledge.
+
+But in my personal experiments, I've found this to be wonky. Finetuning a 1 billion parameter to use RoPE instead of APE has resulted in it "forgetting" almost everything it knows, and the model often hiccups - placing the translated tokens in a very, *very,* wrong order. The hiccups become even more pronounced as the sentence grows longer, and further tuning did not seem to have much of an effect.
+
+On the other hand, MADLAD uses T5 relative positional embeddings and does just fine, hinting to a few possible conclusions. The ones I suspect are:
+
+1. We cannot swap out APE for RoPE in a pretrained MT model - even further tuning would give little advantage.
+2. T5 relative positional embeddings are better than RoPE for MT models.
+
+The authors of the paper I mentioned earlier also found that NoPE (**no** positional embeddings) did awfully. That makes sense - we know positional information is crucial for encoder-decoder MT models. 
+
+What's interesting is that other papers find that NoPE does just fine for decoder-only LLMs, albeit on other non-translation tasks. As far as I know decoder-only NoPE LLMs have not been tested on translation tasks, but it *should* work there too, as NoPE models seem to "learn" a positional embedding of their own.
+
+So why can decoder-only LLMs function without positional embeddings but encoder-decoder models can not?
+
+Could the various tasks and massive data scale be the key to allowing LLMs to learn a positional embedding? 
+
+Could it be some fundamental architectural characteristic to decoder-only LLMs?
+
+Since a decoder in the encoder-decoder and an LLM are pretty similar architecturally except for the cross attention block, the issue - if architectural - may lie in the encoder. 
+
+There are people who believe that the causal mask in the decoder, or the unidirectional nature of the decoder, allows it to learn positional embeddings in spite of NoPE. 
+
+But the encoder is bidirectional. So maybe it prevents or somehow harms the learning of positional knowledge. One interesting idea might be to add some form of positional embedding to the encoder but use NoPE for the decoder.
+
+<sub>Unrelated note: I also remember a paper submitted to an WMT competition where the authors used relative positional embeddings for the encoder, but absolute positional embeddings for the decoder. I wonder why?</sub>
+
+All that said, if encoder-decoder MT models truly need positional information baked in, that might be an interesting insight in of itself. That would mean that we *can* inject priors, or other architectural blocks, or hacks, to strengthen our MT models. Scale might not be king.
