@@ -17,4 +17,4 @@ class BaseTextRecognition(BaseApp):
         return ["" for b in bboxes], None, None
 
     def unload_model(self):
-        pass
+        super().unload_model()

@@ -13,4 +13,4 @@ class BaseSpellCorrection(BaseApp):
         pass
 
     def unload_model(self):
-        pass
+        super().unload_model()

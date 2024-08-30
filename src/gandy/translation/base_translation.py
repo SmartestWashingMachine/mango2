@@ -18,4 +18,4 @@ class BaseTranslation(BaseApp):
         return text  # Returns the best hypothesis.
 
     def unload_model(self):
-        pass
+        super().unload_model()

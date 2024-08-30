@@ -46,4 +46,4 @@ class BaseImageDetection(BaseApp):
         return new_bboxes
 
     def unload_model(self):
-        pass
+        super().unload_model()

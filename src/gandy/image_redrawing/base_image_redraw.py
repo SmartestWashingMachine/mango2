@@ -36,4 +36,4 @@ class BaseImageRedraw(BaseApp):
         return image
 
     def unload_model(self):
-        pass
+        super().unload_model()

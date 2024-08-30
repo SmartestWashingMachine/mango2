@@ -15,4 +15,4 @@ class BaseImageClean(BaseApp):
         return super().begin_process(*args, **kwargs)
 
     def unload_model(self):
-        pass
+        super().unload_model()
