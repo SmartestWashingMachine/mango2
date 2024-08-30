@@ -95,6 +95,10 @@ TEXT_DETECTION_APP = SwitchApp(
             td_model_app=yolo_xl,
             line_model_app=yolo_line_emassive,
         ),
+        UnionImageDetectionApp(
+            td_model_app=detr_xl,
+            line_model_app=yolo_line_emassive,
+        ),
         NoneImageDetectionApp(),
     ],
     app_names=[
@@ -104,6 +108,7 @@ TEXT_DETECTION_APP = SwitchApp(
         "union",
         "union_detr",
         "union_massive",
+        "union_massive_detr",
         "none",
     ],
 )
