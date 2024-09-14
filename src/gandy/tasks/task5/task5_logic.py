@@ -13,6 +13,7 @@ from gandy.tasks.task5.image_is_similar import image_is_similar
 from gandy.utils.fancy_logger import logger
 from gandy.tasks.task5.a_is_close_substring_of_b import a_is_close_substring_of_b
 from gandy.tasks.task5.filter_dominant_bbox import filter_dominant_bbox
+from gandy.utils.clean_text_v2 import clean_text_vq
 from datetime import timedelta
 from uuid import uuid4
 
@@ -128,6 +129,8 @@ def translate_text_from_frame(
     existing_index = next(
         (idx for (idx, other) in cache.enumerate("source_texts") if fst == other), None
     )
+
+    # We only translate if a similar text was not already translated.
     if existing_index is not None:
         # Same text as in a previous frame (actually, it might be due to the "next" frame - see STAGE 2 with the reverse loop). Return it.
         t_text = cache.index("target_texts", existing_index)
@@ -217,6 +220,12 @@ def process_task5(
                 source_text = get_source_text_from_frame(
                     app_container, image, image_cache, ctx, seconds_state
                 )
+
+                # All MT models use clean_text_vq. There's no harm in normalizing twice (once here, once in MT).
+                # But it is somewhat inefficient to normalize twice...
+                # Why do we need this? Because the OCR model sometimes makes mistakes.
+                source_text = clean_text_vq(source_text)
+
                 frame_source_texts.append(source_text)
 
             mt_progress_callback((at_frame / total_frames) / 3)

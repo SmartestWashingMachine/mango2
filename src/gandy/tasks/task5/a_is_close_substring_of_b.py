@@ -74,7 +74,10 @@ def a_is_close_substring_of_b(a: str, b: str, matching_threshold=0.7):
     """
     Returns True if A is a substring or relatively close to being a substring of the beginning of B.
     """
-    if len(a) > len(b) or len(a) == 0:
+    a_norm = re.sub(norm_regex, "", a)
+    b_norm = re.sub(norm_regex, "", b)
+
+    if len(a_norm) > len(b_norm) or len(a) == 0:
         # A cannot be a substring of B if A is longer than B or A is empty!
         return False
 
@@ -82,7 +85,6 @@ def a_is_close_substring_of_b(a: str, b: str, matching_threshold=0.7):
         # If A ends with a punctuation character, and it is not the same as B, we assume that A is not a substring of B.
         return False
 
-    a_norm = re.sub(norm_regex, "", a)
     if len(a_norm) == 0:
         return False
 
