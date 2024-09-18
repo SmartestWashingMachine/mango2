@@ -32,7 +32,7 @@ from gandy.text_detection.rtdetr_image_detection import (
 )
 from gandy.text_detection.none_image_detection import NoneImageDetectionApp
 from gandy.text_detection.union_image_detection import UnionImageDetectionApp
-from gandy.text_recognition.tr_recognition import TrOCRTextRecognitionApp
+from gandy.text_recognition.tr_recognition import TrOCRTextRecognitionApp, MagnusTextRecognitionApp
 from gandy.translation.seq2seq_translation import (
     Seq2SeqTranslationApp,
 )
@@ -100,6 +100,7 @@ TEXT_DETECTION_APP = SwitchApp(
             line_model_app=yolo_line_emassive,
         ),
         NoneImageDetectionApp(),
+        yolo_line_emassive,
     ],
     app_names=[
         "yolo_td",
@@ -110,6 +111,7 @@ TEXT_DETECTION_APP = SwitchApp(
         "union_massive",
         "union_massive_detr",
         "none",
+        "debug_yolo_line_emassive",
     ],
 )
 
@@ -163,8 +165,17 @@ TEXT_RECOGNITION_APP = SwitchApp(
             },
             extra_postprocess=j_ocr_postprocess,
         ),
+        MagnusTextRecognitionApp(
+            model_sub_path="_jmagnus/",
+            do_resize=False,
+            gen_kwargs={
+                "num_beams": 5,
+                "no_repeat_ngram_size": 7,
+            },
+            extra_postprocess=j_ocr_postprocess,
+        ),
     ],
-    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr", "zh_trocr_massive", "trocr_jmassive"],
+    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr", "zh_trocr_massive", "trocr_jmassive", "trocr_jmagnus"],
 )
 
 TRANSLATION_APP = SwitchApp(

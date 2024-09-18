@@ -100,7 +100,8 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         ).pixel_values
         
         if not self.do_resize:
-            logger.log_message(f'Using variable TrOCR variant - input shape: {pixel_values.shape}')
+            # bchw
+            logger.log_message(f'Using variable TrOCR variant', h=pixel_values.shape[2], w=pixel_values.shape[3])
 
         if config_state.use_cuda:
             pixel_values = pixel_values.to("cuda:0")
@@ -120,16 +121,20 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         x = self.preprocess(image)
         generated = self.model.generate(x, **self.gen_kwargs)
         return self.postprocess(generated)
+    
+    def transform_image(self, image):
+        augmented = self.transform(image=image)
+        cropped_image = augmented["image"]
+        return cropped_image
 
     def process_one_image(self, cropped_image):
-        logger.log_message(f"Scanning a text region... - IMG SHAPE: {cropped_image.shape}")
+        logger.log_message(f"Scanning a text region...", h=cropped_image.shape[0], w=cropped_image.shape[1])
 
-        augmented = self.transform(image=cropped_image)
-        cropped_image = augmented["image"]
+        cropped_image = self.transform_image(cropped_image)
 
         output = self.do_generate(cropped_image)
 
-        logger.log_message(f"Done scanning a text region! - IMG SHAPE: {cropped_image.shape}")
+        logger.log_message(f"Done scanning a text region!")
         return output
 
     def process(self, image: Image.Image, bboxes, text_line_app, forced_image=None):
@@ -162,7 +167,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                     cropped_image = np.array(cropped_image)
 
                     outp = self.process_one_image(cropped_image)
-                    logger.log_message(f"Found partial text: {outp}")
+                    logger.log_message(f"Found partial text.", text=outp)
                     line_texts.append(outp)
 
                 text = "".join(line_texts)
@@ -177,7 +182,35 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                 line_bboxes = None
                 line_texts = None
 
-            logger.log_message(f"Found complete text: {text}")
+            logger.log_message(f"Found complete text", text=text)
             source_texts.append(text)
 
         return source_texts, line_bboxes, line_texts
+
+class MagnusTextRecognitionApp(TrOCRTextRecognitionApp):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # do_resize is ignored as an __init__ parameter. Magnus OCR models have their own predefined transforms.
+        self.transform = None
+
+        self.prior_transform = A.Compose([
+            A.LongestMaxSize(max_size=512, always_apply=True),
+        ])
+
+    def transform_image(self, image):
+        image = self.prior_transform(image=image)["image"]
+
+        im_height = image.shape[0]
+        im_width = image.shape[1]
+        tfm_magnus = A.Compose([
+            # INTER_CUBIC is a bit better than INTER_LINEAR for enlarging images.
+            # In here we always expand the image (or keep-as-is), distorting the aspect ratio slightly.
+            A.Resize(height=max(96, im_height), width=max(96, im_width), interpolation=cv2.INTER_CUBIC),
+            A.PadIfNeeded(min_height=None, min_width=None, pad_height_divisor=16, pad_width_divisor=16, border_mode=cv2.BORDER_CONSTANT, value=0),
+            A.ToGray(always_apply=True),
+        ])
+
+        image = tfm_magnus(image=image)["image"]
+
+        return image

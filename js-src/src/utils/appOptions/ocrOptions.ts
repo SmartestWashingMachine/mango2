@@ -15,6 +15,11 @@ export const OCR_OPTIONS = [
     desc: "Incredibly slow but slightly more accurate.",
   },
   {
+    name: "Japanese Magnus",
+    value: "trocr_jmagnus",
+    desc: "Even slower but can be more accurate for longer lines of text.",
+  },
+  {
     name: "Korean",
     value: "k_trocr",
     desc: "Moderately fast.",
