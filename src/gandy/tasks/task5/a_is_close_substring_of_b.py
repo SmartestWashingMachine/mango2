@@ -18,8 +18,9 @@ punctuation_chars = [
     "?",
     ",",
     ")",
+    "(",
 ]
-norm_regex = r"，|。|、|”|．|」|）|？|！|】|\"|\.|!|\?|,|\)"
+norm_regex = r"，|。|、|”|．|」|）|？|！|】|\"|\.|!|\?|,|\)|ー|-|,|\.|\"|'"
 
 
 def slice_b(b: str, end: int):
@@ -81,7 +82,8 @@ def a_is_close_substring_of_b(a: str, b: str, matching_threshold=0.7):
         # A cannot be a substring of B if A is longer than B or A is empty!
         return False
 
-    if a[-1] != b[-1] and any(a.endswith(p) for p in punctuation_chars):
+    # Sometimes the OCR model confuses ending quotation marks with parenthesis.
+    if ((a.replace(')', '"')[-1] != b.replace(')', '"')[-1]) and (a.replace('"', '')[-1] != b.replace('"', '')[-1])) and any(a.endswith(p) for p in punctuation_chars):
         # If A ends with a punctuation character, and it is not the same as B, we assume that A is not a substring of B.
         return False
 

@@ -17,6 +17,56 @@ from gandy.utils.clean_text_v2 import clean_text_vq
 from datetime import timedelta
 from uuid import uuid4
 
+"""
+
+I didn't think I would need to write a pseudo design document for this task, but there are a lot of heuristics involved here, so I want to
+briefly explain them to anybody - or myself in the future - who's curious on how this task can semi-successfully translate text characters drawn in videos.
+
+-- The overall process is simple:
+1. We split the video into frames. Each frame, or every X frames, is an image.
+2. We detect text regions in each frame image.
+3. We OCR each text region.
+4. We translate each OCR'd text region. (Notice that Steps 2/3/4 are similar to Task1 - translating images into text, minus the image cleaning & redrawing part.)
+5. We stitch these translations together into an SRT file.
+6. We burn the SRT file onto the video itself.
+
+-- Now, there are some issues with this approach. Can you find them?
+1. We're detecting *every X frames*
+2. We're OCR'ing *every X frames*
+3. We're translating *every X frames*
+4. What if our text characters are drawn onto the image over time, character-by-character, rather than all at once?
+
+Think of how slow and clunky this approach is! It's really bad if we just built it as-is.
+So there's a few more implementation (read: heuristics) details screwed in to help make this task better.
+
+-- Heuristics
+1. (For 1/2/3) We cache some of the previous whole-frame images and their outputs. If the next frame is similar to these ones, reuse the outputs already generated there.
+    We use image hashing to find similar images quickly. Image hashing tended to produce false positives frequently, so the hashing block size had to be increased greatly.
+    Regrettably, a large hashing block size also increased the false negative rate. A better hashing algorihtm would be appreciated.
+2. (For 2/3) We cache some of the previous text-region images and their outputs. If the next text-region image is similar, reuse the outputs there.
+3. (For 4/3) After detecting and OCR'ing all applicable frames, we do a reverse loop, starting from the final frame to the first.
+    This reverse loop is used to fill in any frames that have sentences that are completed by the later frames from (4).
+    We define "completed by the later frames", as being similar to the next frame.
+
+-- Areas of Improvement
+
+IMAGE HASHING:
+
+The ideal hashing algorithm must be sensitive to slight structurally different pixel differences,
+as the text pixels are rather small in comparison to the entire image.
+
+The ideal hashing algorithm must also be relatively insensitive to spatial differences, such as a person moving a leg.
+
+SIMILAR TEXT STRINGS:
+
+The ideal similarity checker would use less heuristics and still be extremely fast.
+
+One idea would be to use a multilingual sentence embedding model, but would it be fast enough? And it would add another dependency.
+Another idea would be to use the encoder outputs from the MT model, but that would be fairly slow.
+Another idea would be to use the outputs from the MT encoder embeddings alone. It would not consider context, and may still be somewhat slow.
+
+"""
+
 # Only retrieve the one largest box per frame.
 ONLY_DOMINANT_BOX = False
 
@@ -104,10 +154,13 @@ def get_source_text_from_frame(
         source_texts = app_container.get_source_texts_from_bboxes(
             rgb_image, speech_bboxes, forced_image=cropped_image
         )
-    else:
+    elif len(source_texts) > 0:
         source_texts = app_container.get_source_texts_from_bboxes(
             rgb_image, speech_bboxes
         )
+    else:
+        # No texts found in frame.
+        source_texts = []
 
     if len(source_texts) == 0:
         ctx.log("No text found in frame")
@@ -242,7 +295,8 @@ def process_task5(
             prev = frame_source_texts[i - 1]
             cur = frame_source_texts[i]
 
-            is_close = a_is_close_substring_of_b(a=prev, b=cur)
+            # TODO: Second cond might be wonky on some videos...
+            is_close = a_is_close_substring_of_b(a=prev, b=cur) or a_is_close_substring_of_b(a=cur, b=prev)
             with logger.begin_event(
                 "Checking if previous frame text is similar to next frame",
                 seconds=seconds_state,
