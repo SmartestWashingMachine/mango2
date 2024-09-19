@@ -154,7 +154,7 @@ def get_source_text_from_frame(
         source_texts = app_container.get_source_texts_from_bboxes(
             rgb_image, speech_bboxes, forced_image=cropped_image
         )
-    elif len(source_texts) > 0:
+    elif len(speech_bboxes) > 0:
         source_texts = app_container.get_source_texts_from_bboxes(
             rgb_image, speech_bboxes
         )
