@@ -22,8 +22,8 @@ def burn_progress(progress: float):
 def process_task5_background_job(video_file_path: str, every_secs: float):
     out = ""
 
-    try:
-        with logger.begin_event("Task5") as ctx:
+    with logger.begin_event("Task5") as ctx:
+        try:
             ctx.log(
                 "Translating video",
                 video_file_path=video_file_path,
@@ -37,10 +37,11 @@ def process_task5_background_job(video_file_path: str, every_secs: float):
                 every_secs=every_secs,
             )
             ctx.log(f"Created new video", out=out)
-    except Exception as e:
-        logger.log(e)
+        except Exception:
+            logger.event_exception(ctx)
 
     socketio.patched_emit("done_translating_task5", out.replace("\\", "/"))
+    socketio.sleep()
 
 
 @app.route("/processtask5", methods=["POST"])
