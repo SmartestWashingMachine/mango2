@@ -174,6 +174,8 @@ class BasePipeline:
                 rgb_image,
                 speech_bboxes,
                 text_line_app=self.text_line_app.get_sel_app(),
+                # If no lines are found, fallback to scanning the entire cropped image IF that image was cropped by a text detection app.
+                text_line_app_scan_image_if_fails=not self.text_detection_app.get_sel_app_name() == "none",
                 forced_image=forced_image,
             )
 

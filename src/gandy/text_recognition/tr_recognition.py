@@ -137,7 +137,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         logger.log_message(f"Done scanning a text region!")
         return output
 
-    def process(self, image: Image.Image, bboxes, text_line_app, forced_image=None):
+    def process(self, image: Image.Image, bboxes, text_line_app, forced_image=None, text_line_app_scan_image_if_fails = True):
         source_texts = []
         if len(bboxes) > 1 and forced_image is not None:
             raise RuntimeError(
@@ -158,7 +158,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                     forced_image if forced_image is not None else image.crop(bbox)
                 )
 
-                line_bboxes = text_line_app.get_images(text_region_image)
+                line_bboxes = text_line_app.get_images(text_region_image, return_image_if_fails=text_line_app_scan_image_if_fails)
 
                 for bb in line_bboxes:
                     cropped_image = text_region_image.crop(

@@ -3,7 +3,7 @@ import numpy as np
 
 
 class LineMixin(BaseImageDetection):
-    def get_images(self, image):
+    def get_images(self, image, return_image_if_fails = True):
         """
         Returns one image object per detected text line. Can boost OCR accuracy.
 
@@ -51,7 +51,7 @@ class LineMixin(BaseImageDetection):
             bboxes = bboxes[sorted_indices, :]
 
         # Then return the new line bboxes.
-        if bboxes.shape[0] == 0:
+        if bboxes.shape[0] == 0 and return_image_if_fails:
             # No text lines detected can sometimes occur for very small single line text. In this case just scan the whole image for text recognition later on.
             im_width, im_height = image.size
             frame_bboxes = np.array([[0, 0, im_width, im_height]])
