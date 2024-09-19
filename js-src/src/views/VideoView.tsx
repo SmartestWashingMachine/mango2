@@ -89,5 +89,3 @@ const VideoView = () => {
 };
 
 export default VideoView;
-
-//^ side view perhaps ?

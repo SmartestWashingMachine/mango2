@@ -237,15 +237,13 @@ const HomeVideoPage = () => {
                 e.preventDefault();
                 selectFolder(f);
               }}
-              href={`?r=${f}&i=0`}
+              href={`?media=video&r=${f}&i=0`}
               component="a"
             >
-              <video width="90%" height="90%" preload="metadata">
-                <source
-                  src={`${API_URL}/webui/videoresources/${f}/${folderMap[f][0]}`}
-                  type="video/mp4"
-                />
-              </video>
+              <img
+                src={"data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="}
+                style={{}}
+              />
               <ImageListItemBar title={f} />
             </ImageListItem>
           ))}
