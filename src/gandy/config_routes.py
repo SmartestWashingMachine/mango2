@@ -111,6 +111,7 @@ def change_multiple_models_route():
             n_context=c_amount,
             no_repeat_ngram_size=int(data["noRepeatNgramSize"]),
             stroke_size=float(data["strokeSize"]),
+            bottom_text_only=data["bottomTextOnly"],
         )
 
         config_state.update_terms(terms=data["terms"])

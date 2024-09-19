@@ -147,7 +147,7 @@ const GlobalOptionsView = () => {
 
   if (isLoading) return <div></div>;
 
-  const { textLineModelName, textDetectionModelName, textRecognitionModelName, translationModelName, rerankingModelName, spellCorrectionModelName, enableCuda, forceTranslationCPU, forceTdCpu, contextAmount, strokeSize, autoOpenOcrWindow, decodingMode, numBeams, topK, topP, epsilonCutoff, lengthPenalty, noRepeatNgramSize, temperature, repetitionPenalty, maxLengthA } = loadedData;
+  const { textLineModelName, textDetectionModelName, textRecognitionModelName, translationModelName, rerankingModelName, spellCorrectionModelName, enableCuda, forceTranslationCPU, forceTdCpu, contextAmount, strokeSize, autoOpenOcrWindow, decodingMode, numBeams, topK, topP, epsilonCutoff, lengthPenalty, noRepeatNgramSize, temperature, repetitionPenalty, maxLengthA, bottomTextOnly, } = loadedData;
 
   const decodingParamsIgnored = decodingMode === 'beam';
 
@@ -294,8 +294,17 @@ const GlobalOptionsView = () => {
                 changeValue={setStoreValue}
                 keyName="autoOpenOcrWindow"
                 defaultValue={autoOpenOcrWindow}
-                tooltip="Automatically open the OCR window when the Text tab is selected."
+                helperText="Automatically open the OCR window when the Text tab is selected."
                 label="Auto Open OCR Window"
+              />
+            ),
+            "Bottom Text Only": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="bottomTextOnly"
+                defaultValue={bottomTextOnly}
+                helperText="Only scan the bottom region of the video or images. Can be useful for video translation tasks."
+                label="Bottom Text Only"
               />
             ),
           },

@@ -166,7 +166,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
         # Must return [n_boxes, 4] and [n_boxes]
         return bboxes_pos, bboxes_scores
 
-    def fuse_boxes(self, bboxes_data, padded_hw):
+    def fuse_boxes(self, bboxes_data, padded_hw, image_height):
         logger.log_message(
             f"Using non maximum suppression to postprocess object detections..."
         )
@@ -186,9 +186,18 @@ class YOLOImageDetectionApp(BaseImageDetection):
         processed_boxes = bboxes_pos[keep, :]
         scores = bboxes_scores[keep]
 
+        if config_state.bottom_text_only:
+            logger.log_message('Filtering for bottom text regions in image.')
+        height_thr = image_height * 0.79 # on the bottom 21% of the image.
+
         if self.confidence_threshold is not None:
             boxes = []
             for i in range(len(scores)):
+                if config_state.bottom_text_only:
+                    ymid = (processed_boxes[i][3] + processed_boxes[i][1]) / 2
+                    if ymid < height_thr:
+                        continue
+
                 if scores[i] >= self.confidence_threshold:
                     boxes.append(processed_boxes[i])
 
@@ -227,7 +236,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
         dict_output, padded_hw = self.detect_bboxes(image)
 
         logger.log_message("Fusing boxes...")
-        bboxes = self.fuse_boxes(dict_output, padded_hw)
+        bboxes = self.fuse_boxes(dict_output, padded_hw, image_height)
 
         logger.log_message("Sorting boxes...")
         if do_sort:
