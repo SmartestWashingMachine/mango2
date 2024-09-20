@@ -13,8 +13,8 @@ def burn_subs(
 ):
     video = ffmpeg.input(video_path)
     audio = video.audio
-    sub = ffmpeg.filter(video, "subtitles", srt_file_path)
 
+    sub = ffmpeg.filter(video, "subtitles", srt_file_path, force_style="BackColour=&H80000000,BorderStyle=4,Shadow=3")
     concat = ffmpeg.concat(sub, audio, v=1, a=1)
     # concat = ffmpeg.filter(concat, "fps", fps=f"1/{every_secs}") # Makes it choppy.
 
@@ -42,6 +42,3 @@ def burn_subs(
             print("STDOUT:", e.stdout.decode("utf8"))
             print("STDERR:", e.stderr.decode("utf8"))
             raise e
-
-
-# https://stackoverflow.com/questions/16523746/ffmpeg-hangs-when-run-in-background
