@@ -36,6 +36,11 @@ Observations and Quibbles
     - [2. Poor vocabulary](#2-poor-vocabulary)
   - [But ChatGPT blows a bunch of MT models out of the water!](#but-chatgpt-blows-a-bunch-of-mt-models-out-of-the-water)
 - [RoPE can't be swapped into an Absolute Positional MT model without pain.](#rope-cant-be-swapped-into-an-absolute-positional-mt-model-without-pain)
+- [Gradient Accumulation is NOT equivalent to Batch Size for datasets of varying sequence lengths.](#gradient-accumulation-is-not-equivalent-to-batch-size-for-datasets-of-varying-sequence-lengths)
+    - [In the case of batching...](#in-the-case-of-batching)
+    - [In the case of gradient accumulating...](#in-the-case-of-gradient-accumulating)
+    - [How can we fix this issue?](#how-can-we-fix-this-issue)
+- [Make sure the LM head and tokenized input samples are divisible by 8. Usually.](#make-sure-the-lm-head-and-tokenized-input-samples-are-divisible-by-8-usually)
 
 
 ## Tiny machine translation (MT) models on distant language pairs (e.g: Chinese-to-English, Japanese-to-English) fail to train without absolute positional embeddings.
@@ -365,3 +370,63 @@ But the encoder is bidirectional. So maybe it prevents or somehow harms the lear
 <sub>Unrelated note: I also remember a paper submitted to an WMT competition where the authors used relative positional embeddings for the encoder, but absolute positional embeddings for the decoder. I wonder why?</sub>
 
 All that said, if encoder-decoder MT models truly need positional information baked in, that might be an interesting insight in of itself. That would mean that we *can* inject priors, or other architectural blocks, or hacks, to strengthen our MT models. Scale might not be king.
+
+## Gradient Accumulation is NOT equivalent to Batch Size for datasets of varying sequence lengths.
+
+Put another way: **Gradient accumulation assumes each sequence is equal. Batching assumes every token is equal.**
+
+Typical gradacc implementations will cause our language models to pay more attention to (or be biased towards) shorter sequences while training.
+
+Why? Let's say we have a language model that tokenizes every word. We're training on two samples:
+
+`I like to drink mountain dew.` (sequence length == 6)
+
+and
+
+`No way!` (sequence length == 2)
+
+#### In the case of batching...
+
+If we batch these samples together *without* gradient accumulation (batch size == 2, gradient accumulation == 1), we will have a batch of (6 + 2) == 8 tokens.
+
+Since we're using a standard language model, our loss function is the cross entropy function, with parameter `reduction=mean`. This parameter will average the loss of each token (ignoring padding tokens), so we get: `(loss of 8 tokens) / (8)`.
+
+#### In the case of gradient accumulating...
+
+Now let's try (batch size == 1, gradient accumulation == 2). We first calculate the first sample loss, still using cross entropy with the mean reduction parameter, giving us: `(loss of 6 tokens) / (6)`.
+
+We then calculate the second sample loss, giving us `(loss of 2 tokens) / (2)`. Since we're using gradient accumulation, we add these two losses together and then average by the number of gradient accumulation steps, totaling: `{[(loss of 6) / (6)] + [(loss of 2) / (2)]} / (grad_acc_steps which is 2, sometimes - depends on the implementation)`. This is usually **not equal** to the batching case above.
+
+As a result, gradient accumulation tends to "upweight" the loss values for shorter sequences, and "downplay" the loss values for longer sequences: The model learns less from longer sequences than is the case for normal batching.
+
+This is only an issue if we have varying sequence lengths in training. If our sequence length stays fixed or constant during training then this issue won't pop up.
+
+#### How can we fix this issue?
+
+If we want to fix this issue... We're in for a bad time.
+
+We can't just divide the loss value each time we calculate it. Most implementations immediately do a `loss.backward()` call after every sample - and we don't know how many tokens we have before iterating through the next samples in our DataSampler / DataLoader / whatever.
+
+The best solution IMO is:
+
+1. Change the cross entropy function to use `reduction=sum`.
+2. Remove the code that divides each sample's loss value by the number of gradient accumulation steps.
+3. Keep a running count of the number of non-padding tokens while iterating over samples.
+4. Before the `optimizer.step()` call and *before gradient clipping* we have to iterate over the model's parameters, and divide any non-None grads by the running count of non-padding tokens.
+5. Reset the running count whenever we do the `optimizer.step()` call - obviously after step 4.
+
+Regrettably, this solution will cause any logged loss values to show as being exceedingly high (it won't affect the model though: We're chopping down the gradients directly at step 4). 
+
+Make sure to use some sort of validation metric to keep proper track of the model if using this method. And maybe log the gradient norms too (for sanity checking).
+
+## Make sure the LM head and tokenized input samples are divisible by 8. Usually.
+
+According to the ancient Codex, more formally known as the NVIDIA developer docs, having tensor shapes divisible by 8 or other factors can lead to higher tensor core activation, leading to faster training times. This improvement is more noticeable in the final LM head output, as our model likely has a massive vocabulary.
+
+So if our model has an output vocabulary (and consequently, output embedding size) of `52001`, maybe extend the output vocabulary to `52008`.
+
+Likewise, if we are inputting a sequence of total length `14`, maybe pad it so that it becomes a sequence of length `16`.
+
+It's a bit flaky when and when not a speedup actually occurs, but in my runs I've usually seen slightly faster training times when doing this.
+
+(Also: Do not try to profile the tensor core activation rate manually unless you enjoy pulling your hair out. Just profile or track the general training time instead)
