@@ -24,6 +24,7 @@ class Seq2SeqTranslationApp(BaseTranslation):
         extra_postprocess=None,
         on_source_encode=None,
         target_decode_lang=None,
+        max_length=476,
     ):
         super().__init__()
 
@@ -38,6 +39,8 @@ class Seq2SeqTranslationApp(BaseTranslation):
 
         # '/' = j. '/zh/' = c. '/ko/' = k.
         self.model_sub_path = model_sub_path
+
+        self.max_length = max_length
 
     def can_load(self):
         s = "titanmt" + self.model_sub_path
@@ -117,7 +120,7 @@ class Seq2SeqTranslationApp(BaseTranslation):
         if self.on_source_encode is not None:
             self.on_source_encode(self.source_tokenizer)
 
-        return self.source_tokenizer(text, max_length=476, truncation=True, padding=False, return_tensors="pt")
+        return self.source_tokenizer(text, max_length=self.max_length, truncation=True, padding=False, return_tensors="pt")
 
     def target_decode(self, output):
         if config_state.decoding_mode == "beam":
@@ -158,7 +161,7 @@ class Seq2SeqTranslationApp(BaseTranslation):
             ],
 
         gen_kwargs = {
-            "max_length": 476
+            "max_length": self.max_length
             if config_state.max_length_a == 0
             else (x_dict["input_ids"].shape[1] * config_state.max_length_a),
             # Helps with computation time with beam search.

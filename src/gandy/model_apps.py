@@ -212,6 +212,15 @@ TRANSLATION_APP = SwitchApp(
             target_decode_lang=None,
         ),
         Seq2SeqTranslationApp(
+            model_sub_path="_jq300/",
+            encoder_tokenizer_cls=NllbTokenizer,
+            extra_preprocess=prepend_qual,
+            extra_postprocess=remove_unnecessary_eng_tokens,
+            on_source_encode=set_lang_as_j,
+            target_decode_lang="eng_Latn",
+            max_length=300,
+        ),
+        Seq2SeqTranslationApp(
             model_sub_path="_komad/",
             encoder_tokenizer_cls=T5Tokenizer,
             extra_preprocess=prepend_mad_qual,
@@ -231,6 +240,7 @@ TRANSLATION_APP = SwitchApp(
         "nllb_ko",
         "nllb_zh",
         "nllb_jmad",
+        "nllb_jq300",
         "nllb_komad",
         "nllb_zhmad",
     ],

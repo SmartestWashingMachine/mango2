@@ -6,6 +6,13 @@ export const TRANSLATION_OPTIONS = [
     Finetuned for Japanese to English with quality-aware decoding.
     `,
   },
+  {
+    name: "Japanese-2-English Qualia 300",
+    value: "nllb_jq300",
+    desc: `
+    A better variant of Japanese-2-English Qualia.
+    `,
+  },
   /* A mistake! Rotary positional embeddings seem to be a poor fit for "medium"-sized translation models. Why do T5 positional embeddings work so well?? {
     name: "Japanese-2-English Radical",
     value: "nllb_jqrot",
