@@ -1,4 +1,4 @@
-import { Button, MenuItem, Stack, Typography } from "@mui/material";
+import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import ReplaceTermsList from "./components/ReplaceTermsList";
 import { setSeed, triggerCircuitBreak } from "../../flaskcomms/optionsViewComms";
@@ -19,6 +19,7 @@ import { OCR_OPTIONS } from "../../utils/appOptions/ocrOptions";
 import { getInstalledModels } from "../../flaskcomms/getInstalledModels";
 import { useAlerts } from "../../components/AlertProvider";
 import { useInstalledModelsRetriever } from "../../utils/useInstalledModelsRetriever";
+import GLOBAL_OPTIONS_PARTIAL_PRESETS, { PresetItem } from "./globalOptionsPartialPresets";
 
 const GlobalOptionsView = () => {
   const pushAlert = useAlerts();
@@ -132,6 +133,23 @@ const GlobalOptionsView = () => {
     return installedModels.indexOf(x.value) !== -1;
   };
 
+  const selectQuickPreset = (e: any) => {
+    const presetName = e.target.value;
+    const preset = GLOBAL_OPTIONS_PARTIAL_PRESETS.find((x) => x.name === presetName);
+    if (!preset) return;
+
+    for (const [key, value] of Object.entries(preset.opts)) {
+      setStoreValue(key, value);
+    }
+  };
+
+  const presetEnabled = (x: any) => {
+    const { opts } = x;
+
+    // Look in all the models used by the preset; if the model is not installed it's a no-go.
+    return Object.keys(opts).every((k: any) => k.includes('ModelName') ? (installedModels.indexOf(opts[k]) > -1) : true);
+  };
+
   const renderItem = (x: { name: string; value: string; desc: string }) => [
     <MenuItem
       value={x.value}
@@ -155,6 +173,32 @@ const GlobalOptionsView = () => {
     <BaseView>
       <PaginatedTabs
         items={{
+          "Quick Presets": {
+            "Quick Presets": (
+              <TextField
+                onChange={selectQuickPreset}
+                defaultValue=""
+                helperText="You can select a preset here for a quick configuration. Advanced presets will require additional model packs to be installed."
+                variant="standard"
+                select
+              >
+                {GLOBAL_OPTIONS_PARTIAL_PRESETS.map((b) => [
+                  <MenuItem value={b.name} key={b.name} disabled={!presetEnabled(b)}>
+                    {b.name}
+                  </MenuItem>,
+                  <MenuItem
+                    disabled
+                    value="disabledvalue"
+                    divider
+                    dense
+                    key={b.description}
+                  >
+                    <em style={{ fontSize: "small" }}>{b.description}</em>
+                  </MenuItem>,
+                ])}
+              </TextField>
+            ),
+          },
           Models: {
             "Text Line Model": (
               <UpdateListField
@@ -283,7 +327,7 @@ const GlobalOptionsView = () => {
               changeValue={setStoreValue}
               keyName="strokeSize"
               defaultValue={strokeSize}
-              helperText="The size of the edge of the text when automatically redrawing translated images."
+              helperText="The size of the text edge when automatically redrawing translated images."
               valueType="float"
               safeValue={0.5}
               minValue={0.1}
@@ -480,7 +524,7 @@ const GlobalOptionsView = () => {
                   Open Fonts Folder
                 </Button>
                 <Typography variant="caption" color="info">
-                  Font files can be placed in the folder for image editing purposes, or to change the font used by the OCR box.
+                  Font files can be placed in the folder for image editing purposes, or to change the font used by the OCR / text box.
                 </Typography>
               </>
             ),
