@@ -36,6 +36,20 @@ def change_redrawing_route():
 
     return {}, 200
 
+@app.route("/changetilesize", methods=["POST"])
+def change_tile_size_route():
+    with logger.begin_event('Change tile size') as ctx:
+        data = request.json
+        tile_width = data["tileWidth"]
+        tile_height = data["tileHeight"]
+
+        ctx.log('New requested tile size - changing config', tile_width=tile_width, tile_height=tile_height)
+
+        # This should be the only route outside of /switchmodels that can affect the config state from the user side.
+        # Used since /switchmodels is in the settings page: This is called from the image page.
+        config_state.set_decoding_params(tile_width=tile_width, tile_height=tile_height)
+
+    return {}, 200
 
 @app.route("/switchmodels", methods=["POST"])
 def change_multiple_models_route():

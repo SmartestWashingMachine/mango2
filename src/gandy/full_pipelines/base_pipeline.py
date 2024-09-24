@@ -17,6 +17,7 @@ from gandy.state.config_state import config_state
 from gandy.utils.join_nearby_speech_bubbles import (
     join_nearby_speech_bubbles_for_source_texts,
 )
+from gandy.utils.image_chunking import detect_image_chunks
 
 
 def create_entire_bbox(image: Image):
@@ -183,9 +184,17 @@ class BasePipeline:
             return source_texts, line_bboxes, line_texts
         return source_texts
 
+    def _detect_in_chunk(self, im_chunk):
+        return self.text_detection_app.begin_process(im_chunk)
+
     def get_bboxes_from_image(self, rgb_image: Image):
-        with logger.begin_event("Text detection"):
-            speech_bboxes = self.text_detection_app.begin_process(rgb_image)
+        with logger.begin_event("Text detection") as ctx:
+            if config_state.tile_width != 100 or config_state.tile_height != 100:
+                ctx.log('Splitting image into tiles', tile_width=config_state.tile_width, tile_height=config_state.tile_height)
+
+                speech_bboxes = detect_image_chunks(rgb_image, config_state.tile_width, config_state.tile_height, detect_in_chunk=self._detect_in_chunk)
+            else:
+                speech_bboxes = self.text_detection_app.begin_process(rgb_image)
 
         return speech_bboxes
 
