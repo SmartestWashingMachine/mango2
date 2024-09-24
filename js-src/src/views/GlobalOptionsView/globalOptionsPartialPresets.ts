@@ -47,6 +47,19 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     },
   },
   {
+    name: 'General Japanese Images Alternative',
+    description: 'This is an advanced set of options for translating general Japanese images.',
+    opts: {
+      textDetectionModelName: 'union_massive',
+      textRecognitionModelName: 'trocr_jmassive',
+      translationModelName: 'nllb_jq',
+      textLineModelName: 'none',
+      numBeams: 3,
+      bottomTextOnly: false,
+      contextAmount: "zero",
+    },
+  },
+  {
     name: 'Game Videos / Motion Videos',
     description: 'This is an advanced set of options for translating videos with Japanese texts found near the bottom of the video only.',
     opts: {
