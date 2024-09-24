@@ -118,6 +118,8 @@ const retrieveImageModeOptions: GatewayAction = {
     return {
       cleaningMode: store.get("cleaningMode"),
       redrawingMode: store.get("redrawingMode"),
+      tileWidth: store.get("tileWidth"),
+      tileHeight: store.get("tileHeight"),
     };
   },
 };

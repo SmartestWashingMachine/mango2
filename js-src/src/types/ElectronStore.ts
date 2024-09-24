@@ -37,6 +37,8 @@ export type IStoreClientToServer = {
   spellCorrectionSeparate: boolean;
   strokeSize: number;
   bottomTextOnly: boolean;
+  tileWidth: number;
+  tileHeight: number;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;

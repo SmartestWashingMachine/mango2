@@ -8,6 +8,7 @@ import {
   pollTranslateImagesStatus,
   switchCleaningApp,
   switchRedrawingApp,
+  switchTileSize,
   translateImages,
 } from "../../flaskcomms/imageViewComms";
 import { Stack } from "@mui/material";
@@ -26,9 +27,13 @@ const RightPane = memo(
     selectedPath,
     handleChangeCleaningMode,
     handleChangeRedrawingMode,
+    handleChangeTileWidth,
+    handleChangeTileHeight,
     cleaningMode,
     redrawingMode,
     installedModels,
+    tileWidth,
+    tileHeight,
   }: any) => (
     <Stack spacing={2} sx={{ height: "100%" }} key="library-stack">
       <FileListPane
@@ -43,6 +48,10 @@ const RightPane = memo(
         cleaningMode={cleaningMode}
         onChangeCleaningMode={handleChangeCleaningMode}
         onChangeRedrawingMode={handleChangeRedrawingMode}
+        tileWidth={tileWidth}
+        tileHeight={tileHeight}
+        onChangeTileWidth={handleChangeTileWidth}
+        onChangeTileHeight={handleChangeTileHeight}
         installedModels={installedModels}
       />
     </Stack>
@@ -137,6 +146,9 @@ const ImageView = () => {
   const [cleaningMode, setCleaningMode] = useState("simple");
   const [redrawingMode, setRedrawingMode] = useState("amg_convert");
 
+  const [tileWidth, setTileWidth] = useState(-1);
+  const [tileHeight, setTileHeight] = useState(-1);
+
   const handleCeateFolderNameClose = () => {
     setCreateFolderOpen(false);
   };
@@ -198,9 +210,12 @@ const ImageView = () => {
       const imageAddData = await w.electronAPI.retrieveImageAddData();
       switchCleaningApp(imageAddData.cleaningMode);
       switchRedrawingApp(imageAddData.redrawingMode);
+      switchTileSize(imageAddData.tileWidth, imageAddData.tileHeight);
 
       setCleaningMode(imageAddData.cleaningMode);
       setRedrawingMode(imageAddData.redrawingMode);
+      setTileWidth(imageAddData.tileWidth);
+      setTileHeight(imageAddData.tileHeight);
     };
 
     asyncCb();
@@ -242,6 +257,22 @@ const ImageView = () => {
     switchRedrawingApp(m);
   };
 
+  const handleChangeTileWidth = (val: number) => {
+    const w = window as any;
+    w.electronAPI.setStoreValue("tileWidth", val);
+
+    setTileWidth(val);
+    switchTileSize(val, tileHeight);
+  };
+
+  const handleChangeTileHeight = (val: number) => {
+    const w = window as any;
+    w.electronAPI.setStoreValue("tileHeight", val);
+
+    setTileHeight(val);
+    switchTileSize(tileWidth, val);
+  };
+
   const getFolderFromImage = useCallback((imagePath: string) => {
     // Try and get the folder that the image is in. Not as clean as I'd like it to be. TODO.
     const regex = /(?:\/|\\).+(?:\/|\\)(.+)(?:\/|\\).+\.amg/;
@@ -277,6 +308,10 @@ const ImageView = () => {
       cleaningMode={cleaningMode}
       redrawingMode={redrawingMode}
       installedModels={installedModels}
+      tileWidth={tileWidth}
+      tileHeight={tileHeight}
+      handleChangeTileWidth={handleChangeTileWidth}
+      handleChangeTileHeight={handleChangeTileHeight}
     />
   );
 

@@ -34,6 +34,8 @@ const storeDefaults: IStore = {
   spellCorrectionSeparate: false, // TODO: Unused. Probably don't need it either.
   strokeSize: 1.0,
   bottomTextOnly: false,
+  tileWidth: 100,
+  tileHeight: 100,
 };
 
 export const initializeStore = () => {
