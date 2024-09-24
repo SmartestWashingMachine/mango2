@@ -65,7 +65,7 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
         helperText={folderExists ? "This folder already exists." : undefined}
       />
       <DialogActions>
-        <Button onClick={handleDone} fullWidth>
+        <Button onClick={handleDone} fullWidth disabled={folderName.length === 0}>
           Done
         </Button>
       </DialogActions>
