@@ -243,7 +243,7 @@ class Seq2SeqTranslationApp(BaseTranslation):
                     f"Translated",
                     input_text=text,
                     normalized=output[1],
-                    output_text=output[0],
+                    output_text=output[0][0] if isinstance(output[0], list) else output[0],
                 )
             else:
                 output = [[""], [""]]  # [target strings], [source strings]
