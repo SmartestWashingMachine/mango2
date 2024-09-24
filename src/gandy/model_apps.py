@@ -156,7 +156,7 @@ TEXT_RECOGNITION_APP = SwitchApp(
                 "no_repeat_ngram_size": 7,
             },
         ),
-        TrOCRTextRecognitionApp(
+        MagnusTextRecognitionApp(
             model_sub_path="_jmassive/",
             do_resize=False,
             gen_kwargs={
