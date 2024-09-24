@@ -1,4 +1,4 @@
-import { TextField } from "@mui/material";
+import { TextField, Tooltip } from "@mui/material";
 import React from "react";
 
 const tryParseFloat = (
@@ -52,6 +52,7 @@ export type UpdateNumberFieldProps = {
   safeValue?: number;
   valueType: "float" | "int";
   disabled?: boolean;
+  tooltip?: string;
 };
 
 const UpdateNumberField = (props: UpdateNumberFieldProps) => {
@@ -79,7 +80,7 @@ const UpdateNumberField = (props: UpdateNumberFieldProps) => {
     }
   };
 
-  return (
+  const comp = (
     <TextField
       label={props.label}
       variant="standard"
@@ -91,6 +92,16 @@ const UpdateNumberField = (props: UpdateNumberFieldProps) => {
       disabled={props.disabled}
     />
   );
+
+  if (props.tooltip) {
+    return (
+      <Tooltip title={props.tooltip}>
+        {comp}
+      </Tooltip>
+    )
+  }
+
+  return comp;
 };
 
 export default UpdateNumberField;
