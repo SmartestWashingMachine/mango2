@@ -63,13 +63,19 @@ def chars_in_b(a: str, b: str):
 
     return matching_count
 
+def a_is_close_in_len_to_b(a: str, b: str, tol = 1.3):
+    return int(len(a) * tol) >= len(b)
 
-def a_is_close_substring_of_b(a: str, b: str, matching_threshold=0.7):
+def a_is_close_substring_of_b(a: str, b: str, matching_threshold=0.7, a_after_b = False):
     """
     Returns True if A is a substring or relatively close to being a substring of the beginning of B.
     """
     a_norm = re.sub(norm_regex, "", a)
     b_norm = re.sub(norm_regex, "", b)
+
+    if a_after_b:
+        if not a_is_close_in_len_to_b(a_norm, b_norm):
+            return False
 
     if len(a_norm) > len(b_norm) or len(a) == 0:
         # A cannot be a substring of B if A is longer than B or A is empty!

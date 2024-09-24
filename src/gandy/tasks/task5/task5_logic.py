@@ -296,7 +296,7 @@ def process_task5(
             cur = frame_source_texts[i]
 
             # TODO: Second cond might be wonky on some videos...
-            is_close = a_is_close_substring_of_b(a=prev, b=cur) or a_is_close_substring_of_b(a=cur, b=prev)
+            is_close = a_is_close_substring_of_b(a=prev, b=cur) or a_is_close_substring_of_b(a=cur, b=prev, a_after_b=True)
             with logger.begin_event(
                 "Checking if previous frame text is similar to next frame",
                 seconds=seconds_state,
