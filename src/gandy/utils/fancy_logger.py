@@ -68,6 +68,9 @@ class FancyLogger:
     
     def log_message(self, msg: str, **fields):
         return log_message(msg, **fields)
+    
+    def debug_message(self, msg: str, **fields):
+        return log_message(f'DEBUG: {msg}', debug=True, **fields)
 
     def event_exception(self, ctx):
         return ctx.log(traceback.format_exc())

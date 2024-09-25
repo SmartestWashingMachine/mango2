@@ -1,8 +1,12 @@
 from PIL import Image
 from gandy.utils.filter_out_overlapping_bboxes import box_b_in_box_a_thr
 from gandy.utils.speech_bubble import SpeechBubble
+from gandy.state.debug_state import debug_state
 from typing import List
 from math import ceil
+import os
+from uuid import uuid4
+from gandy.utils.fancy_logger import logger
 
 def box_area(b: SpeechBubble):
   return (b[3] - b[1]) * (b[2] - b[0])
@@ -20,6 +24,11 @@ def detect_image_chunks(img: Image.Image, tile_width: int, tile_height: int, det
   overlap_y = ceil(tile_height * overlap_frac)
 
   speech_bboxes: List[SpeechBubble] = []
+
+  if debug_state.debug:
+    os.makedirs('./debugdumps/tiles', exist_ok=True)
+    debug_id = uuid4().hex
+    logger.debug_message('Dumping tiles', tiles_parent_id=debug_id, category='tiles_dump')
 
   # How do we overlap?
   for y in range(0, img.height, chunk_y):
@@ -42,7 +51,8 @@ def detect_image_chunks(img: Image.Image, tile_width: int, tile_height: int, det
       crop_y2 = min(end_y, img.height)
       img_tile = img.crop((crop_x1, crop_y1, crop_x2, crop_y2))
 
-      # For debugging: img_tile.save(f'./img_{x}_{y}.png')
+      if debug_state.debug:
+        img_tile.save(f'./debugdumps/tiles/{debug_id}__{x}_{y}.png')
 
       chunked_speech_bboxes: List[SpeechBubble] = detect_in_chunk(img_tile)
 

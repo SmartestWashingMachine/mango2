@@ -7,7 +7,10 @@ import numpy as np
 from transformers import ViTFeatureExtractor, AutoTokenizer
 from optimum.onnxruntime import ORTModelForVision2Seq
 from gandy.state.config_state import config_state
+from gandy.state.debug_state import debug_state
 from gandy.utils.fancy_logger import logger
+from uuid import uuid4
+import os
 import cv2
 
 
@@ -136,6 +139,18 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
 
         logger.log_message(f"Done scanning a text region!")
         return output
+    
+    def log_text(self, cropped: np.ndarray, msg: str, text: str):
+        if debug_state.debug:
+            debug_id = uuid4().hex
+
+            if cropped is not None:
+                os.makedirs('./debugdumps/textregions', exist_ok=True)
+                Image.fromarray(cropped).save(f'./debugdumps/textregions/{debug_id}.png')
+
+            logger.debug_message(msg, text=text, img_id=debug_id, category='text_region_dump')
+        else:
+            logger.log_message(msg, text=text)
 
     def process(self, image: Image.Image, bboxes, text_line_app, forced_image=None, text_line_app_scan_image_if_fails = True):
         source_texts = []
@@ -148,6 +163,8 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
 
         line_bboxes = None
         line_texts = None
+
+        cropped_image = None
 
         for bbox in bboxes:
             if text_line_app is not None:
@@ -167,7 +184,8 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                     cropped_image = np.array(cropped_image)
 
                     outp = self.process_one_image(cropped_image)
-                    logger.log_message(f"Found partial text.", text=outp)
+                    self.log_text(cropped_image, f"Found partial text.", text=outp)
+
                     line_texts.append(outp)
 
                 text = "".join(line_texts)
@@ -182,7 +200,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                 line_bboxes = None
                 line_texts = None
 
-            logger.log_message(f"Found complete text", text=text)
+            self.log_text(cropped_image, f"Found complete text", text=text)
             source_texts.append(text)
 
         return source_texts, line_bboxes, line_texts
