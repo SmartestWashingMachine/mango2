@@ -86,6 +86,8 @@ def clean_text_v2(s: str, with_normalize=True):
 
     # This section handles errors possibly generated during the OCR process.
     new_sentence = dedupe_punct(new_sentence)
+    # Rare but possible with the Magnus OCR variants:
+    new_sentence = new_sentence.replace("◎", "◯")
 
     return new_sentence
 
