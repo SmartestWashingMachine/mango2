@@ -36,40 +36,6 @@ def clip_boxes(boxes: np.ndarray, shape):
     return boxes
 
 
-def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
-    """
-    Rescales bounding boxes (in the format of xyxy) from the shape of the image they were originally specified in
-    (img1_shape) to the shape of a different image (img0_shape).
-
-    Args:
-      img1_shape (tuple): The shape of the image that the bounding boxes are for, in the format of (height, width).
-      boxes (torch.Tensor): the bounding boxes of the objects in the image, in the format of (x1, y1, x2, y2)
-      img0_shape (tuple): the shape of the target image, in the format of (height, width).
-      ratio_pad (tuple): a tuple of (ratio, pad) for scaling the boxes. If not provided, the ratio and pad will be
-                         calculated based on the size difference between the two images.
-
-    Returns:
-      boxes (torch.Tensor): The scaled bounding boxes, in the format of (x1, y1, x2, y2)
-    """
-    if ratio_pad is None:  # calculate from img0_shape
-        gain = min(
-            img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1]
-        )  # gain  = old / new
-        pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (
-            img1_shape[0] - img0_shape[0] * gain
-        ) / 2  # wh padding
-    else:
-        gain = ratio_pad[0][0]
-        pad = ratio_pad[1]
-
-    boxes[..., [0, 2]] -= pad[0]  # x padding
-    boxes[..., [1, 3]] -= pad[1]  # y padding
-    boxes[..., :4] /= gain
-
-    boxes = clip_boxes(boxes, img0_shape)
-    return boxes
-
-
 def cxcy_to_corners(dets):
     cx = dets[:, 0]
     cy = dets[:, 1]
@@ -166,6 +132,40 @@ class YOLOImageDetectionApp(BaseImageDetection):
         # Must return [n_boxes, 4] and [n_boxes]
         return bboxes_pos, bboxes_scores
 
+    # From UL
+    def scale_boxes(self, img1_shape, boxes, img0_shape, ratio_pad=None):
+        """
+        Rescales bounding boxes (in the format of xyxy) from the shape of the image they were originally specified in
+        (img1_shape) to the shape of a different image (img0_shape).
+
+        Args:
+        img1_shape (tuple): The shape of the image that the bounding boxes are for, in the format of (height, width).
+        boxes (torch.Tensor): the bounding boxes of the objects in the image, in the format of (x1, y1, x2, y2)
+        img0_shape (tuple): the shape of the target image, in the format of (height, width).
+        ratio_pad (tuple): a tuple of (ratio, pad) for scaling the boxes. If not provided, the ratio and pad will be
+                            calculated based on the size difference between the two images.
+
+        Returns:
+        boxes (torch.Tensor): The scaled bounding boxes, in the format of (x1, y1, x2, y2)
+        """
+        if ratio_pad is None:  # calculate from img0_shape
+            gain = min(
+                img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1]
+            )  # gain  = old / new
+            pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (
+                img1_shape[0] - img0_shape[0] * gain
+            ) / 2  # wh padding
+        else:
+            gain = ratio_pad[0][0]
+            pad = ratio_pad[1]
+
+        boxes[..., [0, 2]] -= pad[0]  # x padding
+        boxes[..., [1, 3]] -= pad[1]  # y padding
+        boxes[..., :4] /= gain
+
+        boxes = clip_boxes(boxes, img0_shape)
+        return boxes
+
     def fuse_boxes(self, bboxes_data, padded_hw, image_height):
         logger.log_message(
             f"Using non maximum suppression to postprocess object detections..."
@@ -243,7 +243,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
             bboxes = self.sort_bboxes(bboxes, image_width, image_height)
 
         # bboxes = self.rescale_bboxes(bboxes, image_width, image_height)
-        bboxes = scale_boxes(padded_hw, bboxes, (image_height, image_width))
+        bboxes = self.scale_boxes(padded_hw, bboxes, (image_height, image_width))
 
         # EDIT: No longer needed I think. Don't let me down YOLO! bboxes = gt_min_size(bboxes)
 
