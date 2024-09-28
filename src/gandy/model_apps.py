@@ -69,6 +69,11 @@ detr_xl = RTDetrImageDetectionApp(
     model_name="detr_xl", confidence_threshold=0.25, iou_thr=0.5, image_size=1024, filter_out_overlapping_bboxes=True,
 )
 
+detr_xl_xxx = RTDetrImageDetectionApp(
+    # NOTE: Maybe conf=0.35 is better?
+    model_name="detr_xl_xxx", confidence_threshold=0.35, iou_thr=0.5, image_size=1024, filter_out_overlapping_bboxes=False,
+)
+
 yolo_line_e = RTDetrLineImageDetectionApp(
     model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15,
 )
@@ -77,12 +82,17 @@ yolo_line_emassive = RTDetrLineImageDetectionApp(
     model_name="yolo_line_emassive", confidence_threshold=0.4, iou_thr=0.15, image_size=1024,
 )
 
+yolo_line_emassive_calibrated = RTDetrLineImageDetectionApp(
+    model_name="yolo_line_emassive", confidence_threshold=0.6, iou_thr=0.15, image_size=1024,
+)
+
 
 TEXT_DETECTION_APP = SwitchApp(
     apps=[
         YOLOTDImageDetectionApp(),
         yolo_xl,
         detr_xl,
+        detr_xl_xxx,
         UnionImageDetectionApp(
             td_model_app=yolo_xl,
             line_model_app=yolo_line_e,
@@ -98,6 +108,10 @@ TEXT_DETECTION_APP = SwitchApp(
         UnionImageDetectionApp(
             td_model_app=detr_xl,
             line_model_app=yolo_line_emassive,
+        ),
+        UnionImageDetectionApp(
+            td_model_app=detr_xl_xxx,
+            line_model_app=yolo_line_emassive_calibrated,
         ),
         NoneImageDetectionApp(),
         yolo_line_emassive,
@@ -106,10 +120,12 @@ TEXT_DETECTION_APP = SwitchApp(
         "yolo_td",
         "yolo_xl",
         "detr_xl",
+        "detr_xl_xxx",
         "union",
         "union_detr",
         "union_massive",
         "union_massive_detr",
+        "union_massive_detr_xxx",
         "none",
         "debug_yolo_line_emassive",
     ],

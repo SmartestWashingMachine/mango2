@@ -21,6 +21,13 @@ export const TEXT_DETECTION_OPTIONS = [
     `,
   },
   {
+    name: "DETR-XL-XXX",
+    value: "detr_xl_xxx",
+    desc: `
+    Sometimes better than DETR-XL.
+    `,
+  },
+  {
     name: "Union YOLO",
     value: "union",
     desc: `
@@ -46,6 +53,13 @@ export const TEXT_DETECTION_OPTIONS = [
     value: "union_massive_detr",
     desc: `
     Merges results from YOLO-XL and DETR Line EX-Massive to give even better results. Very slow.
+    `,
+  },
+  {
+    name: "Union DETR-XXX Massive",
+    value: "union_massive_detr_xxx",
+    desc: `
+    Merges results from DETR-XL-XXX and DETR Line EX-Massive to give even better results. Very slow.
     `,
   },
   {
