@@ -10,6 +10,11 @@ export const OCR_OPTIONS = [
     desc: "Moderately fast and more accurate.",
   },
   {
+    name: "Japanese Comics",
+    value: "trocr_jcomics",
+    desc: "Slow but mainly tuned for comic panels.",
+  },
+  {
     name: "Japanese Massive",
     value: "trocr_jmassive",
     desc: "Incredibly slow but slightly more accurate.",

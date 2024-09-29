@@ -21,6 +21,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         gen_kwargs={},
         feature_extractor_cls=ViTFeatureExtractor,
         do_resize=True,
+        do_stretch=False,
         extra_postprocess=None,
     ):
         super().__init__()
@@ -33,22 +34,32 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                     A.ToGray(always_apply=True),
                 ]
             )
+
+            assert not do_stretch, 'Stretch is only for non resizing non-Magnus models.'
         else:
-            self.transform = A.Compose(
-                [
-                    # In theory Massive OCR should be able to extrapolate rather well. Perhaps LongestMaxSize is unnecessary?
-                    A.LongestMaxSize(512, always_apply=True),
-                    A.PadIfNeeded(
-                        None,
-                        None,
-                        pad_width_divisor=16,
-                        pad_height_divisor=16,
-                        border_mode=cv2.BORDER_CONSTANT,
-                        value=0,
-                    ),
-                    A.ToGray(always_apply=True),
-                ]
-            )
+            if do_stretch:
+                self.transform = A.Compose(
+                    [
+                        A.Resize(448, 448, interpolation=cv2.INTER_CUBIC),
+                        A.ToGray(always_apply=True),
+                    ]
+                )
+            else:
+                self.transform = A.Compose(
+                    [
+                        # In theory Massive OCR should be able to extrapolate rather well. Perhaps LongestMaxSize is unnecessary?
+                        A.LongestMaxSize(512, always_apply=True),
+                        A.PadIfNeeded(
+                            None,
+                            None,
+                            pad_width_divisor=16,
+                            pad_height_divisor=16,
+                            border_mode=cv2.BORDER_CONSTANT,
+                            value=0,
+                        ),
+                        A.ToGray(always_apply=True),
+                    ]
+                )
 
         self.model_sub_path = model_sub_path
 

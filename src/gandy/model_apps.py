@@ -164,7 +164,7 @@ TEXT_RECOGNITION_APP = SwitchApp(
                 "num_beams": 5,
             },
         ),
-        TrOCRTextRecognitionApp(
+        MagnusTextRecognitionApp(
             model_sub_path="_zhmassive/",
             do_resize=False,
             gen_kwargs={
@@ -190,8 +190,18 @@ TEXT_RECOGNITION_APP = SwitchApp(
             },
             extra_postprocess=j_ocr_postprocess,
         ),
+        TrOCRTextRecognitionApp(
+            model_sub_path="_jcomics/",
+            do_resize=False,
+            do_stretch=True,
+            gen_kwargs={
+                "num_beams": 5,
+                "no_repeat_ngram_size": 7,
+            }, 
+            extra_postprocess=j_ocr_postprocess
+        ),
     ],
-    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr", "zh_trocr_massive", "trocr_jmassive", "trocr_jmagnus"],
+    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr", "zh_trocr_massive", "trocr_jmassive", "trocr_jmagnus", "trocr_jcomics",],
 )
 
 TRANSLATION_APP = SwitchApp(
