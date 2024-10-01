@@ -1,7 +1,4 @@
-from gandy.image_redrawing.image_redraw_global_smart import (
-    ImageRedrawGlobalSmartApp,
-    load_font,
-)
+from gandy.image_redrawing.image_redraw_global_smarter import ImageRedrawGlobalSmarter, load_font
 from random import choices
 from gandy.utils.compute_stroke_size import compute_stroke_size
 
@@ -29,7 +26,7 @@ def get_center_of_box(box):
     )
 
 
-class ImageRedrawGlobalSmartBackgroundApp(ImageRedrawGlobalSmartApp):
+class ImageRedrawGlobalSmartBackgroundApp(ImageRedrawGlobalSmarter):
     def __init__(self):
         super().__init__()
 

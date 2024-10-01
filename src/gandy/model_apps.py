@@ -16,7 +16,8 @@ from gandy.image_redrawing.amg_convert import AMGConvertApp
 from gandy.image_redrawing.image_redraw_v2 import ImageRedrawV2App
 from gandy.image_redrawing.neighbor_redraw import NeighborRedrawApp
 from gandy.image_redrawing.image_redraw_global import ImageRedrawGlobalApp
-from gandy.image_redrawing.image_redraw_global_smart import ImageRedrawGlobalSmartApp
+# from gandy.image_redrawing.image_redraw_global_smart import ImageRedrawGlobalSmartApp
+from gandy.image_redrawing.image_redraw_global_smarter import ImageRedrawGlobalSmarter
 from gandy.image_redrawing.image_redraw_global_smart_bg import (
     ImageRedrawGlobalSmartBackgroundApp,
 )
@@ -323,7 +324,7 @@ IMAGE_REDRAWING_APP = SwitchApp(
         ImageRedrawGlobalApp(),
         ImageRedrawBigGlobalApp(),
         ImageRedrawBigGlobalAMGApp(),
-        ImageRedrawGlobalSmartApp(),
+        ImageRedrawGlobalSmarter(),
         ImageRedrawGlobalSmartBackgroundApp(),
     ],
     app_names=[
