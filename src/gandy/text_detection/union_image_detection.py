@@ -1,7 +1,7 @@
 from gandy.text_detection.base_image_detection import BaseImageDetection
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
-from gandy.utils.filter_out_overlapping_bboxes import filter_out_overlapping_bboxes
+from gandy.utils.filter_out_overlapping_bboxes import filter_out_overlapping_bboxes, box_b_in_box_a_thr
 import numpy as np
 
 # Code reused from image_redraw_big_global.py
@@ -66,7 +66,7 @@ class UnionImageDetectionApp(BaseImageDetection):
         for box_b in line_bboxes:
             # If the line box is not making contact with any text box, add that line box.
             overlapping_box = box_overlaps(box_b, td_bboxes)
-            if overlapping_box:
+            if overlapping_box and (box_b_in_box_a_thr(box_a=overlapping_box, box_b=box_b) >= 0.3):
                 # If the line box DOES make contact with a text box, expand that text box in terms of width/height.
                 overlapping_box[0] = min(box_b[0], overlapping_box[0])
                 overlapping_box[1] = min(box_b[1], overlapping_box[1])
