@@ -1,7 +1,7 @@
 export const CLEANING_OPTIONS = [
   {
     name: "None",
-    value: "",
+    value: "none",
     desc: `
     Does not attempt to erase the text at all. Probably only
     desirable if redrawing with the "Neighbor" mode.
