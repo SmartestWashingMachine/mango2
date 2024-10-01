@@ -1,9 +1,12 @@
-from gandy.image_redrawing.image_redraw_global_smarter import ImageRedrawGlobalSmarter, load_font
+from gandy.image_redrawing.image_redraw_global_smarter import ImageRedrawGlobalSmarter, load_font, get_vertical_spacing
 from random import choices
 from gandy.utils.compute_stroke_size import compute_stroke_size
+from gandy.image_redrawing.smarter.text_box import TextBox
+from typing import List
+from PIL import Image, ImageDraw
 
 def add_padding(box, img):
-    padding_pct = 0.15
+    padding_pct = 0.05
 
     width = box[2] - box[0]
     height = box[3] - box[1]
@@ -30,41 +33,23 @@ class ImageRedrawGlobalSmartBackgroundApp(ImageRedrawGlobalSmarter):
     def __init__(self):
         super().__init__()
 
-    def draw_details(self, text_details, best_font_size, draw, image, text_colors):
-        for td in text_details:
-            chosen_color = tuple(choices(range(256), k=3))
+    def redraw_from_tboxes(self, image: Image.Image, draw: ImageDraw.ImageDraw, text_boxes: List[TextBox], text_colors):
+        picked_font_size = text_boxes[0].font_size if len(text_boxes) > 0 else 1
 
-            td_box = td[-1]
-            td_coords = [td_box[0], td_box[1], td_box[2], td_box[3]]
+        font = load_font(picked_font_size)
+
+        for idx, tb in enumerate(text_boxes):
+            box = [tb.x1, tb.y1, tb.x2, tb.y2]
+
+            fill_col = 'white'
+            if text_colors is not None and len(text_colors) > idx:
+                fill_col = 'white' if text_colors['idx'] == 'black' else 'black'
 
             draw.rounded_rectangle(
-                add_padding(td_coords, image),
-                outline=chosen_color + (255,),
-                width=1,
-                radius=6,
+                add_padding(box, image),
+                fill=fill_col,
+                radius=int(1 + (image.width * 0.005) + (image.height * 0.005)),
             )
 
-            draw.line(
-                [
-                    get_center_of_box(td[-1]),
-                    get_center_of_box(td[-3]),
-                ],
-                fill=chosen_color + (255,),
-                width=6,
-            )
+        return super().redraw_from_tboxes(image, draw, text_boxes, text_colors)
 
-        for idx, td in enumerate(text_details):
-            # td = A list containing [wrappedtextstring, leftinteger, topinteger]
-            font = load_font(best_font_size)
-
-            draw.multiline_text(
-                (td[1], td[2]),
-                td[0],
-                self.get_text_color(text_colors, idx),
-                font,
-                align="center",
-                stroke_fill=self.get_stroke_color(text_colors, idx),
-                stroke_width=compute_stroke_size(best_font_size),
-            )
-
-        return image

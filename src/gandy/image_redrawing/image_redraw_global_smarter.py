@@ -137,7 +137,7 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
 
         return box, others
     
-    def try_center_boxes(self, image: Image.Image, text_boxes: List[TextBox], container_boxes: List[TextBox]):
+    def try_center_boxes(self, image: Image.Image, text_boxes: List[TextBox], container_boxes: List[TextBox], container_text_boxes: List[TextBox]):
         def _boxes_nearby(tb: TextBox, cb: TextBox):
             def _midp(x: TextBox):
                 return ((x.x1 + x.x2) / 2, (x.y1 + x.y2) / 2)
@@ -160,7 +160,8 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
 
             others = text_boxes[:idx] + text_boxes[idx + 1:]
             # If the box wasn't moved too far from its original location, try to vertically center it.
-            if _boxes_nearby(tb, container_boxes[idx]):
+            # We use container_text_boxes to determine if they are nearby, as the drawn text area will usually be smaller than the entire detected text area.
+            if _boxes_nearby(tb, container_text_boxes[idx]):
                 x_add = max(0, (container_boxes[idx].get_width() - tb.get_width()) // 2)
                 y_add = max(0, (container_boxes[idx].get_height() - tb.get_height()) // 2)
                 #y_add = 0 
@@ -231,8 +232,12 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
 
             text_boxes = [better_box] + other_boxes
 
+        # container_boxes is used to compute the X and Y offsets to center the box.
+        # container_text_boxes is used to determine if the text box is nearby the original detection area.
+        # Why reverse? Because the loop above adds the boxes in reverse order.
         container_boxes = list(reversed([TextBox.from_speech_bubble(bb, t, font_size=-1, draw=draw, img=new_image) for (bb, t) in zip(bboxes, target_texts)]))
-        text_boxes = self.try_center_boxes(new_image, text_boxes, container_boxes)
+        container_text_boxes = list(reversed([TextBox.from_speech_bubble(bb, t, font_size=picked_font_size, draw=draw, img=new_image) for (bb, t) in zip(bboxes, target_texts)]))
+        text_boxes = self.try_center_boxes(new_image, text_boxes, container_boxes, container_text_boxes)
 
         # Actually draw the text on the image.
         self.redraw_from_tboxes(new_image, draw, text_boxes, text_colors)
