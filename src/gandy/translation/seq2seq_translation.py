@@ -129,10 +129,16 @@ class Seq2SeqTranslationApp(BaseTranslation):
         return self.target_tokenizer.batch_decode(output)
 
     def strip_padding(self, prediction):
-        return (
-            prediction.replace("</s>", "")
-            .strip()
-        )
+        if config_state.decoding_mode == "beam":
+            return (
+                prediction.replace("</s>", "")
+                .strip()
+            )
+        else:
+            return (
+                prediction.replace("</s>", "").replace("<pad>", "")
+                .strip()
+            )
 
     def do_generate(self, x_dict, extra_kwargs):
         true_beams = (
