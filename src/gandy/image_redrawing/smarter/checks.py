@@ -35,26 +35,32 @@ def text_intersects(box: TextBox, other_boxes: List[TextBox], return_indices=Fal
 
     return False
 
-def text_overflows(cand1: TextBox, img: Image, direction = "lrud"):
+def text_overflows(cand1: TextBox, img: Image, direction = "lrud", with_margin = "x"):
     """
     Checks if the text box overflows the image.
     """
-    box = cand1 #cand1.get_with_margin()
+    margin_pct = 0.025
+    x_marg = (img.width * margin_pct)
+    y_marg = (img.height * margin_pct)
 
-    #It DOES overflow. Hmm
+    with_margin_x = "x" in with_margin
+    with_margin_y = "y" in with_margin
 
-    # TODO: Add margin
+    x_min = x_marg if with_margin_x else 0
+    y_min = y_marg if with_margin_y else 0
+    x_max = (img.width - x_marg) if with_margin_x else img.width
+    y_max = (img.height - y_marg) if with_margin_y else img.height
 
-    if box.x1 <= 0 and "l" in direction:
+    if cand1.x1 <= x_min and "l" in direction:
         print_spam('BOX OVERFLOWS "LEFT" IMAGE.')
         return True
-    if box.y1 <= 0 and "u" in direction:
+    if cand1.y1 <= y_min and "u" in direction:
         print_spam('BOX OVERFLOWS "ABOVE" IMAGE.')
         return True
-    if box.x2 >= img.width and "r" in direction:
+    if cand1.x2 >= x_max and "r" in direction:
         print_spam('BOX OVERFLOWS "RIGHT" IMAGE.')
         return True
-    if box.y2 >= img.height and "d" in direction:
+    if cand1.y2 >= y_max and "d" in direction:
         print_spam('BOX OVERFLOWS "BELOW" IMAGE.')
         return True
 
