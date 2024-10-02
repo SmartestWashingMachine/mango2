@@ -57,15 +57,6 @@ const HistoryPane = ({
   // ref is for auto scrolling.
   const ref = useRef<any | null>(null);
 
-  /**
-   * Scroll to bottom when new text is added.
-   */
-  useEffect(() => {
-    if (!ref || !ref.current) return;
-
-    ref.current.scrollToIndex({ index: texts.length });
-  }, [texts.length]);
-
   const textItemsData = texts.map((t, index) => ({
     sourceText: t.sourceText,
     targetText: t.targetText,
@@ -111,6 +102,7 @@ const HistoryPane = ({
             itemContent={(index) => <HistoryItem {...textItemsData[index]} isBrief={isBrief} />}
             ref={ref}
             initialItemCount={initialItemCount || undefined}
+            followOutput={() => true}
           />
         ) : (
           <Virtuoso
@@ -118,6 +110,7 @@ const HistoryPane = ({
             totalCount={textItemsData.length}
             itemContent={(index) => <HistoryItem {...textItemsData[index]} isBrief={isBrief} />}
             ref={ref}
+            followOutput={() => true}
           />
         ) // React virtuoso still sets initialItemCount if undefined... very annoying.
       }
