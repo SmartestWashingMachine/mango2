@@ -5,9 +5,7 @@ from PIL import Image, ImageDraw
 from typing import List, Union
 from gandy.image_redrawing.smarter.checks import text_intersects, text_intersects_on_direction, text_overflows
 from gandy.image_redrawing.smarter.text_box import TextBox, FONT_MANAGER
-from gandy.image_redrawing.smarter.actions.move_action import MoveAction
-from gandy.image_redrawing.smarter.actions.move_push_action import MoveAndPushAction
-from gandy.image_redrawing.smarter.actions.expand_aspect_action import ExpandAspectAction
+from gandy.image_redrawing.smarter.policy import ACTIONS
 from gandy.image_redrawing.smarter.image_fonts import compute_min_max_font_sizes, compute_stroke_size, get_vertical_spacing, print_spam
 from gandy.image_redrawing.smarter.declutter_font_size import declutter_font_size
 from gandy.state.debug_state import debug_state
@@ -89,33 +87,6 @@ def upscale_items(image: Image.Image, bboxes):
 def downscale_items(image: Image.Image):
     return image.resize((int(image.width // SCALE_FACTOR), int(image.height // SCALE_FACTOR)), resample=Image.LANCZOS)
 
-MOVE_PCT = 0.01
-
-ACTIONS: List[MoveAction] = [
-    # Stackables.
-    ExpandAspectAction(stackable=True),
-    # Only move.
-    MoveAction(offset_pct=[MOVE_PCT, 0, 0, 0], fatal_error_overlapping_direction="l", action_name="MoveRight"),
-    MoveAction(offset_pct=[-MOVE_PCT, 0, 0, 0], fatal_error_overlapping_direction="r", action_name="MoveLeft"),
-    MoveAction(offset_pct=[0, MOVE_PCT, 0, 0], fatal_error_overlapping_direction="u", action_name="MoveDown"),
-    MoveAction(offset_pct=[0, -MOVE_PCT, 0, 0], fatal_error_overlapping_direction="d", action_name="MoveUp"),
-    # Move and push.
-    MoveAndPushAction(offset_pct=[MOVE_PCT, 0, 0, 0], fatal_error_overlapping_direction="l", action_name="PushRight"),
-    MoveAndPushAction(offset_pct=[-MOVE_PCT, 0, 0, 0], fatal_error_overlapping_direction="r", action_name="PushLeft"),
-    MoveAndPushAction(offset_pct=[0, MOVE_PCT, 0, 0], fatal_error_overlapping_direction="u", action_name="PushDown"),
-    MoveAndPushAction(offset_pct=[0, -MOVE_PCT, 0, 0], fatal_error_overlapping_direction="d", action_name="PushUp"),
-    # Diagonal move and move+push.
-    MoveAction(offset_pct=[MOVE_PCT, MOVE_PCT, 0, 0], fatal_error_overlapping_direction="lu", action_name="MoveDownRight"),
-    #MoveAction(offset_pct=[MOVE_PCT * 0.2, MOVE_PCT * 3, 0, 0], fatal_error_overlapping_direction="lu", action_name="MoveDownRightExtended"),
-    MoveAndPushAction(offset_pct=[MOVE_PCT, MOVE_PCT, 0, 0], fatal_error_overlapping_direction="lu", action_name="PushMoveDownRight"),
-    #MoveAction(offset_pct=[-MOVE_PCT * 0.2, MOVE_PCT * 3, 0, 0], fatal_error_overlapping_direction="ru", action_name="MoveDownLeftExtended"),
-    MoveAction(offset_pct=[-MOVE_PCT, MOVE_PCT, 0, 0], fatal_error_overlapping_direction="ru", action_name="MoveDownLeft"),
-    MoveAndPushAction(offset_pct=[-MOVE_PCT, MOVE_PCT, 0, 0], fatal_error_overlapping_direction="ru", action_name="PushMoveDownLeft"),
-    # Stackables.
-    ExpandAspectAction(stackable=True),
-]
-#ACTIONS = []
-
 class ImageRedrawGlobalSmarter(BaseImageRedraw):
     def __init__(self):
         super().__init__()
@@ -125,7 +96,7 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
             return True
         if text_overflows(box, img):
             return True
-        
+
         return False
 
     def better_box(self, box: TextBox, others: List[TextBox], img: Image.Image):
@@ -136,7 +107,7 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         for next_action_idx in range(len(ACTIONS)):
             cur_action = ACTIONS[next_action_idx]
             if box_is_bad or cur_action.stackable:
-                box, others, did_succeed = cur_action.begin(time_left=30, candidate=box, others=others, img=img)
+                box, others, did_succeed = cur_action.begin(candidate=box, others=others, img=img)
 
                 box_is_bad = self.box_is_bad(box, others, img)
 
@@ -166,19 +137,29 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
             # We use container_text_boxes to determine if they are nearby, as the drawn text area will usually be smaller than the entire detected text area.
             if _boxes_nearby(tb, container_text_boxes[idx]):
                 print_spam(f'Centering box: {tb}')
-                x_add = max(0, (container_boxes[idx].get_width() - tb.get_width()) // 2)
-                y_add = max(0, (container_boxes[idx].get_height() - tb.get_height()) // 2)
 
                 x_add = _midp(container_boxes[idx])[0] - _midp(tb)[0]
                 y_add = _midp(container_boxes[idx])[1] - _midp(tb)[1]
-                #y_add = 0 
 
-                centered_box = TextBox.shift_from(tb, offset_pct=[x_add, y_add, 0, 0], is_abs=True)
-                if not self.box_is_bad(centered_box, others, image):
-                    print_spam('GOOD')
-                    new_boxes.append(centered_box)
-                else:
-                    print_spam('BAD')
+                possible_options = [
+                    [x_add, y_add, 0, 0],
+                    [0, y_add, 0, 0],
+                    [x_add, 0, 0, 0],
+                ]
+
+                opt_chosen = False
+                for opt in possible_options:
+                    centered_box = TextBox.shift_from(tb, offset_pct=opt, is_abs=True)
+
+                    if not self.box_is_bad(centered_box, others, image):
+                        print_spam('GOOD')
+                        opt_chosen = True
+                        new_boxes.append(centered_box)
+                        break
+                    else:
+                        print_spam('BAD')
+
+                if not opt_chosen:
                     new_boxes.append(tb)
             else:
                 new_boxes.append(tb)
@@ -186,11 +167,11 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         return new_boxes
 
     def redraw_from_tboxes(self, image: Image.Image, draw: ImageDraw.ImageDraw, text_boxes: List[TextBox], text_colors):
-        picked_font_size = text_boxes[0].font_size if len(text_boxes) > 0 else 1
-
-        font = FONT_MANAGER.get_font(picked_font_size)
+        # picked_font_size = text_boxes[0].font_size if len(text_boxes) > 0 else 1
 
         for idx, tb in enumerate(text_boxes):
+            font = FONT_MANAGER.get_font(tb.font_size)
+
             draw.multiline_text(
                 (tb.x1, tb.y1),
                 tb.text,
@@ -198,8 +179,8 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
                 font,
                 align="center",
                 stroke_fill=self.get_stroke_color(text_colors, idx),
-                stroke_width=compute_stroke_size(picked_font_size),
-                spacing=get_vertical_spacing(picked_font_size),
+                stroke_width=compute_stroke_size(tb.font_size),
+                spacing=get_vertical_spacing(tb.font_size),
             )
 
         return image

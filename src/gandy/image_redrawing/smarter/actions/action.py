@@ -4,10 +4,12 @@ from PIL import Image
 from typing import List
 
 class Action():
-    def __init__(self, stackable = False, action_name: str = "UnknownAction") -> None:
+    def __init__(self, stackable = False, action_name: str = "UnknownAction", max_iterations: int = 30) -> None:
         self.stackable = stackable
 
         self.action_name = action_name
+
+        self.max_iterations = max_iterations
     
     def action_process(self, time_left: int, candidate: TextBox, others: List[TextBox], img: Image, original: TextBox):
         return candidate, others
@@ -18,8 +20,8 @@ class Action():
     def non_fatal_error(self, candidate: TextBox, others: List[TextBox], img: Image):
         pass
 
-    def begin(self, time_left: int, candidate: TextBox, others: List[TextBox], img: Image):
-        return self.process(time_left, candidate, others, img, original=candidate, original_others=others, iterations_done=1)
+    def begin(self,  candidate: TextBox, others: List[TextBox], img: Image):
+        return self.process(self.max_iterations, candidate, others, img, original=candidate, original_others=others, iterations_done=1)
 
     def process(self, time_left: int, candidate: TextBox, others: List[TextBox], img: Image, original: TextBox, original_others: List[TextBox], iterations_done: int):
         print_spam(f'({self.action_name}) PROCESSING for BOX "{candidate.simple()}" with TimeLeft={time_left}')
