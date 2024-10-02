@@ -1,8 +1,5 @@
 from PIL import Image
 from gandy.state.config_state import config_state
-from typing import List
-from PIL import ImageFont
-from string import ascii_letters
 import textwrap
 
 
@@ -41,20 +38,6 @@ def compute_stroke_size(font_size: int):
 def get_vertical_spacing(font_size: int):
     return 3 - compute_stroke_size(font_size)
 
-def load_font(font_size):
-    font = ImageFont.truetype("resources/fonts/font.otf", font_size, encoding="unic")
-    return font
-
-def compute_max_chars_per_line(font, box_width: float):
-    """
-    Calculate the max number of characters that can fit in a single line for a speech bubble.
-    """
-    avg_char_width = sum((font.getsize(char)[0]) for char in ascii_letters) / len(
-        ascii_letters
-    )
-
-    candidate_max_char_count = max(
-        1, int(box_width / avg_char_width)
-    )  # Max true chars before it overflows the width. AKA chars per line.
-
-    return candidate_max_char_count
+def print_spam(s: str):
+    #print(s)
+    pass

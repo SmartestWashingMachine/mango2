@@ -1,21 +1,27 @@
 from typing import List
 from PIL import ImageDraw, Image
-from gandy.image_redrawing.smarter.image_fonts import load_font, compute_stroke_size, get_vertical_spacing, compute_max_chars_per_line, wrap_text
+from gandy.image_redrawing.smarter.image_fonts import compute_stroke_size, get_vertical_spacing, wrap_text
+from gandy.image_redrawing.smarter.font_cache import FONT_MANAGER
 
 def _v_add(v: float, pct: float, img_side: int):
     if pct == 0:
         return v        
     return v + (img_side * pct)
 
+class ContainerBox():
+    def __init__(self, x1: float, y1: float, x2: float, y2: float) -> None:
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+
 class TextBox():
-    def __init__(self, x1: float, y1: float, x2: float, y2: float, text: str, font_size: int, draw: ImageDraw.ImageDraw, img: Image.Image) -> None:
+    def __init__(self, x1: float, y1: float, x2: float, y2: float, text: str, font_size: int, draw: ImageDraw.ImageDraw, img: Image.Image, container: ContainerBox) -> None:
         self.img = img
         self.draw = draw
 
-        self.container_x1 = x1
-        self.container_y1 = y1
-        self.container_x2 = x2
-        self.container_y2 = y2
+        self.container = container
+
         self.font_size = font_size
         self.text = text
         self.original_text = text
@@ -32,9 +38,9 @@ class TextBox():
             self.recompute()
 
     def recompute(self):
-        font = load_font(self.font_size)
+        font = FONT_MANAGER.get_font(self.font_size)
 
-        max_chars_per_line = compute_max_chars_per_line(font, self.get_width())
+        max_chars_per_line = FONT_MANAGER.compute_max_chars_per_line(self.font_size, self.get_width())
         wrapped_text = wrap_text(self.original_text, max_chars_per_line)
 
         self.x_add = 0
@@ -75,7 +81,7 @@ class TextBox():
         # X2 and Y2 might be greater than the image size.
         new_x2 = min(self.x2 + mx, self.img.width)
         new_y2 = min(self.y2 + my, self.img.height)
-        return TextBox(new_x1, new_y1, new_x2, new_y2, text=self.text, font_size=self.font_size, draw=self.draw, img=self.img)
+        return TextBox(new_x1, new_y1, new_x2, new_y2, text=self.text, font_size=self.font_size, draw=self.draw, img=self.img, container=self.container)
 
     def get_width(self):
         return self.x2 - self.x1
@@ -100,21 +106,26 @@ class TextBox():
         else:
             coords = [_v_add(candidate.x1, offset_pct[0], iwid), _v_add(candidate.y1, offset_pct[1], ihei), _v_add(candidate.x2, offset_pct[2], iwid), _v_add(candidate.y2, offset_pct[3], ihei)]
 
-        return cls.from_speech_bubble(
+        b = cls.from_speech_bubble(
             coords,
             text=candidate.text,
             font_size=candidate.font_size,
             draw=candidate.draw,
             img=candidate.img,
+            container=candidate.container,
             #**candidate.__dict__,
         )
+        return b
     
     @classmethod
     def clone(cls, candidate):
         return cls.shift_from(candidate, [0, 0, 0, 0])
 
     @classmethod
-    def from_speech_bubble(cls, bb, text: str, font_size: int, draw: ImageDraw.ImageDraw, img: Image.Image):
+    def from_speech_bubble(cls, bb, text: str, font_size: int, draw: ImageDraw.ImageDraw, img: Image.Image, container: ContainerBox):
+        if container == 'make':
+            container = ContainerBox(bb[0], bb[1], bb[2], bb[3])
+
         return cls(
             x1=bb[0],
             y1=bb[1],
@@ -124,6 +135,7 @@ class TextBox():
             font_size=font_size,
             draw=draw,
             img=img,
+            container=container,
         )
     
     def __repr__(self) -> str:

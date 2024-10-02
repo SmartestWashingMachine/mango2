@@ -1,4 +1,5 @@
 from gandy.image_redrawing.smarter.text_box import TextBox
+from gandy.image_redrawing.smarter.image_fonts import print_spam
 from PIL import Image
 from typing import List
 
@@ -21,35 +22,35 @@ class Action():
         return self.process(time_left, candidate, others, img, original=candidate, original_others=others, iterations_done=1)
 
     def process(self, time_left: int, candidate: TextBox, others: List[TextBox], img: Image, original: TextBox, original_others: List[TextBox], iterations_done: int):
-        print(f'({self.action_name}) PROCESSING for BOX "{candidate.simple()}" with TimeLeft={time_left}')
+        print_spam(f'({self.action_name}) PROCESSING for BOX "{candidate.simple()}" with TimeLeft={time_left}')
 
         new_candidate, new_others = self.action_process(time_left, candidate, others, img, original, iterations_done)
 
-        return self.validate(time_left, new_candidate, new_others, img, original, original_others, iterations_done=iterations_done)
+        return self.validate(time_left, new_candidate, new_others, img, original, original_others, iterations_done=iterations_done, prev_candidate=candidate)
 
-    def validate(self, time_left: int, candidate: TextBox, others: List[TextBox], img: Image, original: TextBox, original_others: List[TextBox], iterations_done: int, *args, **kwargs):
-        print('Validating CURRENT:')
-        print(candidate)
-        print('Validating OTHERS:')
+    def validate(self, time_left: int, candidate: TextBox, others: List[TextBox], img: Image, original: TextBox, original_others: List[TextBox], iterations_done: int, prev_candidate: TextBox, *args, **kwargs):
+        print_spam('Validating CURRENT:')
+        print_spam(candidate)
+        print_spam('Validating OTHERS:')
         for o in others:
-            print(o)
+            print_spam(o)
         if time_left <= 0 or self.fatal_error(candidate, others, img):
-            return self.fail(candidate, others, original, original_others)
+            return self.fail(candidate, others, original, original_others, prev_candidate)
         elif self.non_fatal_error(candidate, others, img):
             return self.process(time_left - 1, candidate, others, img, original, original_others, iterations_done=(iterations_done + 1))
         else:
             return self.success(candidate, others)
     
-    def fail(self, candidate: TextBox, others: List[TextBox], original: TextBox, original_others: List[TextBox]):
-        print(f'({self.action_name}) FAILED for BOX "{candidate.simple()}"')
+    def fail(self, candidate: TextBox, others: List[TextBox], original: TextBox, original_others: List[TextBox], prev_candidate: TextBox):
+        print_spam(f'({self.action_name}) FAILED for BOX "{candidate.simple()}"')
 
         # NOTE: Currently always returns others, which could be mutated.
         # Make sure to change this if we use other stackable actions that actually mutate other boxes.
         if self.stackable:
-            return candidate, others, False
+            return prev_candidate, others, False
         return original, original_others, False
     
     def success(self, candidate: TextBox, others: List[TextBox]):
-        print(f'({self.action_name}) SUCCEEDED for BOX "{candidate.simple()}"')
+        print_spam(f'({self.action_name}) SUCCEEDED for BOX "{candidate.simple()}"')
 
         return candidate, others, True

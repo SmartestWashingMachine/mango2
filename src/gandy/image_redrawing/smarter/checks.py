@@ -1,4 +1,5 @@
 from gandy.image_redrawing.smarter.text_box import TextBox
+from gandy.image_redrawing.smarter.image_fonts import print_spam
 from typing import List
 from PIL import Image
 
@@ -26,7 +27,7 @@ def text_intersects(box: TextBox, other_boxes: List[TextBox], return_indices=Fal
             if return_indices:
                 indices.append(idx)
             else:
-                print(f'OVERLAPPING {box} WITH: {other}')
+                print_spam(f'OVERLAPPING {box} WITH: {other}')
                 return True
 
     if return_indices:
@@ -45,16 +46,16 @@ def text_overflows(cand1: TextBox, img: Image, direction = "lrud"):
     # TODO: Add margin
 
     if box.x1 <= 0 and "l" in direction:
-        print('BOX OVERFLOWS "LEFT" IMAGE.')
+        print_spam('BOX OVERFLOWS "LEFT" IMAGE.')
         return True
     if box.y1 <= 0 and "u" in direction:
-        print('BOX OVERFLOWS "ABOVE" IMAGE.')
+        print_spam('BOX OVERFLOWS "ABOVE" IMAGE.')
         return True
     if box.x2 >= img.width and "r" in direction:
-        print('BOX OVERFLOWS "RIGHT" IMAGE.')
+        print_spam('BOX OVERFLOWS "RIGHT" IMAGE.')
         return True
     if box.y2 >= img.height and "d" in direction:
-        print('BOX OVERFLOWS "BELOW" IMAGE.')
+        print_spam('BOX OVERFLOWS "BELOW" IMAGE.')
         return True
 
     return False

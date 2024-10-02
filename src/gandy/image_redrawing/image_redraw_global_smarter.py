@@ -4,11 +4,11 @@ from gandy.image_redrawing.base_image_redraw import BaseImageRedraw
 from PIL import Image, ImageDraw
 from typing import List, Union
 from gandy.image_redrawing.smarter.checks import text_intersects, text_intersects_on_direction, text_overflows
-from gandy.image_redrawing.smarter.text_box import TextBox
+from gandy.image_redrawing.smarter.text_box import TextBox, FONT_MANAGER
 from gandy.image_redrawing.smarter.actions.move_action import MoveAction
 from gandy.image_redrawing.smarter.actions.move_push_action import MoveAndPushAction
 from gandy.image_redrawing.smarter.actions.expand_aspect_action import ExpandAspectAction
-from gandy.image_redrawing.smarter.image_fonts import compute_min_max_font_sizes, compute_stroke_size, get_vertical_spacing, load_font
+from gandy.image_redrawing.smarter.image_fonts import compute_min_max_font_sizes, compute_stroke_size, get_vertical_spacing, print_spam
 from gandy.image_redrawing.smarter.declutter_font_size import declutter_font_size
 from gandy.state.debug_state import debug_state
 import json
@@ -76,6 +76,8 @@ WHAT IS A BOX?
 A box, not to be confused with a SpeechBubble, is a set of coordinates that tightly wraps the text, if it were to be drawn on the image.
 
 """
+def _midp(x: TextBox):
+    return ((x.x1 + x.x2) / 2, (x.y1 + x.y2) / 2)
 
 SCALE_FACTOR = 4 # Scale image up then down for sharper looking texts. Ridiculous, isn't it? Thanks PIL...
 
@@ -109,7 +111,10 @@ ACTIONS: List[MoveAction] = [
     #MoveAction(offset_pct=[-MOVE_PCT * 0.2, MOVE_PCT * 3, 0, 0], fatal_error_overlapping_direction="ru", action_name="MoveDownLeftExtended"),
     MoveAction(offset_pct=[-MOVE_PCT, MOVE_PCT, 0, 0], fatal_error_overlapping_direction="ru", action_name="MoveDownLeft"),
     MoveAndPushAction(offset_pct=[-MOVE_PCT, MOVE_PCT, 0, 0], fatal_error_overlapping_direction="ru", action_name="PushMoveDownLeft"),
+    # Stackables.
+    ExpandAspectAction(stackable=True),
 ]
+#ACTIONS = []
 
 class ImageRedrawGlobalSmarter(BaseImageRedraw):
     def __init__(self):
@@ -126,21 +131,19 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
     def better_box(self, box: TextBox, others: List[TextBox], img: Image.Image):
         next_action_idx = 0
 
-        while self.box_is_bad(box, others, img):
-            if next_action_idx >= len(ACTIONS):
-                break
+        box_is_bad = self.box_is_bad(box, others, img)
 
+        for next_action_idx in range(len(ACTIONS)):
             cur_action = ACTIONS[next_action_idx]
-            box, others, did_succeed = cur_action.begin(time_left=30, candidate=box, others=others, img=img)
+            if box_is_bad or cur_action.stackable:
+                box, others, did_succeed = cur_action.begin(time_left=30, candidate=box, others=others, img=img)
 
-            next_action_idx += 1
+                box_is_bad = self.box_is_bad(box, others, img)
 
         return box, others
     
     def try_center_boxes(self, image: Image.Image, text_boxes: List[TextBox], container_boxes: List[TextBox], container_text_boxes: List[TextBox]):
         def _boxes_nearby(tb: TextBox, cb: TextBox):
-            def _midp(x: TextBox):
-                return ((x.x1 + x.x2) / 2, (x.y1 + x.y2) / 2)
             
             def _dist(p1, p2):
                 return (((p1[0] - p2[0]) ** 2) + (p1[1] - p2[1]) ** 2) ** 0.5
@@ -150,7 +153,7 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
 
             tb_mid = _midp(tb)
             cb_mid = _midp(cb)
-            dist_thr = 0.25
+            dist_thr = 0.1
             return _dist_1d(tb_mid[0], cb_mid[0]) <= (image.width * dist_thr) and _dist_1d(tb_mid[1], cb_mid[1]) <= (image.height * dist_thr)
             #return _dist(_midp(tb), _midp(cb)) <= DIST_THR
 
@@ -162,14 +165,20 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
             # If the box wasn't moved too far from its original location, try to vertically center it.
             # We use container_text_boxes to determine if they are nearby, as the drawn text area will usually be smaller than the entire detected text area.
             if _boxes_nearby(tb, container_text_boxes[idx]):
+                print_spam(f'Centering box: {tb}')
                 x_add = max(0, (container_boxes[idx].get_width() - tb.get_width()) // 2)
                 y_add = max(0, (container_boxes[idx].get_height() - tb.get_height()) // 2)
+
+                x_add = _midp(container_boxes[idx])[0] - _midp(tb)[0]
+                y_add = _midp(container_boxes[idx])[1] - _midp(tb)[1]
                 #y_add = 0 
 
                 centered_box = TextBox.shift_from(tb, offset_pct=[x_add, y_add, 0, 0], is_abs=True)
                 if not self.box_is_bad(centered_box, others, image):
+                    print_spam('GOOD')
                     new_boxes.append(centered_box)
                 else:
+                    print_spam('BAD')
                     new_boxes.append(tb)
             else:
                 new_boxes.append(tb)
@@ -179,7 +188,7 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
     def redraw_from_tboxes(self, image: Image.Image, draw: ImageDraw.ImageDraw, text_boxes: List[TextBox], text_colors):
         picked_font_size = text_boxes[0].font_size if len(text_boxes) > 0 else 1
 
-        font = load_font(picked_font_size)
+        font = FONT_MANAGER.get_font(picked_font_size)
 
         for idx, tb in enumerate(text_boxes):
             draw.multiline_text(
@@ -212,7 +221,7 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         draw = ImageDraw.Draw(new_image)
         draw.fontmode = "1"
 
-        text_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=draw, img=new_image) for (bb, t) in zip(bboxes, target_texts)]
+        text_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=draw, img=new_image, container='make') for (bb, t) in zip(bboxes, target_texts)]
 
         # Get the acceptable font size range.
         min_font_size, max_font_size = compute_min_max_font_sizes(new_image)
@@ -235,15 +244,15 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         # container_boxes is used to compute the X and Y offsets to center the box.
         # container_text_boxes is used to determine if the text box is nearby the original detection area.
         # Why reverse? Because the loop above adds the boxes in reverse order.
-        container_boxes = list(reversed([TextBox.from_speech_bubble(bb, t, font_size=-1, draw=draw, img=new_image) for (bb, t) in zip(bboxes, target_texts)]))
-        container_text_boxes = list(reversed([TextBox.from_speech_bubble(bb, t, font_size=picked_font_size, draw=draw, img=new_image) for (bb, t) in zip(bboxes, target_texts)]))
+        container_boxes = list(reversed([TextBox.from_speech_bubble(bb, t, font_size=-1, draw=draw, img=new_image, container='make') for (bb, t) in zip(bboxes, target_texts)]))
+        container_text_boxes = list(reversed([TextBox.from_speech_bubble(bb, t, font_size=picked_font_size, draw=draw, img=new_image, container='make') for (bb, t) in zip(bboxes, target_texts)]))
         text_boxes = self.try_center_boxes(new_image, text_boxes, container_boxes, container_text_boxes)
 
         # Actually draw the text on the image.
         self.redraw_from_tboxes(new_image, draw, text_boxes, text_colors)
 
-        print('Drawn Boxes:')
-        print(text_boxes)
+        print_spam('Drawn Boxes:')
+        print_spam(text_boxes)
 
         new_image = downscale_items(new_image)
         return new_image

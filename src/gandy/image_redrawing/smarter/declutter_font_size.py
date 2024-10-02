@@ -1,6 +1,7 @@
 
 from PIL import Image
 from gandy.image_redrawing.smarter.text_box import TextBox
+from gandy.image_redrawing.smarter.image_fonts import print_spam
 from typing import List
 
 CLUTTER_THRESHOLD = 0.18
@@ -23,7 +24,7 @@ def declutter_font_size(
     while (
         total_text_area / image_area
     ) >= CLUTTER_THRESHOLD and best_font_size > 1:
-        print(
+        print_spam(
             f"Text cluttered! ({total_text_area / image_area}) - cutting down font size."
         )
 
@@ -33,7 +34,7 @@ def declutter_font_size(
             tb.set_font_size(best_font_size)
         total_text_area = sum(tb.get_area() for tb in text_boxes)
 
-    print(
+    print_spam(
         f"Done decluttering text! TextArea=({total_text_area / image_area}) FontSize={best_font_size}"
     )
 

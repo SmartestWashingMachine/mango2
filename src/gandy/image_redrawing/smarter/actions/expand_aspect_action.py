@@ -4,7 +4,7 @@ from gandy.image_redrawing.smarter.text_box import TextBox
 from typing import List
 
 class ExpandAspectAction(Action):
-    def __init__(self, w_increase_pct = 0.03, img_coverage_thresh = 0.1, ideal_asp = 1.25, stackable=False) -> None:
+    def __init__(self, w_increase_pct = 0.01, img_coverage_thresh = 0.1, ideal_asp = 1.0, stackable=False) -> None:
         super().__init__(stackable, action_name="ExpandAspect")
 
         self.w_increase_pct = w_increase_pct
@@ -12,7 +12,7 @@ class ExpandAspectAction(Action):
         self.ideal_asp = ideal_asp
 
     def fatal_error(self, candidate, others, img):
-        if text_overflows(candidate, img):
+        if text_overflows(candidate, img, "lr"):
             return True
         if ((candidate.get_area()) / max((img.width * img.height), 1)) >= self.img_coverage_thresh:
             return True
@@ -29,6 +29,11 @@ class ExpandAspectAction(Action):
         return False
     
     def action_process(self, time_left: int, candidate, others, img, original, iterations_done: int):
-        new_candidate = TextBox.shift_from(candidate, offset_pct=[self.w_increase_pct, 0, self.w_increase_pct, 0])
+        new_candidate = TextBox.clone(candidate)
+
+        w_offset = self.w_increase_pct * img.width * iterations_done
+        new_candidate.x1 = new_candidate.container.x1 - w_offset
+        new_candidate.x2 = new_candidate.container.x2 + w_offset
+        new_candidate.recompute()
 
         return new_candidate, others

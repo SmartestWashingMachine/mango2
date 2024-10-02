@@ -1,7 +1,7 @@
-from gandy.image_redrawing.image_redraw_global_smarter import ImageRedrawGlobalSmarter, load_font, get_vertical_spacing
+from gandy.image_redrawing.image_redraw_global_smarter import ImageRedrawGlobalSmarter, get_vertical_spacing
 from random import choices
 from gandy.utils.compute_stroke_size import compute_stroke_size
-from gandy.image_redrawing.smarter.text_box import TextBox
+from gandy.image_redrawing.smarter.text_box import TextBox, FONT_MANAGER
 from typing import List
 from PIL import Image, ImageDraw
 
@@ -34,10 +34,6 @@ class ImageRedrawGlobalSmartBackgroundApp(ImageRedrawGlobalSmarter):
         super().__init__()
 
     def redraw_from_tboxes(self, image: Image.Image, draw: ImageDraw.ImageDraw, text_boxes: List[TextBox], text_colors):
-        picked_font_size = text_boxes[0].font_size if len(text_boxes) > 0 else 1
-
-        font = load_font(picked_font_size)
-
         for idx, tb in enumerate(text_boxes):
             box = [tb.x1, tb.y1, tb.x2, tb.y2]
 

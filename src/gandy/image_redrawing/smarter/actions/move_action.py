@@ -1,6 +1,7 @@
 from gandy.image_redrawing.smarter.checks import text_intersects, text_intersects_on_direction, text_overflows
 from gandy.image_redrawing.smarter.actions.action import Action
 from gandy.image_redrawing.smarter.text_box import TextBox
+from gandy.image_redrawing.smarter.image_fonts import print_spam
 from typing import List
 
 class MoveAction(Action):
@@ -19,10 +20,10 @@ class MoveAction(Action):
 
     def fatal_error(self, candidate, others, img):
         if text_overflows(candidate, img, direction=self.get_non_fatal_error_overlapping_direction()):
-            print('Box overflows image.')
+            print_spam('Box overflows image.')
             return True
         if text_intersects_on_direction(candidate, others, img, self.fatal_error_overlapping_direction):
-            print('Box intersects on direction.')
+            print_spam('Box intersects on direction.')
             return True
         return False
 
