@@ -39,7 +39,6 @@ class MergeTextAction(Action):
 
                 # This is the actual "fatal" / "non-fatal" error check here.
                 if new_fz >= self.min_font_val and not text_intersects(other_new, other_others) and not text_overflows(other_new, img):
-                    print('SUCCESS???')
                     others_cloned[idx] = other_new # Hooray!
                     new_candidate.set_text("") # Erase the text here.
 
