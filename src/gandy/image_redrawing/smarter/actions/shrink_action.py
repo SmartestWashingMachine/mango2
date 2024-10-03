@@ -10,7 +10,7 @@ class ShrinkAction(Action):
         self.shrink_factor = shrink_factor
         self.min_font_val = min_font_val
 
-    def fatal_error(self, candidate, others, img):
+    def fatal_error(self, candidate, others, img, *args, **kwargs):
         # Very little fatal errors. This is a "final measure" approach.
         if candidate.font_size < self.min_font_val:
             return True

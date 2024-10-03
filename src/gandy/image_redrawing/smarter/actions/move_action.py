@@ -18,7 +18,7 @@ class MoveAction(Action):
 
         return dirs
 
-    def fatal_error(self, candidate, others, img):
+    def fatal_error(self, candidate, others, img, *args, **kwargs):
         if text_overflows(candidate, img, direction=self.get_non_fatal_error_overlapping_direction()):
             print_spam('Box overflows image.')
             return True

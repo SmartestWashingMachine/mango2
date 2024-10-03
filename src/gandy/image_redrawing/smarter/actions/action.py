@@ -14,7 +14,7 @@ class Action():
     def action_process(self, time_left: int, candidate: TextBox, others: List[TextBox], img: Image, original: TextBox):
         return candidate, others
     
-    def fatal_error(self, candidate: TextBox, others: List[TextBox], img: Image):
+    def fatal_error(self, candidate: TextBox, others: List[TextBox], img: Image, prev_candidate: TextBox):
         pass
     
     def non_fatal_error(self, candidate: TextBox, others: List[TextBox], img: Image):
@@ -36,7 +36,7 @@ class Action():
         print_spam('Validating OTHERS:')
         for o in others:
             print_spam(o)
-        if time_left <= 0 or self.fatal_error(candidate, others, img):
+        if time_left <= 0 or self.fatal_error(candidate, others, img, prev_candidate):
             return self.fail(candidate, others, original, original_others, prev_candidate)
         elif self.non_fatal_error(candidate, others, img):
             return self.process(time_left - 1, candidate, others, img, original, original_others, iterations_done=(iterations_done + 1))
