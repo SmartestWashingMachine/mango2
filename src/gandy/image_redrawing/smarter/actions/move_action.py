@@ -17,13 +17,26 @@ class MoveAction(Action):
             dirs = dirs.replace(c, "")
 
         return dirs
+    
+    def get_opposite_direction(self, direction: str):
+        dirs = ""
+        if "l" in direction:
+            dirs += "r"
+        if "r" in direction:
+            dirs += "l"
+        if "u" in direction:
+            dirs += "d"
+        if "d" in direction:
+            dirs += "u"
+        
+        return dirs
 
-    def fatal_error(self, candidate, others, img, *args, **kwargs):
+    def fatal_error(self, candidate, others, img, prev_candidate, *args, **kwargs):
         if text_overflows(candidate, img, direction=self.get_non_fatal_error_overlapping_direction()):
             print_spam('Box overflows image.')
             return True
-        if text_intersects_on_direction(candidate, others, img, self.fatal_error_overlapping_direction):
-            print_spam('Box intersects on direction.')
+        if text_intersects_on_direction(candidate, others, img, direction_to_check=self.fatal_error_overlapping_direction) and text_intersects_on_direction(prev_candidate, others, img, direction_to_check=self.get_opposite_direction(self.fatal_error_overlapping_direction)):
+            print_spam(f'Box intersects on directions "{self.fatal_error_overlapping_direction}".')
             return True
         return False
 
