@@ -17,9 +17,9 @@ class ExpandAspectAction(Action):
     def fatal_error(self, candidate, others, img, prev_candidate):
         if text_overflows(candidate, img, "lr"):
             return True
-        if get_aspect_ratio(candidate) >= self.img_coverage_thresh:
+        if ((candidate.get_area()) / max((img.width * img.height), 1)) >= self.img_coverage_thresh:
             return True
-        if (candidate.get_width() / max(candidate.get_height(), 1)) >= self.ideal_asp:
+        if get_aspect_ratio(candidate) >= self.ideal_asp:
             return True
         if text_intersects(candidate, others):
             return True
