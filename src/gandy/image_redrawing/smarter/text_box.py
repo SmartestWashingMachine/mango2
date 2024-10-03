@@ -92,9 +92,18 @@ class TextBox():
     def get_area(self):
         return self.get_width() * self.get_height()
     
-    def set_font_size(self, fz: int):
+    def set_font_size(self, fz: int, do_recompute: bool = True):
         self.font_size = fz
-        self.recompute()
+
+        if do_recompute:
+            self.recompute()
+
+    def set_text(self, text: str, do_recompute: bool = True):
+        self.text = text
+        self.original_text = text
+
+        if do_recompute:
+            self.recompute()
 
     @classmethod
     def shift_from(cls, candidate, offset_pct: List[float], is_abs = False):

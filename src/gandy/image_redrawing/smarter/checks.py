@@ -84,6 +84,20 @@ def _box_b_is_left_or_right(box_a: TextBox, box_b: TextBox):
         return "right"
     else:
         return "none"
+    
+def _box_b_is_up_or_down(box_a: TextBox, box_b: TextBox):
+    def _midp(b):
+        return b.y1 + ((b.y2 - b.y1) / 2)
+
+    y_center_a = _midp(box_a)
+    y_center_b = _midp(box_b)
+
+    if y_center_b < y_center_a:
+        return "up"
+    elif y_center_b > y_center_a:
+        return "down"
+    else:
+        return "none"
 
 def text_intersects_on_direction(cand1: TextBox, others: List[TextBox], image: Image.Image, direction_to_check: str):
     """
@@ -97,10 +111,15 @@ def text_intersects_on_direction(cand1: TextBox, others: List[TextBox], image: I
 
         other_is_to_the = _box_b_is_left_or_right(box_a=cand1, box_b=other)
 
-        # TODO: Add Y checking.
         if other_is_to_the == "left" and "l" in direction_to_check:
             return True
-        elif other_is_to_the == "right" and "r" in direction_to_check:
+        if other_is_to_the == "right" and "r" in direction_to_check:
+            return True
+        
+        other_is_to_the = _box_b_is_up_or_down(box_a=cand1, box_b=other)
+        if other_is_to_the == "down" and "u" in direction_to_check:
+            return True
+        if other_is_to_the == "up" and "d" in direction_to_check:
             return True
 
     return False

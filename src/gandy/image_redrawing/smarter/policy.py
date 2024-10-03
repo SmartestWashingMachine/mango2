@@ -3,6 +3,7 @@ from gandy.image_redrawing.smarter.actions.move_action import MoveAction
 from gandy.image_redrawing.smarter.actions.move_push_action import MoveAndPushAction
 from gandy.image_redrawing.smarter.actions.expand_aspect_action import ExpandAspectAction
 from gandy.image_redrawing.smarter.actions.shrink_action import ShrinkAction
+from gandy.image_redrawing.smarter.actions.merge_text_action import MergeTextAction
 
 MOVE_PCT = 0.01
 
@@ -41,4 +42,6 @@ ACTIONS: List[MoveAction] = [
     *general_adjustments,
     # Stackables.
     ExpandAspectAction(stackable=True),
+    # A true final ditch measure!
+    MergeTextAction(shrink_factor=0.8, min_font_val=2, max_iterations=5),
 ]
