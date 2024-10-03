@@ -34,11 +34,11 @@ ACTIONS: List[MoveAction] = [
     ExpandAspectAction(stackable=True),
     *general_adjustments,
     # Last measures.
-    ShrinkAction(shrink_factor=0.975, min_font_val=10, max_iterations=3, stackable=True),
+    ShrinkAction(shrink_factor=0.975, min_font_val=10, max_iterations=3, stackable=True, only_on_failure=True),
     *general_adjustments,
-    ShrinkAction(shrink_factor=0.975, min_font_val=10, max_iterations=3, stackable=True),
+    ShrinkAction(shrink_factor=0.975, min_font_val=10, max_iterations=3, stackable=True, only_on_failure=True),
     *general_adjustments,
-    ShrinkAction(shrink_factor=0.95, min_font_val=10, max_iterations=3, stackable=True),
+    ShrinkAction(shrink_factor=0.95, min_font_val=10, max_iterations=3, stackable=True, only_on_failure=True),
     *general_adjustments,
     # Stackables.
     ExpandAspectAction(stackable=True),

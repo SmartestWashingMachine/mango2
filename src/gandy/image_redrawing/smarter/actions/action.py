@@ -4,8 +4,9 @@ from PIL import Image
 from typing import List
 
 class Action():
-    def __init__(self, stackable = False, action_name: str = "UnknownAction", max_iterations: int = 30) -> None:
+    def __init__(self, stackable: bool = False, action_name: str = "UnknownAction", max_iterations: int = 30, only_on_failure: bool = False) -> None:
         self.stackable = stackable
+        self.only_on_failure = only_on_failure # For stackable actions only.
 
         self.action_name = action_name
 
