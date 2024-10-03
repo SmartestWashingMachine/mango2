@@ -4,7 +4,7 @@ from gandy.image_redrawing.smarter.text_box import TextBox
 from gandy.image_redrawing.smarter.image_fonts import print_spam
 from typing import List
 
-CLUTTER_THRESHOLD = 0.18
+CLUTTER_THRESHOLD = 0.15
 
 # FROM: GlobalSmart
 def declutter_font_size(
