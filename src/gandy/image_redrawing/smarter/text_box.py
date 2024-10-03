@@ -16,7 +16,7 @@ class ContainerBox():
         self.y2 = y2
 
 class TextBox():
-    def __init__(self, x1: float, y1: float, x2: float, y2: float, text: str, font_size: int, draw: ImageDraw.ImageDraw, img: Image.Image, container: ContainerBox) -> None:
+    def __init__(self, x1: float, y1: float, x2: float, y2: float, text: str, font_size: int, draw: ImageDraw.ImageDraw, img: Image.Image, container: ContainerBox, metadata = {}) -> None:
         self.img = img
         self.draw = draw
 
@@ -30,6 +30,8 @@ class TextBox():
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
+
+        self.metadata = metadata
 
         #self.x_add = (self.x2 - self.x1) // 2
         #self.y_add = (self.y2 - self.y1) // 2
@@ -81,7 +83,7 @@ class TextBox():
         # X2 and Y2 might be greater than the image size.
         new_x2 = min(self.x2 + mx, self.img.width)
         new_y2 = min(self.y2 + my, self.img.height)
-        return TextBox(new_x1, new_y1, new_x2, new_y2, text=self.text, font_size=self.font_size, draw=self.draw, img=self.img, container=self.container)
+        return TextBox(new_x1, new_y1, new_x2, new_y2, text=self.text, font_size=self.font_size, draw=self.draw, img=self.img, container=self.container, metadata=self.metadata)
 
     def get_width(self):
         return self.x2 - self.x1
@@ -122,6 +124,7 @@ class TextBox():
             draw=candidate.draw,
             img=candidate.img,
             container=candidate.container,
+            metadata=candidate.metadata,
             #**candidate.__dict__,
         )
         return b
@@ -131,7 +134,7 @@ class TextBox():
         return cls.shift_from(candidate, [0, 0, 0, 0])
 
     @classmethod
-    def from_speech_bubble(cls, bb, text: str, font_size: int, draw: ImageDraw.ImageDraw, img: Image.Image, container: ContainerBox):
+    def from_speech_bubble(cls, bb, text: str, font_size: int, draw: ImageDraw.ImageDraw, img: Image.Image, container: ContainerBox, metadata):
         if container == 'make':
             container = ContainerBox(bb[0], bb[1], bb[2], bb[3])
 
@@ -145,6 +148,7 @@ class TextBox():
             draw=draw,
             img=img,
             container=container,
+            metadata=metadata,
         )
     
     def __repr__(self) -> str:
