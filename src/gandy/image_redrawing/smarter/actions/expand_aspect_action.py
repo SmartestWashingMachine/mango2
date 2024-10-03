@@ -21,7 +21,7 @@ class ExpandAspectAction(Action):
             return True
         if get_aspect_ratio(candidate) >= self.ideal_asp:
             return True
-        if text_intersects(candidate, others):
+        if text_intersects_on_direction(candidate, others, img, direction_to_check="lr"):
             return True
         if get_aspect_ratio(prev_candidate) >= get_aspect_ratio(candidate):
             # If the box has only one word or few words, expanding the aspect ratio may actually just result in the box shifting to the left.
