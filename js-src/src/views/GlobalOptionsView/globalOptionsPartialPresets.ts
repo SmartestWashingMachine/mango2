@@ -34,6 +34,19 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     },
   },
   {
+    name: 'Advanced Manga Alternative',
+    description: 'This is an advanced set of options for translating Japanese manga panels.',
+    opts: {
+      textDetectionModelName: 'detr_xl_xxx',
+      textRecognitionModelName: 'trocr_jcomics',
+      translationModelName: 'nllb_jq300',
+      textLineModelName: 'none',
+      numBeams: 3,
+      bottomTextOnly: false,
+      contextAmount: "three",
+    },
+  },
+  {
     name: 'General Japanese Images',
     description: 'This is an advanced set of options for translating general Japanese images.',
     opts: {
