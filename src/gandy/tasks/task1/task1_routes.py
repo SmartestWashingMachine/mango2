@@ -6,6 +6,7 @@ import os
 from gandy.utils.natsort import natsort
 from gandy.app import app, translate_pipeline, socketio
 from gandy.utils.fancy_logger import logger
+from gandy.state.debug_state import debug_state
 
 # Task1 - translate images into images.
 
@@ -51,6 +52,9 @@ def translate_task1_background_job(
             images_data = sorted(images_data, key=lambda tup: natsort(tup[1]))
 
             for img, img_name in images_data:
+                if debug_state.debug:
+                    debug_state.metadata['cur_img_name'] = img_name
+
                 # The client really only uses progress for task1 anyways. The other progress_tasks aren't used... yet.
                 socketio.patched_emit("progress_task1", 5)
                 socketio.sleep()

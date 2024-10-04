@@ -99,11 +99,13 @@ def _box_b_is_up_or_down(box_a: TextBox, box_b: TextBox):
     else:
         return "none"
 
-def text_intersects_on_direction(cand1: TextBox, others: List[TextBox], image: Image.Image, direction_to_check: str):
+def text_intersects_on_direction(cand1: TextBox, others: List[TextBox], image: Image.Image, direction_to_check: str, only_check = False, with_margin = True):
     """
     Returns True if the text overlaps with any other text boxes that are to the (left/right DEPENDING on 'direction_to_check') of the text.
     """
-    cand1 = cand1.get_with_margin()
+    cand1 = cand1.get_with_margin() if with_margin else cand1
+
+    checks = ""
 
     overlapping_indices = text_intersects(cand1, others, return_indices=True)
     for idx in overlapping_indices:
@@ -112,14 +114,29 @@ def text_intersects_on_direction(cand1: TextBox, others: List[TextBox], image: I
         other_is_to_the = _box_b_is_left_or_right(box_a=cand1, box_b=other)
 
         if other_is_to_the == "left" and "l" in direction_to_check:
-            return True
+            if only_check:
+                checks += "l"
+            else:
+                return True
         if other_is_to_the == "right" and "r" in direction_to_check:
-            return True
+            if only_check:
+                checks += "r"
+            else:
+                return True
         
         other_is_to_the = _box_b_is_up_or_down(box_a=cand1, box_b=other)
         if other_is_to_the == "down" and "u" in direction_to_check:
-            return True
-        if other_is_to_the == "up" and "d" in direction_to_check:
-            return True
 
+            if only_check:
+                checks += "d"
+            else:
+                return True
+        if other_is_to_the == "up" and "d" in direction_to_check:
+            if only_check:
+                checks += "u"
+            else:
+                return True
+
+    if only_check:
+        return checks
     return False

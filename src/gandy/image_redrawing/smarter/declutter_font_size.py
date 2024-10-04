@@ -12,6 +12,7 @@ def declutter_font_size(
     min_font_size: int,
     max_font_size: int,
     img: Image.Image,
+    container_boxes: List[TextBox]
 ):
     best_font_size = max_font_size
 
@@ -21,9 +22,14 @@ def declutter_font_size(
     # Then cut it down even further! (if the text is too cluttered)
     image_area = img.width * img.height
     total_text_area = sum(tb.get_area() for tb in text_boxes)
+
+    total_detected_area = sum(cb.get_area() for cb in container_boxes) / image_area
+    true_clutter_threshold = max(CLUTTER_THRESHOLD, total_detected_area) * 0.8 # A bit smaller than the detected region.
+    print_spam(f'Total detected area portion: {total_detected_area}')
+
     while (
         total_text_area / image_area
-    ) >= CLUTTER_THRESHOLD and best_font_size > 1:
+    ) >= true_clutter_threshold and best_font_size > 1:
         print_spam(
             f"Text cluttered! ({total_text_area / image_area}) - cutting down font size."
         )
