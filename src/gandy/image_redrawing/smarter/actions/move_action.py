@@ -5,8 +5,8 @@ from gandy.image_redrawing.smarter.image_fonts import print_spam
 from typing import List
 
 class MoveAction(Action):
-    def __init__(self, offset_pct: List[float], fatal_error_overlapping_direction: str, stackable=False, action_name = "Move") -> None:
-        super().__init__(stackable, action_name)
+    def __init__(self, offset_pct: List[float], fatal_error_overlapping_direction: str, stackable=False, action_name = "Move", max_iterations: int = 30) -> None:
+        super().__init__(stackable, action_name, max_iterations=max_iterations)
 
         self.offset_pct = offset_pct
         self.fatal_error_overlapping_direction = fatal_error_overlapping_direction

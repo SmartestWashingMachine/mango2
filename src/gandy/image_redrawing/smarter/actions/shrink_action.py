@@ -4,8 +4,8 @@ from gandy.image_redrawing.smarter.text_box import TextBox
 from typing import List
 
 class ShrinkAction(Action):
-    def __init__(self, shrink_factor: float, min_font_val: int, stackable=False, max_iterations = 30) -> None:
-        super().__init__(stackable, action_name="Shrink", max_iterations=max_iterations)
+    def __init__(self, shrink_factor: float, min_font_val: int, stackable=False, max_iterations = 30, only_on_failure = True) -> None:
+        super().__init__(stackable, action_name="Shrink", max_iterations=max_iterations, only_on_failure=only_on_failure)
 
         self.shrink_factor = shrink_factor
         self.min_font_val = min_font_val
