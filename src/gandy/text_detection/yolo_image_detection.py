@@ -163,7 +163,9 @@ class YOLOImageDetectionApp(BaseImageDetection):
         boxes[..., [1, 3]] -= pad[1]  # y padding
         boxes[..., :4] /= gain
 
-        boxes = clip_boxes(boxes, img0_shape)
+        boxes = clip_boxes(boxes, img0_shape) # This can introduce some faulty BBOXES with 0 width/height. *cough* RT-DETR-XL-XX *cough*.
+        # So we manually filter out insane boxes via gt_min_size later on.
+
         return boxes
 
     def fuse_boxes(self, bboxes_data, padded_hw, image_height):
@@ -244,8 +246,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
 
         # bboxes = self.rescale_bboxes(bboxes, image_width, image_height)
         bboxes = self.scale_boxes(padded_hw, bboxes, (image_height, image_width))
-
-        # EDIT: No longer needed I think. Don't let me down YOLO! bboxes = gt_min_size(bboxes)
+        bboxes = gt_min_size(bboxes)
 
         if return_list:
             bboxes = bboxes.tolist()
