@@ -237,6 +237,7 @@ TRANSLATION_APP = SwitchApp(
             extra_preprocess=prepend_mad_qual,
             extra_postprocess=remove_unnecessary_eng_tokens_mad,
             target_decode_lang=None,
+            max_length=200,
         ),
         Seq2SeqTranslationApp(
             model_sub_path="_jq300/",
@@ -253,6 +254,7 @@ TRANSLATION_APP = SwitchApp(
             extra_preprocess=prepend_mad_qual,
             extra_postprocess=remove_unnecessary_eng_tokens_mad,
             target_decode_lang=None,
+            max_length=200,
         ),
         Seq2SeqTranslationApp(
             model_sub_path="_zhmad/",
@@ -260,6 +262,7 @@ TRANSLATION_APP = SwitchApp(
             extra_preprocess=prepend_mad_qual,
             extra_postprocess=remove_unnecessary_eng_tokens_mad,
             target_decode_lang=None,
+            max_length=200,
         ),
     ],
     app_names=[
