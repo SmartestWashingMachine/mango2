@@ -19,7 +19,7 @@ class ExpandAspectAction(Action):
             return True
         if ((candidate.get_area()) / max((img.width * img.height), 1)) >= self.img_coverage_thresh:
             return True
-        if get_aspect_ratio(candidate) >= self.ideal_asp:
+        if get_aspect_ratio(candidate) >= self.ideal_asp and get_aspect_ratio(prev_candidate) >= self.ideal_asp:
             return True
         if text_intersects_on_direction(candidate, others, img, direction_to_check="lr"):
             return True
