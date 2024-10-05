@@ -1,6 +1,7 @@
 from PIL import Image
 from gandy.state.config_state import config_state
 import textwrap
+import regex as re
 
 class CustomWrapper(textwrap.TextWrapper):
     def _handle_long_word(self, reversed_chunks, cur_line, cur_len, width):
@@ -23,7 +24,7 @@ def wrap_text(text, max_chars_per_line, max_word_len_before_breaking = 22):
     """
     Given a piece of text, breaks it according to the max_chars_per_line for use in PIL.
     """
-    words = text.split(' ')
+    words = re.split(r' |\n', text)
     max_word_len = max(len(w) for w in words)
     break_long_words = max_word_len >= max_word_len_before_breaking and len(words) > 1
 
