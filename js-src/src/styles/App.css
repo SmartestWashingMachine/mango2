@@ -194,6 +194,7 @@ body,
 .imagePreviewRoot {
   display: flex;
   flex-direction: column;
+  outline: none;
 }
 
 .imagePreviewBox {
