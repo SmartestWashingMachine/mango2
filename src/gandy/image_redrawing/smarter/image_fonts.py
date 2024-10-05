@@ -23,8 +23,9 @@ def wrap_text(text, max_chars_per_line, max_word_len_before_breaking = 22):
     """
     Given a piece of text, breaks it according to the max_chars_per_line for use in PIL.
     """
-    max_word_len = max(len(w) for w in text.split(' '))
-    break_long_words = max_word_len >= max_word_len_before_breaking
+    words = text.split(' ')
+    max_word_len = max(len(w) for w in words)
+    break_long_words = max_word_len >= max_word_len_before_breaking and len(words) > 1
 
     w = CustomWrapper(
         width=max_chars_per_line, break_long_words=break_long_words, break_on_hyphens=False
