@@ -75,6 +75,8 @@ const ImageViewer = ({
 
   const [fontFamilies, _setFontFamilies] = useState(getFontFamilies());
 
+  const [pageFieldVal, setPageFieldVal] = useState("1");
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     noClick: true,
@@ -115,11 +117,19 @@ const ImageViewer = ({
     const { value } = e.currentTarget;
     const parsed = parseInt(value, 10);
 
+    setPageFieldVal(value);
+
     if (Number.isNaN(parsed) || parsed - 1 < 0) return;
     if (parsed - 1 >= imagePaths.length) return;
 
     setCurIndex(parsed - 1);
   };
+
+  useEffect(() => {
+    if (curIndex !== null && curIndex !== undefined) {
+      setPageFieldVal(`${curIndex + 1}`);
+    }
+  }, [curIndex]);
 
   useEffect(() => {
     let canceled = false;
@@ -246,6 +256,7 @@ const ImageViewer = ({
             <TextField
               type="number"
               defaultValue={1}
+              value={pageFieldVal}
               onChange={handlePageFieldChange}
               className="imageViewerPageField"
               InputLabelProps={{
