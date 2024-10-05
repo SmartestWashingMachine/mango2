@@ -76,7 +76,7 @@ def try_center_boxes(image: Image.Image, text_boxes: List[TextBox]):
 
         # If the box wasn't moved too far from its original location, try to vertically center it.
         # We use container_text_boxes to determine if they are nearby, as the drawn text area will usually be smaller than the entire detected text area.
-        if _boxes_nearby(tb, tb_container_text_box, image):
+        if _boxes_nearby(tb, tb_container_text_box, image) and not tb.metadata.get('was_centered', False):
             print_spam(f'Centering box: {tb}')
 
             x_add = _midp(tb_container_box)[0] - _midp(tb)[0]
@@ -93,6 +93,11 @@ def try_center_boxes(image: Image.Image, text_boxes: List[TextBox]):
                 result = generate_and_check_centered_box(tb, others, opt, image, iterations_left=5)
 
                 if result['error'] is None:
+                    # In Smarter redraw, we call try_center_boxes twice.
+                    # But we don't want to re-center boxes twice, that makes things weird(er).
+                    # So we mark successfully processed boxes here so that they don't get re-processed.
+                    result['box'].metadata['was_centered'] = True
+
                     new_boxes.append(result['box'])
                     opt_chosen = True
                     print_spam(f'Centered box initial / success:')
