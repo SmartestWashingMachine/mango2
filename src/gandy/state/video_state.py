@@ -1,5 +1,6 @@
 from typing import List
 
+# The state here is not actually used globally - it's recreated on every task5 call.
 
 class CacheOption:
     def __init__(self, name: str, max: int, is_column=False) -> None:

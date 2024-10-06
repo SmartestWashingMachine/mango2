@@ -1,9 +1,13 @@
 from typing import List
 
+def _postprocess_translated_text(t: str):
+    # Some characters in certain sequences can not be rendered. Weird SRT logic? FFMPEG parsing error? Who knows!
+    # Texts in the form "<abc>: def" are burned as ": def" - a simple naive fix is to replace < with [ and > with ].
+    return t.replace("<", "[").replace(">", "]")
 
 class TranslatedSegment:
     def __init__(self, text: str, at_frame: int) -> None:
-        self.text = text
+        self.text = _postprocess_translated_text(text)
         self.at_frame = at_frame
 
 
