@@ -10,9 +10,6 @@ from gandy.tasks.task5.filter_dominant_bbox import filter_dominant_bbox
 from gandy.utils.text_processing import merge_texts
 from gandy.utils.clean_text_v2 import clean_text_vq
 
-# TODO: Possibly use context
-context_input = []
-
 # Only retrieve the one largest box per frame.
 # This is just used for certain internal debugging purposes.
 ONLY_DOMINANT_BOX = False
@@ -84,6 +81,7 @@ def _get_source_text_from_frame(
         ctx.log("No text found in frame")
         return ""
 
+    context_input = [] # Context joining is done in set_neighboring_similar_source_texts.
     source_texts = merge_texts(source_texts, context_input)
 
     cache.push("images", transformed_image)

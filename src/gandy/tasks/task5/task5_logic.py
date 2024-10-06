@@ -10,6 +10,8 @@ from gandy.tasks.task5.stages.read_text_in_frames import read_text_in_frames
 from gandy.tasks.task5.stages.set_neighboring_similar_texts import set_neighboring_similar_texts
 from gandy.tasks.task5.stages.translate_text_in_frames import translate_text_in_frames
 from gandy.state.debug_state import debug_state
+from gandy.state.config_state import config_state
+from gandy.utils.text_processing import pack_context
 
 """
 
@@ -129,6 +131,9 @@ def process_task5(
 
         if debug_state.debug or debug_state.debug_dump_task5:
             dump_before_translation_debug_data(frame_source_texts)
+
+    # Add context as needed.
+    frame_source_texts = pack_context(frame_source_texts, config_state.n_context)
 
     ## STAGE 3: Translate each frame.
     segments = translate_text_in_frames(
