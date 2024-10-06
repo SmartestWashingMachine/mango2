@@ -1,24 +1,15 @@
 import os
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
-from gandy.tasks.task5.subtitle_maker import SubtitleMaker, TranslatedSegment
+from gandy.tasks.task5.subtitle_maker import SubtitleMaker
 from gandy.tasks.task5.video_burner import burn_subs
 from gandy.tasks.task5.generate_images import generate_images
 from gandy.tasks.task5.get_fps import get_fps
-from PIL import Image
 import tempfile
 import regex as re
-
-from gandy.state.video_state import make_image_cache, make_translation_cache
-
-from gandy.utils.fancy_logger import logger
-from gandy.tasks.task5.a_is_close_substring_of_b import a_is_close_substring_of_b
-
 from gandy.tasks.task5.stages.read_text_in_frames import read_text_in_frames
 from gandy.tasks.task5.stages.set_neighboring_similar_texts import set_neighboring_similar_texts
 from gandy.tasks.task5.stages.translate_text_in_frames import translate_text_in_frames
-
-from datetime import timedelta
-from uuid import uuid4
+from gandy.state.debug_state import debug_state
 
 """
 
@@ -73,6 +64,19 @@ Another idea would be to use the outputs from the MT encoder embeddings alone. I
 save_videos_path = os.path.expanduser("~/Documents/Mango/videos")
 save_subtitles_path = os.path.expanduser("~/Documents/Mango/subtitles")
 
+def dump_before_translation_debug_data(frame_source_texts):
+    import json
+    import os
+    import uuid
+
+    translation_input_data = {
+        'frame_source_texts': frame_source_texts,
+    }
+
+    os.makedirs('./debugdumps/task5_beforetranslation', exist_ok=True)
+    with open(f'./debugdumps/task5_beforetranslation/{uuid.uuid4().hex}.json', 'w', encoding='utf-8') as f:
+        json.dump(translation_input_data, f, ensure_ascii=False)
+
 
 def working_path(p: str, abs=False):
     ## FFMPeg needs paths in a specific format (at least for parsing subtitles).
@@ -96,6 +100,7 @@ def process_task5(
     mt_progress_callback,
     burn_progress_callback,
     every_secs=2,
+    frame_source_texts=None,
 ):
     """
     Adds text captions to an image.
@@ -109,22 +114,26 @@ def process_task5(
 
     total_frames = fps * video_duration_seconds
 
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        frame_image_paths = generate_images(
-            video_file_path, tmp_dir, every_secs=every_secs
-        )
+    if frame_source_texts is None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            frame_image_paths = generate_images(
+                video_file_path, tmp_dir, every_secs=every_secs
+            )
 
-        frame_source_texts = []
-
-        ## STAGE 1: Detect and OCR regions.
-        frame_source_texts = read_text_in_frames(app_container, frame_image_paths, every_secs, fps, total_frames, mt_progress_callback)
+            ## STAGE 1: Detect and OCR regions.
+            frame_source_texts = read_text_in_frames(app_container, frame_image_paths, every_secs, fps, total_frames, mt_progress_callback)
 
         ## STAGE 2: Reverse loop to find neighboring frames with similar texts.
         # This mutates in-place.
         set_neighboring_similar_texts(frame_source_texts, every_secs, fps, total_frames, mt_progress_callback)
 
-        ## STAGE 3: Translate each frame.
-        segments = translate_text_in_frames(app_container, frame_source_texts, every_secs, fps, total_frames, mt_progress_callback)
+        if debug_state.debug or debug_state.debug_dump_task5:
+            dump_before_translation_debug_data(frame_source_texts)
+
+    ## STAGE 3: Translate each frame.
+    segments = translate_text_in_frames(
+        app_container, frame_source_texts, every_secs, fps, total_frames, mt_progress_callback
+    )
 
     if len(segments) == 0:
         raise RuntimeError("No text detected in video.")
@@ -149,3 +158,19 @@ def process_task5(
     )
 
     return out_video_path
+
+def run_before_translation_debug_data(
+    dump_id: str,
+    app_container: AdvancedPipeline,
+    video_file_path: str,
+    mt_progress_callback,
+    burn_progress_callback,
+    every_secs=2,
+):
+    import json
+
+    with open(f'./debugdumps/task5_beforetranslation/{dump_id}.json', encoding='utf-8') as f:
+        translation_input_data = json.load(f)
+        fsts = translation_input_data['frame_source_texts']
+
+    return process_task5(app_container, video_file_path, mt_progress_callback, burn_progress_callback, every_secs, fsts)

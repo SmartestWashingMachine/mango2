@@ -1,6 +1,8 @@
 class DebugState:
     def __init__(self) -> None:
         self.debug = False
+        self.debug_dump_task5 = False
+
         self.metadata = {}
 
     def set_debug(self, d: bool):
