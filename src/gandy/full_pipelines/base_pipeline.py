@@ -130,6 +130,9 @@ class BasePipeline:
             )  # string
 
         return translation_output
+    
+    def embed_text(self, s: str):
+        return self.translation_app.get_sel_app().embed_text(s)
 
     def get_target_texts_from_str(
         self,

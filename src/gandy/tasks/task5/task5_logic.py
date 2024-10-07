@@ -127,7 +127,7 @@ def process_task5(
 
         ## STAGE 2: Reverse loop to find neighboring frames with similar texts.
         # This mutates in-place.
-        set_neighboring_similar_texts(frame_source_texts, every_secs, fps, total_frames, mt_progress_callback)
+        set_neighboring_similar_texts(app_container, frame_source_texts, every_secs, fps, total_frames, mt_progress_callback)
 
         if debug_state.debug or debug_state.debug_dump_task5:
             dump_before_translation_debug_data(frame_source_texts)

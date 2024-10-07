@@ -256,3 +256,13 @@ class Seq2SeqTranslationApp(BaseTranslation):
                 ctx.log(f"Poor text found - returning empty string")
 
         return output[0]
+
+    def embed_text(self, s: str):
+        if not self.loaded:
+            self.load_model()
+
+        if self.extra_preprocess is not None:
+            s = self.extra_preprocess(s)
+        inputs = self.source_encode(s)
+
+        return self.translation_model.encoder(**inputs)['last_hidden_state']
