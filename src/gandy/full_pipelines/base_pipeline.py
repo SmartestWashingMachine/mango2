@@ -344,6 +344,8 @@ class BasePipeline:
             # How do we handle this? Simple! After text recognition, combine all of the recognized text into one unit and translate it all together.
             source_texts = merge_texts(source_texts, context_input)
 
+            source_texts = replace_terms_source_side(source_texts, config_state.source_terms)
+
             target_texts = self.get_target_texts_from_str(
                 [source_texts], use_stream=use_stream
             )

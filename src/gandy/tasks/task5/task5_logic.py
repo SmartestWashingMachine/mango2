@@ -1,5 +1,6 @@
 import os
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
+from gandy.full_pipelines.base_pipeline import replace_terms_source_side
 from gandy.tasks.task5.subtitle_maker import SubtitleMaker
 from gandy.tasks.task5.video_burner import burn_subs
 from gandy.tasks.task5.generate_images import generate_images
@@ -125,15 +126,18 @@ def process_task5(
             ## STAGE 1: Detect and OCR regions.
             frame_source_texts = read_text_in_frames(app_container, frame_image_paths, every_secs, fps, total_frames, mt_progress_callback)
 
+        if debug_state.debug or debug_state.debug_dump_task5:
+            dump_before_translation_debug_data(frame_source_texts)
+
         ## STAGE 2: Reverse loop to find neighboring frames with similar texts.
         # This mutates in-place.
         set_neighboring_similar_texts(app_container, frame_source_texts, every_secs, fps, total_frames, mt_progress_callback)
 
-        if debug_state.debug or debug_state.debug_dump_task5:
-            dump_before_translation_debug_data(frame_source_texts)
-
     # Add context as needed.
     frame_source_texts = pack_context(frame_source_texts, config_state.n_context)
+
+    # Replace source-terms.
+    frame_source_texts = replace_terms_source_side(frame_source_texts, config_state.source_terms)
 
     ## STAGE 3: Translate each frame.
     segments = translate_text_in_frames(
