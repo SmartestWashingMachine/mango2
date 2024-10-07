@@ -17,13 +17,17 @@ def set_neighboring_similar_texts(app_container: AdvancedPipeline, frame_source_
 
     ### Use simple heuristics - no deep learning magick here.
     if USE_HEURISTICS:
+        prog_marker = 0
+
         for i in reversed(range(len(frame_source_texts))):
             if i == 0:
                 break
 
             seconds_state = i * every_secs
-            at_frame = (seconds_state) * fps
             timestamp = str(timedelta(seconds=seconds_state))
+
+            prog_marker += 1
+            at_frame = (prog_marker * every_secs) * fps
 
             prev = frame_source_texts[i - 1]
             cur = frame_source_texts[i]
@@ -46,14 +50,36 @@ def set_neighboring_similar_texts(app_container: AdvancedPipeline, frame_source_
                 mt_progress_callback((1 / 3) + ((at_frame / total_frames) / 3))
 
     ### Use MT embeddings for similarity.
+
+    prev_embs = [] # list of tuple (str TEXT, tensor EMBED)
+
+    def _get_from_prev_embs(t: str):
+        for p in prev_embs:
+            if p[0] == t:
+                return p[1]
+            
+        return None
+
+    def _add_to_prev_embs(prev_embs, t: str, emb):
+        prev_embs.append((t, emb))
+
+        if len(prev_embs) > 10:
+            prev_embs = prev_embs[1:]
+
+        return prev_embs
+
     if USE_MT_EMBEDDINGS:
+        prog_marker = 0
+
         for i in reversed(range(len(frame_source_texts))):
             if i == 0:
                 break
 
             seconds_state = i * every_secs
-            at_frame = (seconds_state) * fps
             timestamp = str(timedelta(seconds=seconds_state))
+
+            prog_marker += 1
+            at_frame = (prog_marker * every_secs) * fps
 
             prev = frame_source_texts[i - 1]
             cur = frame_source_texts[i]
@@ -61,9 +87,17 @@ def set_neighboring_similar_texts(app_container: AdvancedPipeline, frame_source_
             if prev == cur or prev is None or cur is None or len(prev) == 0 or len(cur) == 0:
                 continue
 
-            a = app_container.embed_text(prev)
-            b = app_container.embed_text(cur)
-            cos_score = cos_sim(a, b).item()
+            prev_emb = _get_from_prev_embs(prev)
+            cur_emb = _get_from_prev_embs(cur)
+            if prev_emb is None:
+                prev_emb = app_container.embed_text(prev)
+            if cur_emb is None:
+                cur_emb = app_container.embed_text(cur)
+
+            prev_embs = _add_to_prev_embs(prev_embs, prev, prev_emb)
+            prev_embs = _add_to_prev_embs(prev_embs, cur, cur_emb)
+
+            cos_score = cos_sim(prev_emb, cur_emb).item()
             is_close = cos_score >= EMB_THR
 
             with logger.begin_event(
