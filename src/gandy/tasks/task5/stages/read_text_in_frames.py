@@ -43,6 +43,7 @@ def _get_source_text_from_frame(
     if ONLY_DOMINANT_BOX:
         speech_bboxes = filter_dominant_bbox(speech_bboxes)
 
+    # NOTE that these len() checks are only for text detection models - NOT text line models (which is what is commonly used for task5).
     if len(speech_bboxes) == 1:
         cropped_image = rgb_image.crop(speech_bboxes[0])
 

@@ -1,7 +1,7 @@
 from gandy.text_detection.yolo_image_detection import YOLOTDImageDetectionApp
 import numpy as np
 import torch
-from gandy.text_detection.line_mixin import LineMixin
+from gandy.text_detection.line_mixin import LineMixin, ExpandedLineMixin
 
 
 # From ultralytics
@@ -50,4 +50,7 @@ class RTDetrImageDetectionApp(YOLOTDImageDetectionApp):
 
 
 class RTDetrLineImageDetectionApp(RTDetrImageDetectionApp, LineMixin):
+    pass
+
+class RTDetrExpandedLineImageDetectionApp(RTDetrImageDetectionApp, ExpandedLineMixin):
     pass

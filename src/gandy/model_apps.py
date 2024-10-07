@@ -30,6 +30,7 @@ from gandy.text_detection.yolo_image_detection import (
 from gandy.text_detection.rtdetr_image_detection import (
     RTDetrImageDetectionApp,
     RTDetrLineImageDetectionApp,
+    RTDetrExpandedLineImageDetectionApp,
 )
 from gandy.text_detection.none_image_detection import NoneImageDetectionApp
 from gandy.text_detection.union_image_detection import UnionImageDetectionApp
@@ -79,11 +80,12 @@ yolo_line_e = RTDetrLineImageDetectionApp(
     model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15,
 )
 
-yolo_line_emassive = RTDetrLineImageDetectionApp(
+yolo_line_emassive = RTDetrExpandedLineImageDetectionApp(
     model_name="yolo_line_emassive", confidence_threshold=0.4, iou_thr=0.15, image_size=1024,
 )
 
-yolo_line_emassive_calibrated = RTDetrLineImageDetectionApp(
+# Better LTR sorting.
+yolo_line_emassive_calibrated = RTDetrExpandedLineImageDetectionApp(
     model_name="yolo_line_emassive", confidence_threshold=0.6, iou_thr=0.15, image_size=1024,
 )
 
