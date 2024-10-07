@@ -66,10 +66,10 @@ const GlobalOptionsView = () => {
     };
   }, []);
 
-  const setStoreValue = async (key: string, value: any) => {
+  const setStoreValue = async (key: string, value: any, doResend = true) => {
     await MainGateway.setStoreValue(key, value);
 
-    await MainGateway.resendData();
+    if (doResend) await MainGateway.resendData();
 
     setLoadedData((d: any) => ({ ...d, [key]: value, }));
   };
@@ -133,14 +133,16 @@ const GlobalOptionsView = () => {
     return installedModels.indexOf(x.value) !== -1;
   };
 
-  const selectQuickPreset = (e: any) => {
+  const selectQuickPreset = async (e: any) => {
     const presetName = e.target.value;
     const preset = GLOBAL_OPTIONS_PARTIAL_PRESETS.find((x) => x.name === presetName);
     if (!preset) return;
 
     for (const [key, value] of Object.entries(preset.opts)) {
-      setStoreValue(key, value);
+      await setStoreValue(key, value, false);
     }
+
+    await MainGateway.resendData();
   };
 
   const presetEnabled = (x: any) => {
