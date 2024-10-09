@@ -52,7 +52,7 @@ def translate_task1_background_job(
             images_data = sorted(images_data, key=lambda tup: natsort(tup[1]))
 
             for img, img_name in images_data:
-                if debug_state.debug:
+                if debug_state.debug or debug_state.debug_redraw:
                     debug_state.metadata['cur_img_name'] = img_name
 
                 # The client really only uses progress for task1 anyways. The other progress_tasks aren't used... yet.

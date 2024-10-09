@@ -148,7 +148,7 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         target_texts: List[str],
         text_colors: List[str],
     ):
-        if debug_state.debug:
+        if debug_state.debug or debug_state.debug_redraw:
             self.save_recording(image, bboxes, target_texts, text_colors)
         # Initialize the TextBoxes and other vars.
         new_image = image.copy()
