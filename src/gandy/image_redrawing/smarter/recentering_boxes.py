@@ -96,7 +96,8 @@ def try_center_boxes(image: Image.Image, text_boxes: List[TextBox]):
                     # In Smarter redraw, we call try_center_boxes twice.
                     # But we don't want to re-center boxes twice, that makes things weird(er).
                     # So we mark successfully processed boxes here so that they don't get re-processed.
-                    result['box'].metadata['was_centered'] = True
+                    #result['box'].metadata['was_centered'] = True
+                    result['box'].metadata['container_box'] = TextBox.shift_from(result['box'].metadata['container_box'], offset_pct=[opt[0], opt[1], -opt[0], -opt[1]], is_abs=True)
 
                     new_boxes.append(result['box'])
                     opt_chosen = True
