@@ -60,5 +60,5 @@ ACTIONS: List[MoveAction] = [
     # Stackables.
     ExpandAspectAction(stackable=True),
     # A true final ditch measure!
-    MergeTextAction(shrink_factor=0.8, min_font_val=2, max_iterations=5),
+    MergeTextAction(shrink_factor=0.9, min_font_val=2, max_iterations=5),
 ]
