@@ -36,9 +36,14 @@ class TextBox():
         #self.x_add = (self.x2 - self.x1) // 2
         #self.y_add = (self.y2 - self.y1) // 2
 
+        self._old_x2 = None
+        self._old_y2 = None
+
         if self.font_size != -1:
             self.recompute()
 
+    # NOTE: [YUGE ERROR!] Due to the way x2 and y2 are set here, the box can shrink or adjust as it is recreated.
+    # TODO: Somehow fix the above.
     def recompute(self):
         font = FONT_MANAGER.get_font(self.font_size)
 
@@ -61,6 +66,8 @@ class TextBox():
         )
 
         self._bbox = bbox
+        self._old_x2 = self.x2
+        self._old_y2 = self.y2
 
         #When drawing, the point of origin changes -_-
         #self.x1 = bbox[0]
@@ -131,7 +138,14 @@ class TextBox():
     
     @classmethod
     def clone(cls, candidate):
-        return cls.shift_from(candidate, [0, 0, 0, 0])
+        # Due to the YUGE ERROR above, there's a quick hotfix applied here to keep the box consistent position-wise...
+        cand = cls.shift_from(candidate, [0, 0, 0, 0])
+
+        cand.x2 = candidate._old_x2 or cand.x2
+        cand.y2 = candidate._old_y2 or cand.y2
+        cand.recompute()
+
+        return cand
 
     @classmethod
     def from_speech_bubble(cls, bb, text: str, font_size: int, draw: ImageDraw.ImageDraw, img: Image.Image, container: ContainerBox, metadata):
@@ -152,7 +166,7 @@ class TextBox():
         )
     
     def __repr__(self) -> str:
-        return f'TextBox: {[int(self.x1), int(self.y1), int(self.x2), int(self.y2)]} || "{self.simple()}"'
+        return f'TextBox: {[int(self.x1), int(self.y1), int(self.x2), int(self.y2)]} || "{self.simple()}" || Width={self.get_width()} Font={self.font_size}'
     
     def simple(self):
         return self.text[:10].replace('\\n', ' ').replace('\n', ' ').strip()

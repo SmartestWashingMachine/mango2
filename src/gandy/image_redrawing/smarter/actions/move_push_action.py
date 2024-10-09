@@ -5,15 +5,16 @@ from typing import List
 from PIL import Image
 
 def get_wrong_direction_from_offset(shift_pct: List[float]):
+    dirs = ""
     if shift_pct[0] < 0:
-        return "l"
+        dirs += "l"
     if shift_pct[0] > 0:
-        return "r"
+        dirs += "r"
     if shift_pct[1] < 0:
-        return "u"
+        dirs += "u"
     if shift_pct[1] > 0:
-        return "d"
-    return ""
+        dirs += "d"
+    return dirs
 
 def push_others(boxes: List[TextBox], shift_pct: List[float], img: Image.Image):
     # Can't mutate in-place; affects originals.
