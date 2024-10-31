@@ -3,7 +3,7 @@ from gandy.image_redrawing.smarter.image_fonts import print_spam
 from typing import List
 from PIL import Image
 
-def text_intersects(box: TextBox, other_boxes: List[TextBox], return_indices=False):
+def text_intersects(box: TextBox, other_boxes: List[TextBox], return_indices=False, expand_x = 0, expand_y = 0):
     """
     Returns True if box overlaps with any of the other boxes, and False otherwise.
 
@@ -21,8 +21,8 @@ def text_intersects(box: TextBox, other_boxes: List[TextBox], return_indices=Fal
 
         # From: https://stackoverflow.com/questions/20925818/algorithm-to-check-if-two-boxes-overlap
         is_overlapping = _is_overlapping_1d(
-            box.x1, other.x1, box.x2, other.x2
-        ) and _is_overlapping_1d(box.y1, other.y1, box.y2, other.y2)
+            box.x1 + expand_x, other.x1, box.x2 + expand_x, other.x2
+        ) and _is_overlapping_1d(box.y1 + expand_y, other.y1, box.y2 + expand_y, other.y2)
         if is_overlapping:
             if return_indices:
                 indices.append(idx)

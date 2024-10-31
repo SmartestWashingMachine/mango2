@@ -111,8 +111,10 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
 
         box_is_bad = self.box_is_bad(box, others, img)
 
-        for next_action_idx in range(len(ACTIONS)):
-            cur_action = ACTIONS[next_action_idx]
+        actions_to_use = ACTIONS
+
+        for next_action_idx in range(len(actions_to_use)):
+            cur_action = actions_to_use[next_action_idx]
             if box_is_bad or (cur_action.stackable and not cur_action.only_on_failure):
                 box, others, did_succeed = cur_action.begin(candidate=box, others=others, img=img)
 
