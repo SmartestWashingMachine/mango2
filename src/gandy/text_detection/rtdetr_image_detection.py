@@ -2,7 +2,7 @@ from gandy.text_detection.yolo_image_detection import YOLOTDImageDetectionApp
 import numpy as np
 import torch
 from gandy.text_detection.line_mixin import LineMixin, ExpandedLineMixin
-
+from gandy.state.config_state import config_state
 
 # From ultralytics
 def xywh2xyxy(x):
@@ -50,7 +50,11 @@ class RTDetrImageDetectionApp(YOLOTDImageDetectionApp):
 
 
 class RTDetrLineImageDetectionApp(RTDetrImageDetectionApp, LineMixin):
-    pass
+    def check_cuda(self):
+        can_cuda = config_state.use_cuda
+        return can_cuda
 
 class RTDetrExpandedLineImageDetectionApp(RTDetrImageDetectionApp, ExpandedLineMixin):
-    pass
+    def check_cuda(self):
+        can_cuda = config_state.use_cuda
+        return can_cuda

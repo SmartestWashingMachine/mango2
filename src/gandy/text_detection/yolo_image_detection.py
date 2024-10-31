@@ -277,13 +277,18 @@ class YOLOTDImageDetectionApp(YOLOImageDetectionApp):
 
     def can_load(self):
         return super().can_load(f"models/yolo/{self.model_name}.onnx")
+    
+    def check_cuda(self):
+        # For a quick and dirty RT-DETR line model fix.
+        can_cuda = config_state.use_cuda and not config_state.force_td_cpu
+        return can_cuda
 
     def load_model(self):
         if not self.loaded:
-            can_cuda = config_state.use_cuda and not config_state.force_td_cpu
+            can_cuda = self.check_cuda()
 
             logger.info(
-                f"Loading object detection model ({self.model_name})... CUDA: {config_state.use_cuda} FORCE CPU: {config_state.force_td_cpu}"
+                f"Loading object detection model ({self.model_name})... CUDA: {config_state.use_cuda} FORCE CPU: {config_state.force_td_cpu} WILLCUDA={can_cuda}"
             )
             self.model = YOLOONNX(
                 f"models/yolo/{self.model_name}.onnx", use_cuda=can_cuda,
@@ -319,9 +324,11 @@ class YOLOLineImageDetectionApp(YOLOImageDetectionApp, LineMixin):
 
     def load_model(self):
         if not self.loaded:
-            can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+            # can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+            can_cuda = config_state.use_cuda
+
             logger.info(
-                f"Loading object line detection model ({self.model_name})... CUDA: {config_state.use_cuda} FORCE CPU: {config_state.force_td_cpu}"
+                f"Loading object line detection model ({self.model_name})... CUDA: {config_state.use_cuda}"
             )
             self.model = YOLOONNX(
                 f"models/yolo/{self.model_name}.onnx", use_cuda=can_cuda,
