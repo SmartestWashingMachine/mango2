@@ -17,6 +17,7 @@ import { useLoader } from "../../components/LoaderContext";
 import { useAlerts } from "../../components/AlertProvider";
 import ImageFolderInputDialog from "./components/ImageFolderInputDialog";
 import { useInstalledModelsRetriever } from "../../utils/useInstalledModelsRetriever";
+import { v4 as uuidv4 } from "uuid";
 
 const RightPane = memo(
   ({
@@ -130,12 +131,11 @@ const ImageView = () => {
   );
 
   const doneTranslatingAll = useCallback(async () => {
-    setLoading(false);
-    setLoadingProgress(0);
+    // no-op now.
   }, []);
 
   const startTranslating = useCallback(() => {
-    setLoadingProgress(0);
+    // setLoadingProgress(0);
     setLoading(true);
   }, []);
 
@@ -155,6 +155,8 @@ const ImageView = () => {
 
   const handleCreateFolderNameDone = useCallback(
     async (folderName: string) => {
+      const taskId = uuidv4();
+
       setCreateFolderOpen(false);
 
       startTranslating(); // Ensure the client is loading.
@@ -172,13 +174,14 @@ const ImageView = () => {
       await pollTranslateImagesStatus(
         updateProgress,
         doneWithOne,
-        doneTranslatingAll
+        doneTranslatingAll,
+        taskId,
       ); // Create a websocket to listen to the server for progress and the end result.
 
       // Now we actually begin the translation job on the server.
-      const sortedFileNames = await translateImages(files, null);
+      const sortedFileNames = await translateImages(files, null, taskId);
 
-      setPendingImageNames(sortedFileNames);
+      setPendingImageNames(l => [...l, ...sortedFileNames]);
     },
     [
       startTranslating,
@@ -224,6 +227,13 @@ const ImageView = () => {
       didCancel = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (pendingImageNames.length === 0) {
+      setLoading(false);
+      setLoadingProgress(0);
+    }
+  }, [pendingImageNames]);
 
   const handleRefresh = async () => {
     const w = window as any;

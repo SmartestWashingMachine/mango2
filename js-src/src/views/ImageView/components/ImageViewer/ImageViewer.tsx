@@ -80,7 +80,6 @@ const ImageViewer = ({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     noClick: true,
-    disabled: selectDisabled,
   });
 
   useEffect(() => {
@@ -221,7 +220,7 @@ const ImageViewer = ({
             dense
           />
         </Collapse>
-        <input {...getInputProps()} disabled={selectDisabled} />
+        <input {...getInputProps()} />
         <div className="imagePreviewContainer">
           <div className="imagePreviewTitle">
             <Typography variant="h6" align="center">

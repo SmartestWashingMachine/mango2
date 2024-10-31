@@ -27,6 +27,7 @@ def on_progress(progress: int, socketio):
 
 def translate_task1_background_job(
     images,
+    task_id: str,
 ):
     with logger.begin_event("Task1") as ctx:
         try:
@@ -84,25 +85,29 @@ def translate_task1_background_job(
                         "image": new_image_base64,
                         "imageName": new_img_name,
                         "annotations": annotations,
+                        "taskId": task_id,
                     },
                 )
                 socketio.sleep()
 
-            socketio.patched_emit("done_translating_task1", {})
+            socketio.patched_emit("done_translating_task1", { "taskId": task_id, })
             socketio.sleep()
         except Exception:
             logger.event_exception(ctx)
 
-            socketio.patched_emit("done_translating_task1", {})
+            socketio.patched_emit("done_translating_task1", { "taskId": task_id, })
             socketio.sleep()
 
 
 @app.route("/processtask1", methods=["POST"])
 def process_task1_route():
     images = request.files.getlist("file")
+    task_id = request.form.get('task_id', type=str)
+
     socketio.start_background_task(
         translate_task1_background_job,
         images,
+        task_id,
     )
 
     return {"processing": True}, 202

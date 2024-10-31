@@ -34,7 +34,6 @@ const ImageInput = ({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    disabled: selectDisabled,
   });
 
   const divClasses = classNames({
@@ -46,7 +45,7 @@ const ImageInput = ({
   const innerContent = (
     <Stack sx={{ width: "75%", alignSelf: "center" }} spacing={4}>
       <Paper {...getRootProps()} className={divClasses} elevation={2}>
-        <input {...getInputProps()} disabled={selectDisabled} />
+        <input {...getInputProps()} />
         <FolderIcon className="imageInputIcon" color="primary" />
         <Typography
           variant="h5"

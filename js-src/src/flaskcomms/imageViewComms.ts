@@ -2,7 +2,8 @@ import { makeSocket } from "./makeSocket";
 
 export const translateImages = async (
   files: any,
-  tgtContextMemory: string | null
+  tgtContextMemory: string | null,
+  taskId: string
 ) => {
   const apiUrl = "http://localhost:5000/processtask1";
 
@@ -30,6 +31,8 @@ export const translateImages = async (
     formData.append("tgt_context_memory", tgtContextMemory);
   }
 
+  formData.append("task_id", taskId);
+
   // We don't actually await here. We don't care about the output as the data is transmitted via websockets.
   const output = fetch(apiUrl, {
     method: "POST",
@@ -45,7 +48,8 @@ export const translateImages = async (
 export const pollTranslateImagesStatus = (
   progressCb: (progress: number) => void,
   itemCb: (image: string, imageName: string, annotations?: any) => void,
-  doneCb: () => void
+  doneCb: () => void,
+  taskId: string
 ) =>
   new Promise<void>((resolve) => {
     const socket = makeSocket();
@@ -59,12 +63,14 @@ export const pollTranslateImagesStatus = (
     });
 
     socket.on("item_task1", (data) => {
-      if (data && data.image && data.imageName) {
+      if (data && data.image && data.imageName && data.taskId === taskId) {
         itemCb(data.image, data.imageName, data.annotations);
       }
     });
 
-    socket.on("done_translating_task1", () => {
+    socket.on("done_translating_task1", (data) => {
+      if (data && data.taskId !== taskId) return;
+
       doneCb();
       socket.disconnect();
     });
