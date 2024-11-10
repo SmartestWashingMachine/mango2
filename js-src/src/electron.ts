@@ -17,11 +17,11 @@ import { OcrBoxManager } from "./electron/ocrUtils/ocrBox";
 import { createEssentialFolders } from "./electron/fileUtils/createEssentialFolders";
 import { OPTIONS_PRESETS } from "./utils/boxPresets";
 
-import http from 'http';
-import { Server } from 'socket.io';
+import http from "http";
+import { Server } from "socket.io";
 
-app.commandLine.appendSwitch('disable-renderer-backgrounding');
-app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch("disable-renderer-backgrounding");
+app.commandLine.appendSwitch("disable-background-timer-throttling");
 
 // Bricks OCR window screenshotting. The fudge ElectronJS? Why do you have to be shady?
 // app.disableHardwareAcceleration();
@@ -36,6 +36,8 @@ const electronState: ElectronState = {
   texts: [],
 };
 
+const lockTop = app.commandLine.hasSwitch("locktop"); // For dev usage.
+
 const createWindow = () => {
   const win = new BrowserWindow({
     width: 800,
@@ -49,7 +51,8 @@ const createWindow = () => {
     frame: isDev, // No menu bars nor top bar.
     resizable: true,
     titleBarStyle: isDev ? "default" : "hidden",
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
+    alwaysOnTop: lockTop || undefined,
   });
 
   console.log("Window created.");
@@ -79,7 +82,7 @@ app.whenReady().then(async () => {
   const boxes = store.get("boxes") as any[];
 
   if (boxes.length === 0) {
-    const boxes = [{ ...OPTIONS_PRESETS[0].options, boxId: 'firstbox' }];
+    const boxes = [{ ...OPTIONS_PRESETS[0].options, boxId: "firstbox" }];
     store.set("boxes", boxes);
   }
 
@@ -101,13 +104,19 @@ app.whenReady().then(async () => {
 
   // TODO: Do I need expressJS? I hope not.
 
-  const io = new Server(server, { pingTimeout: 100000, maxHttpBufferSize: 1e10 });
-  io.on('connection', (socket) => {
+  const io = new Server(server, {
+    pingTimeout: 100000,
+    maxHttpBufferSize: 1e10,
+  });
+  io.on("connection", (socket) => {
     // Act as a bridge. Cybersecurity says what?
     socket.onAny((evName, ...args) => {
       // console.log(`Emitting ${evName}`);
 
-      const browWindows: BrowserWindow[] = [mainWindow, ...electronState.managers.map(x => x.ocrWindow)];
+      const browWindows: BrowserWindow[] = [
+        mainWindow,
+        ...electronState.managers.map((x) => x.ocrWindow),
+      ];
       for (const win of browWindows) {
         if (win) {
           win.webContents.send(`bridge_${evName}`, ...args);
@@ -117,7 +126,7 @@ app.whenReady().then(async () => {
   });
 
   server.listen(5100, () => {
-    console.log('Experimental WS server listening on port 5100.');
+    console.log("Experimental WS server listening on port 5100.");
   });
 
   // API call.
