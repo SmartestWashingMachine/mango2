@@ -71,7 +71,7 @@ const questions = [
       `Take a look at the "Settings" tab! There are a lot of things you can configure, such as...`,
       "A. Decreasing max context will moderately improve speed.",
       "B. Reducing beam size will improve speed. (e.g: setting beam size to 1)",
-      "C. (The big one!) Enable CUDA. In CUDA mode, processing can be MUCH faster (sometimes even up to 10x!), but it requires the CUDA Toolkit to be installed (which can be upwards of 5gbs).",
+      "C. (The big one!) Enable CUDA. In CUDA mode, processing can be MUCH faster (sometimes even up to 10x!), but it requires a CUDA compatible GPU.",
     ],
   },
   {
