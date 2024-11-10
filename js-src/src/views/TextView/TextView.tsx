@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import BaseView from "../BaseView";
 import TextField from "@mui/material/TextField";
 import {
@@ -30,6 +30,10 @@ import { pTransformerJoin } from "../../utils/pTransformerJoin";
 import { debugListeners } from "../../flaskcomms/debugListeners";
 import { MainGateway } from "../../utils/mainGateway";
 import { useAlerts } from "../../components/AlertProvider";
+import { useInterval } from "../..//utils/useInterval";
+import ContentPasteIcon from "@mui/icons-material/ContentPaste";
+
+const SPLIT_AND_QUEUES = [/(?=「)/, "　"];
 
 type TextViewProps = {
   onOpenOcrSettings: () => void;
@@ -65,6 +69,14 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   // Users can make the history list smaller for easier navigation.
   const [briefHistory, setBriefHistory] = useState(false);
 
+  const prevClipboardRef = useRef<string | null>();
+  const [readClipboardDelay, setReadClipboardDelay] = useState<number | null>(
+    null
+  );
+
+  const handleToggleClipboardReading = () =>
+    setReadClipboardDelay((d) => (d === null ? 250 : null));
+
   const handleSearchChange = (e: any) => setSearch(e.currentTarget.value);
 
   const handleContextEnabled = () => setContextEnabled((s) => !s);
@@ -88,7 +100,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     const csvRows = texts.map((t) => [t.sourceText, t.targetText]);
     await w.electronAPI.saveCsvFile(csvRows, ["SourceText", "TargetText"]);
 
-    pushAlert('Saved in documents.');
+    pushAlert("Saved in documents.");
   };
 
   const pushContext = useCallback(
@@ -105,15 +117,17 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     [contextIds]
   );
 
-  const transformInput = () => {
-    const contextSourceTexts = texts
-      .filter((t) => contextIds.indexOf(t.uuid) > -1)
-      .map((t) => t.sourceText);
-    const curSourceText = inputText;
+  const transformInput = useCallback(
+    (curSourceText: string) => {
+      const contextSourceTexts = texts
+        .filter((t) => contextIds.indexOf(t.uuid) > -1)
+        .map((t) => t.sourceText);
 
-    const joined = pTransformerJoin([...contextSourceTexts, curSourceText]);
-    return joined;
-  };
+      const joined = pTransformerJoin([...contextSourceTexts, curSourceText]);
+      return joined;
+    },
+    [contextIds, texts]
+  );
 
   const doneTranslatingOne = useCallback(
     async (sourceText: string | null, targetText: string | null) => {
@@ -141,26 +155,67 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     setLoading(true);
   }, []);
 
+  const processOneText = (inp: string) => {
+    return new Promise(async (resolve) => {
+      // Create a websocket to listen to the server for progress and the end result.
+      await pollTranslateTextStatus(
+        () => {},
+        doneTranslatingOne,
+        () => {
+          resolve(null);
+
+          doneTranslatingAll();
+        }
+      );
+
+      // Now we actually begin the translation job on the server.
+      await translateText(inp, null, null);
+    });
+  };
+
+  // Used for handleProcessTextClick.
+  const splitByChar = (textToSplitOn: string, char: any) => {
+    return textToSplitOn
+      .split(char)
+      .map((x) => x.trim())
+      .filter((x) => x.length > 0);
+  };
+
   /**
    * Submit text to the backend for translating, and receive the end result via websockets.
    */
-  const handleProcessTextClick = async () => {
+  const handleProcessTextClick = async (
+    textToUse?: string,
+    splitBy?: any[]
+  ) => {
     if (loading) return;
 
-    // Combine inputText with the context.
-    const inp = transformInput();
+    const curSourceText = textToUse || inputText;
+    if (!textToUse) {
+      setInputText("");
+    }
 
-    setInputText("");
+    let allInps = [curSourceText];
+    if (splitBy && splitBy.length > 0 && curSourceText.length > 75) {
+      // Find the first split character that matters.
+      for (const char of splitBy) {
+        allInps = splitByChar(curSourceText, char);
+        if (allInps.length > 1) break;
+      }
+    }
 
-    startTranslating(); // Ensure the client is loading.
-    await pollTranslateTextStatus(
-      () => { },
-      doneTranslatingOne,
-      doneTranslatingAll
-    ); // Create a websocket to listen to the server for progress and the end result.
+    for (const curInputText of allInps) {
+      // Combine curInputText with the context.
+      // NOTE: Due to react async shenanigans, context will not be applied here (it uses whatever is known for the "first text")
+      const inp = transformInput(curInputText);
 
-    // Now we actually begin the translation job on the server.
-    await translateText(inp, null, null);
+      startTranslating(); // Ensure the client is loading.
+
+      // Create a websocket to listen to the server for progress and the end result.
+      // Also process the given inp.
+      // Resolve when the text is done.
+      await processOneText(inp);
+    }
   };
 
   const handleProcessTextEnter = async (e: any) => {
@@ -171,6 +226,17 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
       await handleProcessTextClick();
     }
   };
+
+  // If the "Read From Clipboard" mode is on (delay is non-null), then automatically translate the clipboard every now and then.
+  // Unlike the one from the OCR box, this one is special as it splits long paragraphs (see SPLIT_AND_QUEUES above).
+  useInterval(async () => {
+    const clipboard = await MainGateway.readClipboard();
+
+    if (prevClipboardRef.current === clipboard) return;
+    prevClipboardRef.current = clipboard;
+
+    await handleProcessTextClick(clipboard, SPLIT_AND_QUEUES);
+  }, readClipboardDelay);
 
   const handleInputChange = (e: any) => setInputText(e.currentTarget.value);
 
@@ -287,7 +353,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
       <Tooltip title={briefHistory ? "Expand History" : "Minimize History"}>
         <Paper elevation={2}>
           <IconButton
-            onClick={() => setBriefHistory(h => !h)}
+            onClick={() => setBriefHistory((h) => !h)}
             sx={{ borderRadius: 0 }}
           >
             <ReorderIcon />
@@ -322,6 +388,22 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
         <Paper elevation={2}>
           <IconButton onClick={handleContextEnabled} sx={{ borderRadius: 0 }}>
             <AutoStoriesIcon />
+          </IconButton>
+        </Paper>
+      </Tooltip>
+      <Tooltip
+        title={
+          readClipboardDelay !== null
+            ? "Stop Reading From Clipboard"
+            : "Read From Clipboard"
+        }
+      >
+        <Paper elevation={2}>
+          <IconButton
+            onClick={handleToggleClipboardReading}
+            sx={{ borderRadius: 0 }}
+          >
+            <ContentPasteIcon />
           </IconButton>
         </Paper>
       </Tooltip>
@@ -411,7 +493,9 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={handleProcessTextClick}
+                        onClick={() => {
+                          handleProcessTextClick();
+                        }}
                         disabled={loading}
                         color="primary"
                         edge="end"

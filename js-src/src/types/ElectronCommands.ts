@@ -29,10 +29,11 @@ enum ElectronCommands {
   OPEN_MODELS_FOLDER = "open-models-folder",
   OPEN_FONTS_FOLDER = "open-fonts-folder",
   OPEN_LOGS_FOLDER = "open-logs-folder",
-  IMPORT_TERMS = 'import-terms',
-  EXPORT_TERMS = 'export-terms',
-  RESET_SETTINGS = 'reset-settings',
-  CONNECTED_OCR_BOX = 'connected-ocr-box',
+  IMPORT_TERMS = "import-terms",
+  EXPORT_TERMS = "export-terms",
+  RESET_SETTINGS = "reset-settings",
+  CONNECTED_OCR_BOX = "connected-ocr-box",
+  READ_CLIPBOARD = "read-clipboard",
 }
 
 export default ElectronCommands;

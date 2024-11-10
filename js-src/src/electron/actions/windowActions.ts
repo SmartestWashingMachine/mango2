@@ -1,4 +1,4 @@
-import { app } from "electron";
+import { app, clipboard } from "electron";
 import ElectronCommands from "../../types/ElectronCommands";
 import { GatewayAction } from "../../types/GatewayAction";
 import { createHelpWindow } from "../createHelpWindow";
@@ -50,4 +50,18 @@ const openHelpWindow: GatewayAction = {
   },
 };
 
-export default [closeWindow, expandWindow, hideApp, openHelpWindow];
+const readClipboard: GatewayAction = {
+  command: ElectronCommands.READ_CLIPBOARD,
+  commandType: "handle",
+  fn: async () => {
+    return clipboard.readText();
+  },
+};
+
+export default [
+  closeWindow,
+  expandWindow,
+  hideApp,
+  openHelpWindow,
+  readClipboard,
+];

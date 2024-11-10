@@ -99,7 +99,9 @@ const HistoryPane = ({
           <Virtuoso
             style={{ height: "100%" }}
             totalCount={textItemsData.length}
-            itemContent={(index) => <HistoryItem {...textItemsData[index]} isBrief={isBrief} />}
+            itemContent={(index) => (
+              <HistoryItem {...textItemsData[index]} isBrief={isBrief} />
+            )}
             ref={ref}
             initialItemCount={initialItemCount || undefined}
             followOutput={() => true}
@@ -108,9 +110,11 @@ const HistoryPane = ({
           <Virtuoso
             style={{ height: "100%" }}
             totalCount={textItemsData.length}
-            itemContent={(index) => <HistoryItem {...textItemsData[index]} isBrief={isBrief} />}
+            itemContent={(index) => (
+              <HistoryItem {...textItemsData[index]} isBrief={isBrief} />
+            )}
             ref={ref}
-            followOutput={() => true}
+            followOutput={() => "smooth"}
           />
         ) // React virtuoso still sets initialItemCount if undefined... very annoying.
       }

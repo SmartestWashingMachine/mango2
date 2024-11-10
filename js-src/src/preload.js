@@ -14,6 +14,7 @@ const initializeListener = (channel, cb) => {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  readClipboard: () => ipcRenderer.invoke('read-clipboard'), // NOTE: Somewhat insecure - we don't want clients arbitrarily reading the clipboard contents.
   createOcrBox: () => ipcRenderer.send('create-ocr-box'),
   retrieveFiles: (retrieveMode) => ipcRenderer.invoke('retrieve-files', retrieveMode),
   saveBase64Files: (files, folderName, fileName, annotations) => ipcRenderer.invoke('process-files', files, folderName, fileName, annotations),

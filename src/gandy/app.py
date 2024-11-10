@@ -70,7 +70,7 @@ if ENABLE_WEB_UI:
 
 
 def run_server():
-    serve(app, host='0.0.0.0', port=5000)
+    serve(app, host='0.0.0.0', port=5000, threads=1)
     # app.run(host="0.0.0.0", debug=False)
 
 
