@@ -29,7 +29,7 @@ def create_entire_bbox(image: Image):
 
 
 def replace_terms_source_side(sentences, terms):
-    return replace_terms(sentences, terms, on_side="source")
+    return replace_terms(sentences, terms, on_side="source", split_context=True)
 
 
 def replace_terms_target_side(sentences, terms):
