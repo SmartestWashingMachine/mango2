@@ -39,6 +39,12 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
     props.onDone(folderName.trim());
   };
 
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleDone();
+    }
+  };
+
   // Only goes to depth 1.
   const folderExists =
     !!props.rootItem &&
@@ -63,9 +69,14 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
         inputRef={ref}
         error={folderExists}
         helperText={folderExists ? "This folder already exists." : undefined}
+        onKeyDown={onKeyDown}
       />
       <DialogActions>
-        <Button onClick={handleDone} fullWidth disabled={folderName.length === 0}>
+        <Button
+          onClick={handleDone}
+          fullWidth
+          disabled={folderName.length === 0}
+        >
           Done
         </Button>
       </DialogActions>
