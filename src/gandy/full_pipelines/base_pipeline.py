@@ -18,6 +18,7 @@ from gandy.utils.join_nearby_speech_bubbles import (
     join_nearby_speech_bubbles_for_source_texts,
 )
 from gandy.utils.image_chunking import detect_image_chunks
+from math import floor
 
 
 def create_entire_bbox(image: Image):
@@ -140,6 +141,7 @@ class BasePipeline:
         use_stream: bool,
         socketio: SocketIO = None,
         with_global_cache=False,
+        progress_cb=None,
     ):
         target_texts: List[str] = []
 
@@ -159,6 +161,13 @@ class BasePipeline:
             )  # string
 
             target_texts.append(translation_output)
+
+            if progress_cb is not None:
+                # Max progress for this part is 80.
+                # Min is 50.
+                progress_cb(
+                    progress=(50 + floor(30 * (idx / len(source_texts))))
+                )
 
         return replace_terms_target_side(target_texts, config_state.target_terms)
 
@@ -252,7 +261,7 @@ class BasePipeline:
             source_texts = pack_context(source_texts, config_state.n_context, ignore_single_words_in_context=True)
 
             target_texts = self.get_target_texts_from_str(
-                source_texts=source_texts, use_stream=None
+                source_texts=source_texts, use_stream=None, progress_cb=progress_cb,
             )
             if progress_cb is not None:
                 progress_cb(80)
