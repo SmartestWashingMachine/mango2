@@ -12,7 +12,8 @@ import { CLEANING_OPTIONS } from "../../../../utils/appOptions/cleaningOptions";
 import { REDRAWING_OPTIONS } from "../../../../utils/appOptions/redrawingOptions";
 import UpdateNumberField from "../../../../components/UpdateNumberField";
 
-const chunkTip = "Images can be split into small chunks for better text detection at the cost of speed. The translated image chunks will then be merged for the final image.";
+const chunkTip =
+  "Images can be split into small chunks for better text detection at the cost of speed. The translated image chunks will then be merged for the final image.";
 
 export type ImageViewOptionsProps = {
   cleaningMode: string;
@@ -36,11 +37,7 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
   };
 
   const renderItem = (x: { name: string; value: string; desc: string }) => [
-    <MenuItem
-      value={x.value}
-      dense
-      disabled={!itemEnabled(x)}
-    >
+    <MenuItem value={x.value} dense disabled={!itemEnabled(x)}>
       {x.name}
     </MenuItem>,
     <MenuItem disabled value="" divider dense>
@@ -49,7 +46,7 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
   ];
 
   const itemEnabled = (x: { name: string; value: string; desc: string }) => {
-    return (props.installedModels.indexOf(x.value) !== -1) || (x.name === "None");
+    return props.installedModels.indexOf(x.value) !== -1 || x.name === "None";
   };
 
   // Since UpdateNumberField uses defaultValues.
@@ -58,15 +55,18 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
   return (
     <Paper elevation={2} sx={{ padding: 4 }}>
       <Stack spacing={4}>
-        <Stack direction={{ sm: "column", md: "row", }} spacing={{ sm: 4, md: 8, }}>
+        <Stack
+          direction={{ sm: "column", md: "row" }}
+          spacing={{ sm: 4, md: 8 }}
+        >
           <UpdateNumberField
             label="Tile Width %"
             changeValue={(_, val: any) => props.onChangeTileWidth(val)}
             keyName="tileWidth"
             defaultValue={props.tileWidth}
-            valueType="int"
+            valueType="float"
             safeValue={100}
-            minValue={1}
+            minValue={0.0000000000001}
             maxValue={100}
             tooltip={chunkTip}
           />
@@ -75,9 +75,9 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
             changeValue={(_, val: any) => props.onChangeTileHeight(val)}
             keyName="tileHeight"
             defaultValue={props.tileHeight}
-            valueType="int"
+            valueType="float"
             safeValue={100}
-            minValue={1}
+            minValue={0.0000000000001}
             maxValue={100}
             tooltip={chunkTip}
           />
