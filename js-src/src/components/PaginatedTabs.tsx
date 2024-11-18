@@ -108,8 +108,14 @@ const PaginatedTabs = (props: PaginatedTabsProps) => {
         value={search}
         fullWidth
         size="small"
+        autoFocus
       />
-      <Grid container spacing={2} sx={{ minHeight: "90%" }} key={props.itemsKey || "items-key"}>
+      <Grid
+        container
+        spacing={2}
+        sx={{ minHeight: "90%" }}
+        key={props.itemsKey || "items-key"}
+      >
         <Grid item xs={3}>
           <Stack spacing={1} sx={{ padding: 2, height: "100%" }}>
             {createHeaders()}
@@ -133,14 +139,16 @@ const PaginatedTabs = (props: PaginatedTabsProps) => {
         </Grid>
         <Divider orientation="vertical" flexItem sx={{ mr: "-1px" }} />
         <Grid item xs={9}>
-          {props.showItems !== false && <Stack spacing={2} sx={{ padding: 2 }}>
-            {props.items[selCategory] && (
-              <Typography align="center" variant="h6">
-                {selCategory}
-              </Typography>
-            )}
-            {search.length === 0 ? flattenElements() : lookforElements()}
-          </Stack>}
+          {props.showItems !== false && (
+            <Stack spacing={2} sx={{ padding: 2 }}>
+              {props.items[selCategory] && (
+                <Typography align="center" variant="h6">
+                  {selCategory}
+                </Typography>
+              )}
+              {search.length === 0 ? flattenElements() : lookforElements()}
+            </Stack>
+          )}
         </Grid>
       </Grid>
     </Stack>
