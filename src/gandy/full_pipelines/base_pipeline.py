@@ -249,7 +249,7 @@ class BasePipeline:
                     n_after=len(speech_bboxes),
                 )
 
-            source_texts = pack_context(source_texts, config_state.n_context)
+            source_texts = pack_context(source_texts, config_state.n_context, ignore_single_words_in_context=True)
 
             target_texts = self.get_target_texts_from_str(
                 source_texts=source_texts, use_stream=None

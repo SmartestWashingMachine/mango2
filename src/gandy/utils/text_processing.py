@@ -10,19 +10,29 @@ def concat_text(text: str, context: List[str]):
     return SEP_TOKEN.join(context) + TSOS_TOKEN + text
 
 
-def pack_context(source_texts: List[str], n_context: int):
+# If ignore_single_words_in_context is on (from image translations):
+# texts with only one word are not used as context for other texts.
+# texts with only one word can still use context (that have more than one word still).
+def pack_context(source_texts: List[str], n_context: int, ignore_single_words_in_context = False):
     new_sources: List[str] = []
 
+    contexts_to_use: List[str] = []
     for idx, st in enumerate(source_texts):
-        if idx == 0:
-            new_sources.append(st)
-            continue
-
-        slice_idx = max(0, idx - max(n_context - 1, 0))
-        others = source_texts[slice_idx:idx]
-        concat = concat_text(st, others)
+        if len(contexts_to_use) > 0:
+            concat = concat_text(st, contexts_to_use)
+        else:
+            concat = st
 
         new_sources.append(concat)
+
+        if ignore_single_words_in_context:
+            if len(st.split(' ')) > 1:
+                contexts_to_use.append(st)
+        else:
+            contexts_to_use.append(st)
+
+        if len(contexts_to_use) > 0 and len(contexts_to_use) > (n_context - 1):
+            contexts_to_use = contexts_to_use[1:]
 
     return new_sources
 
