@@ -356,7 +356,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
             onClick={() => setBriefHistory((h) => !h)}
             sx={{ borderRadius: 0 }}
           >
-            <ReorderIcon />
+            <ReorderIcon color={briefHistory ? "primary" : undefined} />
           </IconButton>
         </Paper>
       </Tooltip>
@@ -387,7 +387,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
       >
         <Paper elevation={2}>
           <IconButton onClick={handleContextEnabled} sx={{ borderRadius: 0 }}>
-            <AutoStoriesIcon />
+            <AutoStoriesIcon color={contextEnabled ? "primary" : undefined} />
           </IconButton>
         </Paper>
       </Tooltip>
@@ -403,14 +403,16 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
             onClick={handleToggleClipboardReading}
             sx={{ borderRadius: 0 }}
           >
-            <ContentPasteIcon />
+            <ContentPasteIcon
+              color={readClipboardDelay !== null ? "primary" : undefined}
+            />
           </IconButton>
         </Paper>
       </Tooltip>
       <Tooltip title={isSideView ? "Vertical Mode" : "Horizontal Mode"}>
         <Paper elevation={2}>
           <IconButton onClick={toggleSideView} sx={{ borderRadius: 0 }}>
-            <OpenInFullIcon />
+            <OpenInFullIcon color={isSideView ? "primary" : undefined} />
           </IconButton>
         </Paper>
       </Tooltip>
@@ -430,20 +432,6 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
           <Grid item xs={6}>
             <Paper className="fullWidth" elevation={2}>
               <TextField
-                label="Output"
-                size="small"
-                placeholder="Target text will appear here."
-                multiline
-                rows={15}
-                value={
-                  texts.length === 0 ? "" : texts[texts.length - 1].targetText
-                }
-              />
-            </Paper>
-          </Grid>
-          <Grid item xs={6}>
-            <Paper className="fullWidth" elevation={2}>
-              <TextField
                 label="Input"
                 size="small"
                 placeholder="Enter text here..."
@@ -452,6 +440,20 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
                 multiline
                 rows={15}
                 onKeyDown={handleProcessTextEnter}
+              />
+            </Paper>
+          </Grid>
+          <Grid item xs={6}>
+            <Paper className="fullWidth" elevation={2}>
+              <TextField
+                label="Output"
+                size="small"
+                placeholder="Target text will appear here."
+                multiline
+                rows={15}
+                value={
+                  texts.length === 0 ? "" : texts[texts.length - 1].targetText
+                }
               />
             </Paper>
           </Grid>
