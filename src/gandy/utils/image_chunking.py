@@ -11,6 +11,26 @@ from gandy.utils.fancy_logger import logger
 def box_area(b: SpeechBubble):
   return (b[3] - b[1]) * (b[2] - b[0])
 
+def merge_and_validate(speech_bboxes: List[SpeechBubble], idx: int):
+  # Merge a box and return True if a box was merged.
+
+  b = speech_bboxes[idx]
+
+  others = speech_bboxes[:idx] + speech_bboxes[(idx + 1):]
+  for other_idx in range(len(others)):
+    o = others[other_idx]
+
+    # Merge!
+    if box_b_in_box_a_thr(box_a=b, box_b=o) >= 0.3:
+      # Merge this box...
+      speech_bboxes[idx] = SpeechBubble([min(b[0], o[0]), min(b[1], o[1]), max(b[2], o[2]), max(b[3], o[3])])
+      # Then delete the other...
+      speech_bboxes = speech_bboxes[:other_idx] + speech_bboxes[(other_idx + 1):]
+
+      return speech_bboxes, True # A box was merged.
+    
+  return speech_bboxes, False
+
 def detect_image_chunks(img: Image.Image, tile_width: int, tile_height: int, detect_in_chunk):
   # tile_width/tile_height = int from [0, 100]. 50 would mean 50%.
   # Returns a list of split image chunks.
@@ -20,8 +40,8 @@ def detect_image_chunks(img: Image.Image, tile_width: int, tile_height: int, det
   chunk_y = ceil(img.height * (tile_height / 100))
 
   overlap_frac = 0.2
-  overlap_x = ceil(tile_width * overlap_frac)
-  overlap_y = ceil(tile_height * overlap_frac)
+  overlap_x = ceil(chunk_x * overlap_frac)
+  overlap_y = ceil(chunk_y * overlap_frac)
 
   speech_bboxes: List[SpeechBubble] = []
 
@@ -61,58 +81,23 @@ def detect_image_chunks(img: Image.Image, tile_width: int, tile_height: int, det
       chunked_speech_bboxes = [[s[0] + crop_x1, s[1] + crop_y1, s[2] + crop_x1, s[3] + crop_y1] for s in chunked_speech_bboxes]
       speech_bboxes.extend(chunked_speech_bboxes)
 
-      # Process each img; get speech_bboxes. Extend
+      # Process each img; get speech_bboxes.
 
-  """
-  # Because we have overlapping chunks, some speech bubbles could be overlapping.
-  # So let's prioritize keeping the box with the largest area.
-  true_speech_bboxes: List[SpeechBubble] = []
+  # iterate over every box.
+  # if box overlaps another, merge it, removing it from the list before repeating.
+  failsafe_max_n = 0
+  while failsafe_max_n < 10:
+    failsafe_max_n += 1
+    can_break = True
 
-  # TODO: Lots of optimizations to be made.
-  bad_indices = set() # Indices to ignore.
-  for idx, b in enumerate(speech_bboxes):
-    others = speech_bboxes[:idx] + speech_bboxes[(idx + 1):]
+    for idx in range(len(speech_bboxes)):
+      speech_bboxes, did_merge = merge_and_validate(speech_bboxes, idx)
+      if did_merge:
+        can_break = not did_merge
+        break
 
-    for other_idx, o in enumerate(others):
-      if other_idx in bad_indices:
-        continue
+    if can_break:
+      break
 
-      if box_b_in_box_a_thr(box_a=b, box_b=o) >= 0.3:
-        if box_area(o) >= box_area(b):
-          bad_indices.add(idx)
-          break
-        else:
-          bad_indices.add(other_idx)
-
-    if idx in bad_indices:
-      continue # This was a bad box (overlapping another, probably near a chunk edge, yet smaller).
-
-    # Good box!
-    true_speech_bboxes.append(b)
-  """
-
-  # Because we have overlapping chunks, some speech bubbles could be overlapping.
-  # So we merge overlapping bboxes here.
-  true_speech_bboxes: List[SpeechBubble] = []
-
-  # TODO: Lots of optimizations to be made.
-  bad_indices = set() # Indices to ignore - these bboxes were already merged.
-  for idx, b in enumerate(speech_bboxes):
-    if idx in bad_indices:
-      continue # This was a bad box that was already used to extend/merge with another below.
-
-    others = speech_bboxes[:idx] + speech_bboxes[(idx + 1):]
-
-    for other_idx, o in enumerate(others):
-      if other_idx in bad_indices:
-        continue
-
-      # Merge!
-      if box_b_in_box_a_thr(box_a=b, box_b=o) >= 0.3:
-        b = SpeechBubble([min(b[0], o[0]), min(b[1], o[1]), max(b[2], o[2]), max(b[3], o[3])])
-        bad_indices.add(other_idx)
-
-    # Good box!
-    true_speech_bboxes.append(b)
-
-  return true_speech_bboxes
+  return speech_bboxes
+  
