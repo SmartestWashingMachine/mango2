@@ -13,17 +13,29 @@ def set_lang_as_c(tokenizer):
 
 
 def prepend_qual(s: str):
+    # A little history: On older models, two Q9 tags worked better than one.
+    # Why two Q9? I have no idea why, but it somehow improved the quality further! (3 no effect?)
+    # No - there is no training data with two Q9s. So WTF is going on?
+    # It must be something in the water.
+
+    return f"<Q9>{clean_text_vq(s)}"
+
+def prepend_qual_mad(s: str):
     return f"<Q9>{clean_text_vq(s)}"
 
 def prepend_mad_qual(s: str):
-    return f"<2en> {prepend_qual(s)}"
+    return f"<2en> {prepend_qual_mad(s)}"
 
 
 def remove_unnecessary_eng_tokens(s: str):
-    return s.replace("eng_Latn", "").replace(
+    s = s.replace("eng_Latn", "").replace(
         "<TSOS>",
         "",
     )
+
+    # Had to do this due to a data clean/filter error in our new dataset.
+    s = s.replace('$1', '...')
+    return s
 
 def remove_unnecessary_eng_tokens_mad(s: str):
     return s.replace("<unk>", "").replace(
