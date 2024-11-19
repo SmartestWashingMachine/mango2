@@ -66,7 +66,7 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
             defaultValue={props.tileWidth}
             valueType="float"
             safeValue={100}
-            minValue={0.0000000000001}
+            minValue={0}
             maxValue={100}
             tooltip={chunkTip}
           />
@@ -77,7 +77,7 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
             defaultValue={props.tileHeight}
             valueType="float"
             safeValue={100}
-            minValue={0.0000000000001}
+            minValue={0}
             maxValue={100}
             tooltip={chunkTip}
           />

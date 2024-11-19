@@ -7,8 +7,21 @@ from gandy.utils.natsort import natsort
 from gandy.app import app, translate_pipeline, socketio
 from gandy.utils.fancy_logger import logger
 from gandy.state.debug_state import debug_state
+from gandy.state.config_state import config_state
+from gandy.tasks.task1.stitch_images_together import stack_horizontally, stack_vertically
 
 # Task1 - translate images into images.
+
+# From: https://stackoverflow.com/questions/24101524/finding-median-of-list-in-python
+def median(lst):
+    sortedLst = sorted(lst)
+    lstLen = len(lst)
+    index = (lstLen - 1) // 2
+
+    if (lstLen % 2):
+        return sortedLst[index]
+    else:
+        return (sortedLst[index] + sortedLst[index + 1]) / 2.0
 
 
 def encode_image(new_image):
@@ -34,10 +47,18 @@ def translate_task1_background_job(
             image_streams = []
             image_names = []
 
+            is_auto_tiling = config_state.tile_width == 0 or config_state.tile_height == 0
+
+            image_widths = []
+            image_heights = []
+
             # List all files.
             for idx, img_file in enumerate(images):
                 img = Image.open(img_file)
                 img.load()
+
+                image_widths.append(img.width)
+                image_heights.append(img.height)
 
                 image_streams.append(img)
 
@@ -51,6 +72,27 @@ def translate_task1_background_job(
 
             images_data = list(zip(image_streams, image_names))
             images_data = sorted(images_data, key=lambda tup: natsort(tup[1]))
+
+            if is_auto_tiling and len(images_data) > 1:
+                old_tile_width = config_state.tile_width
+                old_tile_height = config_state.tile_height
+
+                avg_width = sum(image_widths) / len(images_data)
+                avg_height = sum(image_heights) / len(images_data)
+                if avg_height > avg_width:
+                    # Images are likely long in the vertical dimension. Tile them top to bottom.
+                    config_state.tile_width = 100
+                    config_state.tile_height = (median(image_heights) / sum(image_heights)) * 100
+
+                    images_data = [[stack_vertically([i[0] for i in images_data]), images_data[0][1]]]
+                else:
+                    # Images are likely long in the horizontal dimension. This should never happen though...
+                    config_state.tile_width = (median(image_widths) / sum(image_widths)) * 100
+                    config_state.tile_height = 100
+
+                    images_data = [[stack_horizontally(images_data), images_data[0][1]]]
+
+                ctx.log('Auto tile mode enabled.', computed_tile_width=config_state.tile_width, computed_tile_height=config_state.tile_height)
 
             for img, img_name in images_data:
                 if debug_state.debug or debug_state.debug_redraw:
@@ -97,6 +139,10 @@ def translate_task1_background_job(
 
             socketio.patched_emit("done_translating_task1", { "taskId": task_id, })
             socketio.sleep()
+
+        if is_auto_tiling:
+            config_state.tile_width = old_tile_width
+            config_state.tile_height = old_tile_height
 
 
 @app.route("/processtask1", methods=["POST"])

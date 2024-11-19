@@ -175,13 +175,20 @@ const ImageView = () => {
         updateProgress,
         doneWithOne,
         doneTranslatingAll,
-        taskId,
+        taskId
       ); // Create a websocket to listen to the server for progress and the end result.
 
       // Now we actually begin the translation job on the server.
-      const sortedFileNames = await translateImages(files, null, taskId);
+      let sortedFileNames = await translateImages(files, null, taskId);
+      if (
+        (tileWidth === 0 || tileHeight === 0) &&
+        sortedFileNames?.length > 1
+      ) {
+        // Auto tiling mode stacks all the images together into one.
+        sortedFileNames = [sortedFileNames[0]];
+      }
 
-      setPendingImageNames(l => [...l, ...sortedFileNames]);
+      setPendingImageNames((l) => [...l, ...sortedFileNames]);
     },
     [
       startTranslating,
@@ -190,6 +197,8 @@ const ImageView = () => {
       doneTranslatingAll,
       pushAlert,
       files, // Hopefully nothing breaks O_O
+      tileWidth,
+      tileHeight,
     ]
   );
 
