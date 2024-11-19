@@ -40,8 +40,8 @@ def text_overflows(cand1: TextBox, img: Image, direction = "lrud", with_margin =
     Checks if the text box overflows the image.
     """
     margin_pct = 0.025
-    x_marg = (img.width * margin_pct)
-    y_marg = (img.height * margin_pct)
+    x_marg = (img.tile_width * margin_pct)
+    y_marg = (img.tile_height * margin_pct)
 
     with_margin_x = "x" in with_margin
     with_margin_y = "y" in with_margin

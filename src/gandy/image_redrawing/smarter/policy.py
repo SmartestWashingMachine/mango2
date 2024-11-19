@@ -5,7 +5,7 @@ from gandy.image_redrawing.smarter.actions.expand_aspect_action import ExpandAsp
 from gandy.image_redrawing.smarter.actions.shrink_action import ShrinkAction
 from gandy.image_redrawing.smarter.actions.merge_text_action import MergeTextAction
 
-MOVE_PCT = 0.01
+MOVE_PCT = 0.01 #0.01
 
 SLIGHT_MOVE_ITERATIONS = 8
 LARGE_MOVE_ITERATIONS = 30

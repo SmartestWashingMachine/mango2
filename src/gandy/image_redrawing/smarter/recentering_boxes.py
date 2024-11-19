@@ -16,7 +16,7 @@ def _boxes_nearby(tb: TextBox, cb: TextBox, image: Image.Image):
     tb_mid = _midp(tb)
     cb_mid = _midp(cb)
     dist_thr = 0.2
-    return _dist_1d(tb_mid[0], cb_mid[0]) <= (image.width * dist_thr) and _dist_1d(tb_mid[1], cb_mid[1]) <= (image.height * dist_thr)
+    return _dist_1d(tb_mid[0], cb_mid[0]) <= (image.tile_width * dist_thr) and _dist_1d(tb_mid[1], cb_mid[1]) <= (image.tile_height * dist_thr)
 
 def generate_and_check_centered_box(tb: TextBox, others: List[TextBox], opt: List[float], image: Image.Image, x_mult = 1.0, y_mult = 1.0, mult_mult = 0.9, iterations_left = 5):
     centered_box = TextBox.shift_from(tb, offset_pct=opt, is_abs=True)

@@ -10,6 +10,7 @@ from gandy.image_redrawing.smarter.image_fonts import compute_min_max_font_sizes
 from gandy.image_redrawing.smarter.declutter_font_size import declutter_font_size
 from gandy.image_redrawing.smarter.recentering_boxes import try_center_boxes
 from gandy.state.debug_state import debug_state
+from gandy.state.config_state import config_state
 import json
 
 """
@@ -83,9 +84,14 @@ SCALE_FACTOR = 4 # Scale image up then down for sharper looking texts. Ridiculou
 def upscale_items(image: Image.Image, bboxes):
     mapped_bboxes = [[b[0] * SCALE_FACTOR, b[1] * SCALE_FACTOR, b[2] * SCALE_FACTOR, b[3] * SCALE_FACTOR] for b in bboxes]
 
-    return image.resize((int(image.width * SCALE_FACTOR), int(image.height * SCALE_FACTOR)), resample=Image.LANCZOS), mapped_bboxes
+    up_image = image.resize((int(image.width * SCALE_FACTOR), int(image.height * SCALE_FACTOR)), resample=Image.LANCZOS)
+    up_image.tile_width = int(up_image.width * SCALE_FACTOR)
+    up_image.tile_height = int(up_image.height * SCALE_FACTOR)
+
+    return up_image, mapped_bboxes
 
 def downscale_items(image: Image.Image):
+    # By the point we downscale we don't care for the tile sizes anymore.
     return image.resize((int(image.width // SCALE_FACTOR), int(image.height // SCALE_FACTOR)), resample=Image.LANCZOS)
 
 class ImageRedrawGlobalSmarter(BaseImageRedraw):
@@ -153,12 +159,18 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         if debug_state.debug or debug_state.debug_redraw:
             self.save_recording(image, bboxes, target_texts, text_colors)
         # Initialize the TextBoxes and other vars.
-        new_image = image.copy()
+        new_image = image.copy().convert('RGB')
 
-        new_image, bboxes = upscale_items(new_image, bboxes)
+        # We might be tiling the image (e.g: a long vertical comic),
+        # in which case we want to shift the boxes by the size of a TILE, rather than the entire large IMAGE size.
+        new_image.tile_width = int(new_image.width * (config_state.tile_width / 100))
+        new_image.tile_height = int(new_image.height * (config_state.tile_height / 100))
+
+        if new_image.width < 10000 and new_image.height < 10000:
+            new_image, bboxes = upscale_items(new_image, bboxes) # Tile sizes are changed here too accordingly.
 
         draw = ImageDraw.Draw(new_image)
-        draw.fontmode = "1"
+        draw.fontmode = "L"
 
         def _make_metadata(bb: SpeechBubble, t: str):
             return {
@@ -208,7 +220,8 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         print_spam('Drawn Boxes:')
         print_spam(text_boxes)
 
-        new_image = downscale_items(new_image)
+        if new_image.width < 10000 and new_image.height < 10000:
+            new_image = downscale_items(new_image)
         return new_image
 
     def save_recording(self, image, bboxes, target_texts, text_colors):

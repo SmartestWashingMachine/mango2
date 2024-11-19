@@ -17,7 +17,7 @@ class ExpandAspectAction(Action):
     def fatal_error(self, candidate, others, img, prev_candidate):
         if text_overflows(candidate, img, "lr"):
             return True
-        if ((candidate.get_area()) / max((img.width * img.height), 1)) >= self.img_coverage_thresh:
+        if ((candidate.get_area()) / max((img.tile_width * img.tile_height), 1)) >= self.img_coverage_thresh:
             return True
         if get_aspect_ratio(candidate) >= self.ideal_asp and get_aspect_ratio(prev_candidate) >= self.ideal_asp:
             return True
@@ -37,7 +37,7 @@ class ExpandAspectAction(Action):
     def action_process(self, time_left: int, candidate, others, img, original, iterations_done: int):
         new_candidate = TextBox.clone(candidate)
 
-        w_offset = self.w_increase_pct * img.width * iterations_done
+        w_offset = self.w_increase_pct * img.tile_width * iterations_done
         new_candidate.x1 = new_candidate.container.x1 - w_offset
         new_candidate.x2 = new_candidate.container.x2 + w_offset
         new_candidate.recompute()

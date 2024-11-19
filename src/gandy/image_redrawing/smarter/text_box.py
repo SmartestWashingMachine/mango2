@@ -81,8 +81,8 @@ class TextBox():
 
         CLOSE_FACTOR = 0.002
         # image is only used here for margin calculation.
-        mx = self.img.width * CLOSE_FACTOR
-        my = self.img.height * CLOSE_FACTOR
+        mx = self.img.tile_width * CLOSE_FACTOR
+        my = self.img.tile_height * CLOSE_FACTOR
 
         new_x1 = max(self.x1 - mx, 0)
         new_y1 = max(self.y1 - my, 0)
@@ -116,8 +116,8 @@ class TextBox():
 
     @classmethod
     def shift_from(cls, candidate, offset_pct: List[float], is_abs = False):
-        iwid = candidate.img.width
-        ihei = candidate.img.height
+        iwid = candidate.img.tile_width
+        ihei = candidate.img.tile_height
 
         if is_abs:
             coords = [candidate.x1 + offset_pct[0], candidate.y1 + offset_pct[1], candidate.x2 + offset_pct[2], candidate.y2 + offset_pct[3]]
