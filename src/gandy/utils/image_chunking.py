@@ -8,22 +8,47 @@ import os
 from uuid import uuid4
 from gandy.utils.fancy_logger import logger
 
+class TiledBubble():
+  bubble: SpeechBubble
+
+def boxes_near_edges(b, o):
+  b_tmp = b[-1]
+  o_tmp = o[-1]
+
+  if b_tmp['merged_once'] or o_tmp['merged_once']:
+    return False
+
+  return (b_tmp['is_near_x'] + o_tmp['is_near_x'] == 0) or (o_tmp['is_near_y'] + o_tmp['is_near_y'] == 0)
+
+def _midp(box: SpeechBubble):
+  return (box[2] - box[0], box[3] - box[1])
+
+def boxes_close(b, o, chunk_x, chunk_y):
+  b_midp = _midp(b)
+  o_midp = _midp(o)
+
+  x_thr = y_thr = 0.2
+
+  return (abs(b_midp[0] - o_midp[0]) <= (chunk_x * x_thr)) and (abs(b_midp[1] - o_midp[1]) <= (chunk_y * y_thr))
+
 def box_area(b: SpeechBubble):
   return (b[3] - b[1]) * (b[2] - b[0])
 
-def merge_and_validate(speech_bboxes: List[SpeechBubble], idx: int):
+def merge_and_validate(speech_bboxes: List[SpeechBubble], idx: int, condition):
   # Merge a box and return True if a box was merged.
 
   b = speech_bboxes[idx]
 
-  others = speech_bboxes[:idx] + speech_bboxes[(idx + 1):]
-  for other_idx in range(len(others)):
-    o = others[other_idx]
+  for other_idx in range(len(speech_bboxes)):
+    if idx == other_idx:
+      continue
+
+    o = speech_bboxes[other_idx]
 
     # Merge!
-    if box_b_in_box_a_thr(box_a=b, box_b=o) >= 0.3:
+    if condition(b, o):
       # Merge this box...
-      speech_bboxes[idx] = SpeechBubble([min(b[0], o[0]), min(b[1], o[1]), max(b[2], o[2]), max(b[3], o[3])])
+      speech_bboxes[idx] = [min(b[0], o[0]), min(b[1], o[1]), max(b[2], o[2]), max(b[3], o[3]), { 'merged_once': True, }]
       # Then delete the other...
       speech_bboxes = speech_bboxes[:other_idx] + speech_bboxes[(other_idx + 1):]
 
@@ -83,21 +108,72 @@ def detect_image_chunks(img: Image.Image, tile_width: int, tile_height: int, det
 
       # Process each img; get speech_bboxes.
 
-  # iterate over every box.
-  # if box overlaps another, merge it, removing it from the list before repeating.
+
+  # Iterate over every box.
+  # If one box is touching the edge of a tile, and is near another box, merge them.
   failsafe_max_n = 0
-  while failsafe_max_n < 10:
+  while failsafe_max_n < 4000:
     failsafe_max_n += 1
     can_break = True
 
     for idx in range(len(speech_bboxes)):
-      speech_bboxes, did_merge = merge_and_validate(speech_bboxes, idx)
+      b = speech_bboxes[idx]
+
+      is_near_x = -2
+      is_near_y = -2
+
+      if ((b[1] / (chunk_y + overlap_y)) % 1) <= 0.1:
+        # Is near the top of the tile.
+        is_near_y = 1
+      elif ((b[3] / (chunk_y + overlap_y)) % 1) >= 0.9:
+        # Is near the bottom of the tile.
+        is_near_y = -1
+
+      if ((b[0] / (chunk_x + overlap_x)) % 1) <= 0.1:
+        # Is near the left of the tile.
+        is_near_x = 1
+      elif ((b[2] / (chunk_x + overlap_x)) % 1) >= 0.9:
+        is_near_x = -1
+
+      #Each tmp_data item is a dict of { is_near_x STR|NONE and is_near_y STR|NONE }
+      tmp_data = { 'is_near_x': is_near_x, 'is_near_y': is_near_y, 'merged_once': False, }
+      speech_bboxes = [[*s[0:4], tmp_data] for s in speech_bboxes]
+
+    for idx in range(len(speech_bboxes)):
+      b = speech_bboxes[idx]
+
+      # If the box is near the top/bottom, find a box nearby in the Y dimension.
+      # If the box is near the left/right, find a box nearby in the X dimension.
+      # Actually, for now: If a box is near an edge, just find a nearby box that's also near the edge.
+      speech_bboxes, did_merge = merge_and_validate(
+        speech_bboxes, idx,
+        condition=lambda b, o: boxes_near_edges(b, o) and boxes_close(b, o, chunk_x, chunk_y)
+      )
       if did_merge:
-        can_break = not did_merge
+        can_break = False
         break
 
     if can_break:
       break
+
+  # iterate over every box.
+  # if box overlaps another, merge it, removing it from the list before repeating.
+  failsafe_max_n = 0
+  while failsafe_max_n < 4000:
+    failsafe_max_n += 1
+    can_break = True
+
+    for idx in range(len(speech_bboxes)):
+      speech_bboxes, did_merge = merge_and_validate(speech_bboxes, idx, condition=lambda b, o: box_b_in_box_a_thr(box_a=b, box_b=o) >= 0.3)
+      if did_merge:
+        can_break = False
+        break
+
+    if can_break:
+      break
+
+
+  speech_bboxes = [s[:-1] for s in speech_bboxes] # Remove tmp_data.
 
   return speech_bboxes
   
