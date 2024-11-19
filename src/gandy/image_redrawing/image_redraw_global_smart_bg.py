@@ -1,4 +1,5 @@
 from gandy.image_redrawing.image_redraw_global_smarter import ImageRedrawGlobalSmarter, get_vertical_spacing
+from gandy.image_redrawing.smarter.policy import ACTIONS
 from random import choices
 from gandy.utils.compute_stroke_size import compute_stroke_size
 from gandy.image_redrawing.smarter.text_box import TextBox, FONT_MANAGER
@@ -31,7 +32,7 @@ def get_center_of_box(box):
 
 class ImageRedrawGlobalSmartBackgroundApp(ImageRedrawGlobalSmarter):
     def __init__(self):
-        super().__init__()
+        super().__init__(actions=ACTIONS)
 
     def redraw_from_tboxes(self, image: Image.Image, draw: ImageDraw.ImageDraw, text_boxes: List[TextBox], text_colors):
         for idx, tb in enumerate(text_boxes):
