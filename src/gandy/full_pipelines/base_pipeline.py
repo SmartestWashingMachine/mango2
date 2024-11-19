@@ -328,10 +328,19 @@ class BasePipeline:
         with logger.begin_event("Image to untranslated texts") as ctx:
             image = image.convert("RGB")
 
+            # We never want to tile an image here. Tiling is only for task1 (image to image).
+            old_tile_width = config_state.tile_width
+            old_tile_height = config_state.tile_height
+            config_state.tile_width = 100
+            config_state.tile_height = 100
+
             if with_text_detect:
                 speech_bboxes = self.get_bboxes_from_image(image)
             else:
                 speech_bboxes = create_entire_bbox(image)
+
+            config_state.tile_width = old_tile_width
+            config_state.tile_height = old_tile_height
 
             if with_ocr:
                 source_texts = self.get_source_texts_from_bboxes(image, speech_bboxes)
