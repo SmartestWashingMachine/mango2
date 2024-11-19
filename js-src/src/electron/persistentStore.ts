@@ -46,7 +46,9 @@ export const initializeStore = () => {
 
   // Juuust in case.
   for (const key in storeDefaults) {
-    if (!store.get(key)) store.set(key, storeDefaults[key as keyof IStore]);
+    const cur = store.get(key);
+    if (cur === null || cur === undefined)
+      store.set(key, storeDefaults[key as keyof IStore]);
   }
 
   return store;
