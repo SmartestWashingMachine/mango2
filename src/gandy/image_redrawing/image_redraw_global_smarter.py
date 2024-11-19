@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw
 from typing import List, Union
 from gandy.image_redrawing.smarter.checks import text_intersects, text_intersects_on_direction, text_overflows
 from gandy.image_redrawing.smarter.text_box import TextBox, FONT_MANAGER
-from gandy.image_redrawing.smarter.policy import ACTIONS
+from gandy.image_redrawing.smarter.policy import MoveAction
 from gandy.image_redrawing.smarter.image_fonts import compute_min_max_font_sizes, compute_stroke_size, get_vertical_spacing, print_spam
 from gandy.image_redrawing.smarter.declutter_font_size import declutter_font_size
 from gandy.image_redrawing.smarter.recentering_boxes import try_center_boxes
@@ -79,6 +79,37 @@ A box, not to be confused with a SpeechBubble, is a set of coordinates that tigh
 def _midp(x: TextBox):
     return ((x.x1 + x.x2) / 2, (x.y1 + x.y2) / 2)
 
+class CacheDraw():
+    def __init__(self, draw) -> None:
+        self.cache = {}
+        self.draw = draw
+
+    def do_draw(self, coords, text: str, font, align: str, stroke_width, spacing, item):
+        drawn = self.draw.multiline_textbbox(coords, text, font, align=align, stroke_width=stroke_width, spacing=spacing)
+        self.cache[item] = { 'coords': coords, 'drawn': drawn, }
+
+        return drawn
+
+    def multiline_textbbox(self, coords, text: str, font, align: str, stroke_width, spacing):
+        #x_space = coords[2] - coords[0]
+        #y_space = coords[3] - coords[1]
+        #item = f'{x_space}_{y_space}_{text}_{font.size}_{align}_{stroke_width}_{spacing}'
+
+        item = f'{text}_{font.size}_{align}_{stroke_width}_{spacing}'
+        existing_item = self.cache.get(item, None)
+
+        if existing_item is None:
+            # First time this item was seen.
+            return self.do_draw(coords, text, font, align, stroke_width, spacing, item)
+
+        return [
+            coords[0] + (existing_item['drawn'][0] - existing_item['coords'][0]),
+            coords[1] + (existing_item['drawn'][1] - existing_item['coords'][1]),
+            coords[0] + (existing_item['drawn'][2] - existing_item['drawn'][0]),
+            coords[1] + (existing_item['drawn'][3] - existing_item['drawn'][1]),
+        ]
+
+
 SCALE_FACTOR = 4 # Scale image up then down for sharper looking texts. Ridiculous, isn't it? Thanks PIL...
 
 def upscale_items(image: Image.Image, bboxes):
@@ -95,8 +126,10 @@ def downscale_items(image: Image.Image):
     return image.resize((int(image.width // SCALE_FACTOR), int(image.height // SCALE_FACTOR)), resample=Image.LANCZOS)
 
 class ImageRedrawGlobalSmarter(BaseImageRedraw):
-    def __init__(self):
+    def __init__(self, actions: List[MoveAction]):
         super().__init__()
+
+        self.actions = actions
 
     def box_is_bad(self, box: TextBox, others: List[TextBox], img: Image.Image, return_reason = False):
         if text_intersects(box, others):
@@ -117,10 +150,8 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
 
         box_is_bad = self.box_is_bad(box, others, img)
 
-        actions_to_use = ACTIONS
-
-        for next_action_idx in range(len(actions_to_use)):
-            cur_action = actions_to_use[next_action_idx]
+        for next_action_idx in range(len(self.actions)):
+            cur_action = self.actions[next_action_idx]
             if box_is_bad or (cur_action.stackable and not cur_action.only_on_failure):
                 box, others, did_succeed = cur_action.begin(candidate=box, others=others, img=img)
 
@@ -178,8 +209,9 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
                 't': t,
             }
 
-        container_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=draw, img=new_image, container='make', metadata={}) for (bb, t) in zip(bboxes, target_texts)]
-        text_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=draw, img=new_image, container='make', metadata=_make_metadata(bb, t)) for (bb, t) in zip(bboxes, target_texts)]
+        cached_draw = CacheDraw(draw=draw)
+        container_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=cached_draw, img=new_image, container='make', metadata={}) for (bb, t) in zip(bboxes, target_texts)]
+        text_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=cached_draw, img=new_image, container='make', metadata=_make_metadata(bb, t)) for (bb, t) in zip(bboxes, target_texts)]
 
         # Get the acceptable font size range.
         min_font_size, max_font_size = compute_min_max_font_sizes(new_image)

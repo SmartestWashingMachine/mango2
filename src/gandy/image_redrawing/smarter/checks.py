@@ -23,7 +23,7 @@ def text_intersects(box: TextBox, other_boxes: List[TextBox], return_indices=Fal
         is_overlapping = _is_overlapping_1d(
             box.x1 + expand_x, other.x1, box.x2 + expand_x, other.x2
         ) and _is_overlapping_1d(box.y1 + expand_y, other.y1, box.y2 + expand_y, other.y2)
-        if is_overlapping:
+        if is_overlapping and box.text != "" and other.text != "":
             if return_indices:
                 indices.append(idx)
             else:

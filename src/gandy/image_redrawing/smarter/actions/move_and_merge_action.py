@@ -1,34 +1,59 @@
 from gandy.image_redrawing.smarter.checks import text_intersects, text_intersects_on_direction, text_overflows
 from gandy.image_redrawing.smarter.actions.action import Action
 from gandy.image_redrawing.smarter.text_box import TextBox
+from gandy.image_redrawing.smarter.image_fonts import print_spam
 from typing import List
 
-class MergeTextAction(Action):
-    def __init__(self, shrink_factor: float, min_font_val: int, stackable=False, max_iterations = 30, expand_box = False) -> None:
-        super().__init__(stackable, action_name="MergeText", max_iterations=max_iterations)
+class MoveAndMergeTextAction(Action):
+    def __init__(self, shrink_factor: float, min_font_val: int, stackable=False, max_iterations = 30, offset_pct = None, expand_box = False, fatal_overflowing_direction = None) -> None:
+        super().__init__(stackable, action_name="MoveMergeText", max_iterations=max_iterations)
 
         self.shrink_factor = shrink_factor
         self.min_font_val = min_font_val
-
+        self.offset_pct = offset_pct
         self.expand_box = expand_box
 
-    def fatal_error(self, candidate: TextBox, others, img, *args, **kwargs):
+        self.fatal_overflowing_direction = fatal_overflowing_direction
+
+    def get_non_fatal_error_overlapping_direction(self):
+        dirs = "lrud"
+        for c in self.fatal_overflowing_direction:
+            dirs = dirs.replace(c, "")
+
+        return dirs
+
+    def fatal_error(self, candidate, others, img, prev_candidate, *args, **kwargs):
+        if candidate.text == "":
+            return False
+
+            #raise RuntimeError('e')
+        if text_overflows(candidate, img, direction=self.fatal_overflowing_direction):
+            print_spam('Box overflows image.')
+            return True
         return False
 
     def non_fatal_error(self, candidate, others, img):
-        if candidate.text != "":
+        if candidate.text == "":
+            return False
+
+        if text_intersects(candidate, others):
+            return True
+        if text_overflows(candidate, img, direction=self.get_non_fatal_error_overlapping_direction()):
             return True
 
         return False
     
     def action_process(self, time_left: int, candidate: TextBox, others: List[TextBox], img, original, iterations_done: int):
-        new_candidate = TextBox.clone(candidate)
+        if iterations_done > 1:
+            new_candidate = TextBox.shift_from(candidate, offset_pct=self.offset_pct)
+        else:
+            new_candidate = TextBox.clone(candidate)
 
         # Shrink other boxes that touch this one.
         # Can't mutate in-place; affects originals.
         others_cloned = [TextBox.clone(b) for b in others]
         for idx in range(len(others_cloned)):
-            if text_intersects(new_candidate, [others_cloned[idx]]) and others_cloned[idx].text != "" and new_candidate.text != "":
+            if text_intersects(new_candidate, [others_cloned[idx]]):
                 other_new = TextBox.clone(others_cloned[idx])
 
                 new_fz = max(self.min_font_val, int(other_new.font_size * (self.shrink_factor ** iterations_done)))

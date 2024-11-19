@@ -4,6 +4,7 @@ from gandy.image_redrawing.smarter.actions.move_push_action import MoveAndPushAc
 from gandy.image_redrawing.smarter.actions.expand_aspect_action import ExpandAspectAction
 from gandy.image_redrawing.smarter.actions.shrink_action import ShrinkAction
 from gandy.image_redrawing.smarter.actions.merge_text_action import MergeTextAction
+from gandy.image_redrawing.smarter.actions.move_and_merge_action import MoveAndMergeTextAction
 
 MOVE_PCT = 0.01 #0.01
 
@@ -61,4 +62,17 @@ ACTIONS: List[MoveAction] = [
     ExpandAspectAction(stackable=True),
     # A true final ditch measure!
     MergeTextAction(shrink_factor=0.9, min_font_val=2, max_iterations=5),
+]
+
+iterations = 30
+MOVE_PCT = 0.025
+EXP_BOX = True
+ACTIONS_SMART_TOON: List[MoveAction] = [
+    # A true final ditch measure!
+    #MergeTextAction(shrink_factor=0.975, min_font_val=4, max_iterations=5, expand_box=EXP_BOX),
+    # Only move IF overflowing the image.
+    MoveAndMergeTextAction(offset_pct=[MOVE_PCT, 0, 0, 0], max_iterations=iterations, shrink_factor=0.975, min_font_val=4, expand_box=EXP_BOX, fatal_overflowing_direction="r"),
+    MoveAndMergeTextAction(offset_pct=[-MOVE_PCT, 0, 0, 0], max_iterations=iterations, shrink_factor=0.975, min_font_val=4, expand_box=EXP_BOX, fatal_overflowing_direction="l"),
+    MoveAndMergeTextAction(offset_pct=[0, MOVE_PCT, 0, 0], max_iterations=iterations, shrink_factor=0.975, min_font_val=4, expand_box=EXP_BOX, fatal_overflowing_direction="d"),
+    MoveAndMergeTextAction(offset_pct=[0, -MOVE_PCT, 0, 0], max_iterations=iterations, shrink_factor=0.975, min_font_val=4, expand_box=EXP_BOX, fatal_overflowing_direction="u"),
 ]
