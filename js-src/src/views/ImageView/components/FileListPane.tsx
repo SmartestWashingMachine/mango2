@@ -52,27 +52,12 @@ const FileListPane = ({
     handleMenuClose();
   };
 
+  if (!rootItem) {
+    return null;
+  }
+
   return (
     <Paper className="filesListContainer" elevation={1}>
-      <Paper className="filesListControls" elevation={3}>
-        <IconButton
-          onClick={onRefresh}
-          className="filesListRefresh"
-          data-testid="refresh-button"
-          sx={{ opacity: 0.85 }}
-        >
-          <RefreshIcon />
-        </IconButton>
-        {children}
-        <IconButton
-          onClick={onBackClick}
-          className="filesListRefresh"
-          data-testid="back-button"
-          sx={{ opacity: 0.85 }}
-        >
-          <ArrowBackIosNewIcon />
-        </IconButton>
-      </Paper>
       <SimpleTreeView
         selectedItems={selectedPath || ""}
         className="filesList"
@@ -88,17 +73,9 @@ const FileListPane = ({
             onSelect={onSelectFileInfo}
             isRoot
             onOpenMenu={handleMenuOpen}
-          />
-        )}
-        {!rootItem && (
-          <FileItemPane
-            fileName="Loading..."
-            fullPath="loading"
-            childrenItems={[]}
-            selectedPath={selectedPath}
-            onSelect={() => {}}
-            isRoot
-            onOpenMenu={() => {}}
+            onRootSelect={() => {
+              if (onBackClick !== undefined) onBackClick();
+            }}
           />
         )}
       </SimpleTreeView>

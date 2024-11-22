@@ -272,6 +272,10 @@ body,
   text-overflow: ellipsis;
 }
 
+.file-root-header {
+  background-color: hsl(291, 12%, 11%) !important;
+}
+
 .fileItemRoot {
   font-size: 24px !important;
 }

@@ -52,12 +52,18 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
   // Since UpdateNumberField uses defaultValues.
   if (props.tileWidth === -2000 || props.tileHeight === -2000) return null;
 
+  const checkSpecialMode = () => {
+    if (props.tileHeight === -1) return "Short Webtoon Mode";
+    if (props.tileHeight === 0) return "Long Webtoon Mode";
+    return " ";
+  };
+
   return (
-    <Paper elevation={2} sx={{ padding: 4 }}>
-      <Stack spacing={4}>
+    <Paper elevation={2} sx={{ padding: 3 }}>
+      <Stack spacing={2}>
         <Stack
-          direction={{ sm: "column", md: "row" }}
-          spacing={{ sm: 4, md: 8 }}
+          direction={{ sm: "column", lg: "row" }}
+          spacing={{ sm: 2, lg: 6 }}
         >
           <UpdateNumberField
             label="Tile Width %"
@@ -80,26 +86,26 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
             minValue={-1}
             maxValue={100}
             tooltip={chunkTip}
-            helperText={props.tileHeight === -1 ? "Webtoon Mode" : undefined}
-            color={props.tileHeight === -1 ? "warning" : undefined}
+            helperText={checkSpecialMode()}
+            color={props.tileHeight <= 0 ? "warning" : undefined}
           />
         </Stack>
-        <FormControl fullWidth>
+        <FormControl fullWidth variant="standard">
           <InputLabel>Cleaning Mode</InputLabel>
           <Select
-            variant="standard"
             onChange={updateCleaningMode}
             value={props.cleaningMode}
+            label="Cleaning Mode"
           >
             {CLEANING_OPTIONS.map(renderItem)}
           </Select>
         </FormControl>
-        <FormControl fullWidth>
+        <FormControl fullWidth variant="standard">
           <InputLabel>Redrawing Mode</InputLabel>
           <Select
-            variant="standard"
             onChange={updateRedrawingMode}
             value={props.redrawingMode}
+            label="Redrawing Mode"
           >
             {REDRAWING_OPTIONS.map(renderItem)}
           </Select>

@@ -54,6 +54,7 @@ export type UpdateNumberFieldProps = {
   disabled?: boolean;
   tooltip?: string;
   color?: any;
+  size?: any;
 };
 
 const UpdateNumberField = (props: UpdateNumberFieldProps) => {
@@ -92,6 +93,8 @@ const UpdateNumberField = (props: UpdateNumberFieldProps) => {
       placeholder={props.placeholder}
       disabled={props.disabled}
       color={props.color}
+      focused={props.color !== undefined}
+      size={props.size}
     />
   );
 

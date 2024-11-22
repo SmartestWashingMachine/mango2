@@ -34,6 +34,7 @@ export type FileItemProps = BaseFileItem & {
   onSelect: (f: FileInfo) => void;
   isRoot: boolean;
   onOpenMenu: (e: any, fullPath: string) => void;
+  onRootSelect: () => void;
 };
 
 const FileItemPane = ({
@@ -44,9 +45,10 @@ const FileItemPane = ({
   childrenItems,
   isRoot,
   onOpenMenu,
+  onRootSelect,
 }: FileItemProps) => {
   const handleClick = () => {
-    if (isRoot) return;
+    if (isRoot) return onRootSelect();
 
     onSelect({ fileName, fullPath, childrenItems });
   };
@@ -72,6 +74,13 @@ const FileItemPane = ({
       className={divClasses}
       onContextMenu={handleMenuOpen}
       data-testid={`file-${fullPath}`}
+      classes={
+        isRoot
+          ? {
+              content: "file-root-header",
+            }
+          : undefined
+      }
     >
       {childrenItems.map((c) => (
         <FileItemPane
@@ -83,6 +92,7 @@ const FileItemPane = ({
           key={c.fullPath}
           isRoot={false}
           onOpenMenu={onOpenMenu}
+          onRootSelect={onRootSelect}
         />
       ))}
     </StyledTreeItem>
