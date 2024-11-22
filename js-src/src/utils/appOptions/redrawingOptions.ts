@@ -18,7 +18,7 @@ export const REDRAWING_OPTIONS = [
     name: "Smart Toons",
     value: "smart_toon",
     desc: `
-    Use this when translating long web toon strips with tile width and tile height set to 0.
+    Sometimes better than Smart for certain web toons.
     `,
   },
   {

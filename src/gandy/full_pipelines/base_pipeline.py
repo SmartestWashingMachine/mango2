@@ -197,7 +197,12 @@ class BasePipeline:
         return source_texts
 
     def _detect_in_chunk(self, im_chunk):
-        return self.text_detection_app.begin_process(im_chunk)
+        try:
+            return self.text_detection_app.begin_process(im_chunk)
+        except Exception:
+            logger.log('AN ERROR HAS SPAWNED! Ignoring this image...')
+            logger.event_exception(ctx=None)
+            return []
 
     def get_bboxes_from_image(self, rgb_image: Image):
         with logger.begin_event("Text detection") as ctx:
@@ -206,7 +211,7 @@ class BasePipeline:
 
                 speech_bboxes = detect_image_chunks(rgb_image, config_state.tile_width, config_state.tile_height, detect_in_chunk=self._detect_in_chunk)
             else:
-                speech_bboxes = self.text_detection_app.begin_process(rgb_image)
+                speech_bboxes = self._detect_in_chunk(rgb_image)
 
         return speech_bboxes
 
