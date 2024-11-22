@@ -12,6 +12,7 @@ from gandy.image_redrawing.smarter.recentering_boxes import try_center_boxes
 from gandy.state.debug_state import debug_state
 from gandy.state.config_state import config_state
 import json
+from gandy.utils.fancy_logger import logger
 
 """
 
@@ -187,22 +188,26 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         target_texts: List[str],
         text_colors: List[str],
     ):
-        if debug_state.debug or debug_state.debug_redraw:
-            self.save_recording(image, bboxes, target_texts, text_colors)
-        # Initialize the TextBoxes and other vars.
+        with logger.begin_event("Copy image"):
+            if debug_state.debug or debug_state.debug_redraw:
+                self.save_recording(image, bboxes, target_texts, text_colors)
+            # Initialize the TextBoxes and other vars.
 
-        if image.width < 10000 and image.height < 10000:
-            new_image = image.copy().convert('RGB')
-        else:
-            new_image = image.convert('RGB')
+            original_image_width = image.width
+            original_image_height = image.height
+            if original_image_width < 10000 and original_image_height < 10000:
+                new_image = image.copy().convert('RGB')
+            else:
+                new_image = image.convert('RGB')
 
-        # We might be tiling the image (e.g: a long vertical comic),
-        # in which case we want to shift the boxes by the size of a TILE, rather than the entire large IMAGE size.
-        new_image.tile_width = int(new_image.width * (config_state.tile_width / 100))
-        new_image.tile_height = int(new_image.height * (config_state.tile_height / 100))
+        with logger.begin_event("Upscale image"):
+            # We might be tiling the image (e.g: a long vertical comic),
+            # in which case we want to shift the boxes by the size of a TILE, rather than the entire large IMAGE size.
+            new_image.tile_width = int(new_image.width * (config_state.tile_width / 100))
+            new_image.tile_height = int(new_image.height * (config_state.tile_height / 100))
 
-        if new_image.width < 10000 and new_image.height < 10000:
-            new_image, bboxes = upscale_items(new_image, bboxes) # Tile sizes are changed here too accordingly.
+            if original_image_width < 10000 and original_image_height < 10000:
+                new_image, bboxes = upscale_items(new_image, bboxes) # Tile sizes are changed here too accordingly.
 
         draw = ImageDraw.Draw(new_image)
         draw.fontmode = "L"
@@ -213,51 +218,55 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
                 't': t,
             }
 
-        cached_draw = CacheDraw(draw=draw)
-        container_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=cached_draw, img=new_image, container='make', metadata={}) for (bb, t) in zip(bboxes, target_texts)]
-        text_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=cached_draw, img=new_image, container='make', metadata=_make_metadata(bb, t)) for (bb, t) in zip(bboxes, target_texts)]
+        with logger.begin_event("Compute font size"):
+            cached_draw = CacheDraw(draw=draw)
+            container_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=cached_draw, img=new_image, container='make', metadata={}) for (bb, t) in zip(bboxes, target_texts)]
+            text_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=cached_draw, img=new_image, container='make', metadata=_make_metadata(bb, t)) for (bb, t) in zip(bboxes, target_texts)]
 
-        # Get the acceptable font size range.
-        min_font_size, max_font_size = compute_min_max_font_sizes(new_image)
+            # Get the acceptable font size range.
+            min_font_size, max_font_size = compute_min_max_font_sizes(new_image)
 
-        # Then pick a font size.
-        # The font size is set in each text box inside this method.
-        # Actually... Only the max font size is used to account for in this method.
-        picked_font_size = declutter_font_size(text_boxes, min_font_size, max_font_size, new_image, container_boxes)
-        for idx, b in enumerate(text_boxes):
-            # container_boxes is used to compute the X and Y offsets to center the box.
-            # container_text_boxes is used to determine if the text box is nearby the original detection area.
-            # the metadata here is used for recentering the box after all actions are performed on all boxes.
-            b.metadata['container_text_box'] = TextBox.from_speech_bubble(b.metadata['bb'], b.metadata['t'], font_size=picked_font_size, draw=draw, img=new_image, container='make', metadata={})
-            b.metadata['container_box'] = container_boxes[idx]
+            # Then pick a font size.
+            # The font size is set in each text box inside this method.
+            # Actually... Only the max font size is used to account for in this method.
+            picked_font_size = declutter_font_size(text_boxes, min_font_size, max_font_size, new_image, container_boxes)
+            for idx, b in enumerate(text_boxes):
+                # container_boxes is used to compute the X and Y offsets to center the box.
+                # container_text_boxes is used to determine if the text box is nearby the original detection area.
+                # the metadata here is used for recentering the box after all actions are performed on all boxes.
+                b.metadata['container_text_box'] = TextBox.from_speech_bubble(b.metadata['bb'], b.metadata['t'], font_size=picked_font_size, draw=draw, img=new_image, container='make', metadata={})
+                b.metadata['container_box'] = container_boxes[idx]
 
-        top_right_corner = (new_image.width, 0)
-        def _dist(p1, p2):
-            return (((p1[0] - p2[0]) ** 2) + (p1[1] - p2[1]) ** 2) ** 0.5
+        with logger.begin_event("Compute box positions"):
+            top_right_corner = (new_image.width, 0)
+            def _dist(p1, p2):
+                return (((p1[0] - p2[0]) ** 2) + (p1[1] - p2[1]) ** 2) ** 0.5
 
-        text_boxes = sorted(text_boxes, key=lambda x: _dist(top_right_corner, _midp(x)), reverse=True)
+            text_boxes = sorted(text_boxes, key=lambda x: _dist(top_right_corner, _midp(x)), reverse=True)
 
-        # For every invalid box, use actions to attempt to make it valid.
-        for idx in range(len(text_boxes)):
-            cur_box = text_boxes[idx]
-            others = text_boxes[:idx] + text_boxes[(idx + 1):]
+            # For every invalid box, use actions to attempt to make it valid.
+            for idx in range(len(text_boxes)):
+                cur_box = text_boxes[idx]
+                others = text_boxes[:idx] + text_boxes[(idx + 1):]
 
-            better_box, other_boxes = self.better_box(cur_box, others, new_image)
-            # text_boxes[idx] = better_box
+                better_box, other_boxes = self.better_box(cur_box, others, new_image)
+                # text_boxes[idx] = better_box
 
-            text_boxes = [better_box] + other_boxes
+                text_boxes = [better_box] + other_boxes
 
-        text_boxes = try_center_boxes(new_image, text_boxes)
-        text_boxes = try_center_boxes(new_image, text_boxes) # Center again! (As some of the next boxes need to be centered first)
+            text_boxes = try_center_boxes(new_image, text_boxes)
+            text_boxes = try_center_boxes(new_image, text_boxes) # Center again! (As some of the next boxes need to be centered first)
 
         # Actually draw the text on the image.
-        self.redraw_from_tboxes(new_image, draw, text_boxes, text_colors)
+        with logger.begin_event("Draw text"):
+            self.redraw_from_tboxes(new_image, draw, text_boxes, text_colors)
 
         print_spam('Drawn Boxes:')
         print_spam(text_boxes)
 
-        if new_image.width < 10000 and new_image.height < 10000:
-            new_image = downscale_items(new_image)
+        with logger.begin_event("Downscale image", original_size=[original_image_width, original_image_height], cur_size=new_image.size):
+            if original_image_width < 10000 and original_image_height < 10000:
+                new_image = downscale_items(new_image)
         return new_image
 
     def save_recording(self, image, bboxes, target_texts, text_colors):
