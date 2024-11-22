@@ -142,22 +142,25 @@ def translate_task1_background_job(
 
                 ctx.log(f"Task1 processing image", img_name=img_name)
                 progress_cb = lambda progress: on_progress(progress, socketio)
-                new_image, is_amg = translate_pipeline.image_to_image(
-                    img, progress_cb=progress_cb
-                )
+
+                with logger.begin_event('Process image'):
+                    new_image, is_amg = translate_pipeline.image_to_image(
+                        img, progress_cb=progress_cb
+                    )
 
                 img_name_no_ext = os.path.splitext(img_name)[0]
 
-                if is_amg:
-                    new_image_base64 = encode_image(new_image["image"])
-                    annotations = new_image["annotations"]
+                with logger.begin_event('Base64 encode image'):
+                    if is_amg:
+                        new_image_base64 = encode_image(new_image["image"])
+                        annotations = new_image["annotations"]
 
-                    new_img_name = f"{img_name_no_ext}.amg"
-                else:
-                    new_image_base64 = encode_image(new_image)
-                    annotations = []
+                        new_img_name = f"{img_name_no_ext}.amg"
+                    else:
+                        new_image_base64 = encode_image(new_image)
+                        annotations = []
 
-                    new_img_name = f"{img_name_no_ext}.png"
+                        new_img_name = f"{img_name_no_ext}.png"
 
                 socketio.patched_emit(
                     "item_task1",
