@@ -13,7 +13,7 @@ import { REDRAWING_OPTIONS } from "../../../../utils/appOptions/redrawingOptions
 import UpdateNumberField from "../../../../components/UpdateNumberField";
 
 const chunkTip =
-  "Images can be split into small chunks for better text detection at the cost of speed. The translated image chunks will then be merged for the final image.";
+  "Images can be split into small chunks for better text detection at the cost of speed. The translated image chunks will then be merged for the final image. Translating webtoons? Try setting the Tile Height to -1.";
 
 export type ImageViewOptionsProps = {
   cleaningMode: string;
@@ -50,7 +50,7 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
   };
 
   // Since UpdateNumberField uses defaultValues.
-  if (props.tileWidth === -1 || props.tileHeight === -1) return null;
+  if (props.tileWidth === -2000 || props.tileHeight === -2000) return null;
 
   return (
     <Paper elevation={2} sx={{ padding: 4 }}>
@@ -66,7 +66,7 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
             defaultValue={props.tileWidth}
             valueType="float"
             safeValue={100}
-            minValue={0}
+            minValue={1}
             maxValue={100}
             tooltip={chunkTip}
           />
@@ -77,9 +77,11 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
             defaultValue={props.tileHeight}
             valueType="float"
             safeValue={100}
-            minValue={0}
+            minValue={-1}
             maxValue={100}
             tooltip={chunkTip}
+            helperText={props.tileHeight === -1 ? "Webtoon Mode" : undefined}
+            color={props.tileHeight === -1 ? "warning" : undefined}
           />
         </Stack>
         <FormControl fullWidth>

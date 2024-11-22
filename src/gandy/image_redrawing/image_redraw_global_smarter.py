@@ -190,7 +190,11 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         if debug_state.debug or debug_state.debug_redraw:
             self.save_recording(image, bboxes, target_texts, text_colors)
         # Initialize the TextBoxes and other vars.
-        new_image = image.copy().convert('RGB')
+
+        if image.width < 10000 and image.height < 10000:
+            new_image = image.copy().convert('RGB')
+        else:
+            new_image = image.convert('RGB')
 
         # We might be tiling the image (e.g: a long vertical comic),
         # in which case we want to shift the boxes by the size of a TILE, rather than the entire large IMAGE size.

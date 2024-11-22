@@ -47,7 +47,12 @@ export const translateImages = async (
 
 export const pollTranslateImagesStatus = (
   progressCb: (progress: number) => void,
-  itemCb: (image: string, imageName: string, annotations?: any) => void,
+  itemCb: (
+    image: string,
+    imageName: string,
+    annotations?: any,
+    remainingImages?: number
+  ) => void,
   doneCb: () => void,
   taskId: string
 ) =>
@@ -64,7 +69,12 @@ export const pollTranslateImagesStatus = (
 
     socket.on("item_task1", (data) => {
       if (data && data.image && data.imageName && data.taskId === taskId) {
-        itemCb(data.image, data.imageName, data.annotations);
+        itemCb(
+          data.image,
+          data.imageName,
+          data.annotations,
+          data.remainingImages
+        );
       }
     });
 

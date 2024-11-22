@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import BaseView from "../BaseView";
 import ImageInput from "./components/ImageViewer/ImageInput";
 import ImageViewer from "./components/ImageViewer/ImageViewer";
@@ -64,6 +64,8 @@ const ImageView = () => {
 
   const [showingImages, setShowingImages] = useState(false);
 
+  const [pendingImageTasks, setPendingImageTasks] = useState(0);
+
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
 
   const [rootItem, setRootItem] = useState<FileInfo | null>(null);
@@ -103,7 +105,8 @@ const ImageView = () => {
       base64Image: string,
       folderName: string,
       fileName: string,
-      annotations?: any[]
+      annotations?: any[],
+      remainingImages: number = 100
     ) => {
       if (!base64Image) return;
 
@@ -125,14 +128,36 @@ const ImageView = () => {
       setSelectedPath(folderPath);
 
       // Images in the backend are always processed in order, so we can safely remove the first image in the pending list.
-      setPendingImageNames((l) => (l.length > 0 ? l.slice(1) : []));
+      // setPendingImageNames((l) => (l.length > 0 ? l.slice(1) : []));
+
+      setPendingImageNames((l) => {
+        const original = l.length > 0 ? l.slice(1) : [];
+
+        // The amount of images can be less if we're in auto splitting mode (for webtoons).
+        const other = [...Array(remainingImages).keys()].map(
+          (f: any, idx: number) => `File ${idx + 1}`
+        );
+
+        if (original.length >= other.length) {
+          return original;
+        } else {
+          return other;
+        }
+      });
     },
     []
   );
 
-  const doneTranslatingAll = useCallback(async () => {
-    // no-op now.
+  const doneTranslatingAll = useCallback(() => {
+    // In case of toons: The amount of images processed can be less than the actual amount of images uploaded.
+    // (As images are expanded)
+    setPendingImageTasks((t) => (t > 0 ? t - 1 : 0));
   }, []);
+
+  // For use in conjunction with doneTranslatingAll.
+  useEffect(() => {
+    if (pendingImageTasks === 0) setPendingImageNames([]);
+  }, [pendingImageTasks]);
 
   const startTranslating = useCallback(() => {
     // setLoadingProgress(0);
@@ -146,8 +171,8 @@ const ImageView = () => {
   const [cleaningMode, setCleaningMode] = useState("simple");
   const [redrawingMode, setRedrawingMode] = useState("amg_convert");
 
-  const [tileWidth, setTileWidth] = useState(-1);
-  const [tileHeight, setTileHeight] = useState(-1);
+  const [tileWidth, setTileWidth] = useState(-2000);
+  const [tileHeight, setTileHeight] = useState(-2000);
 
   const handleCeateFolderNameClose = () => {
     setCreateFolderOpen(false);
@@ -164,13 +189,21 @@ const ImageView = () => {
       const doneWithOne = (
         base64Image: string,
         fileName: string,
-        annotations?: any[]
+        annotations?: any[],
+        remainingImages: number = 100
       ) => {
-        doneTranslatingOne(base64Image, folderName, fileName, annotations);
+        doneTranslatingOne(
+          base64Image,
+          folderName,
+          fileName,
+          annotations,
+          remainingImages
+        );
 
         pushAlert(`Saved "${fileName}".`);
       };
 
+      setPendingImageTasks((t) => t + 1);
       await pollTranslateImagesStatus(
         updateProgress,
         doneWithOne,
@@ -180,10 +213,7 @@ const ImageView = () => {
 
       // Now we actually begin the translation job on the server.
       let sortedFileNames = await translateImages(files, null, taskId);
-      if (
-        (tileWidth === 0 || tileHeight === 0) &&
-        sortedFileNames?.length > 1
-      ) {
+      if (tileWidth === 0 && tileHeight === 0 && sortedFileNames?.length > 1) {
         // Auto tiling mode stacks all the images together into one.
         sortedFileNames = [sortedFileNames[0]];
       }

@@ -53,6 +53,7 @@ export type UpdateNumberFieldProps = {
   valueType: "float" | "int";
   disabled?: boolean;
   tooltip?: string;
+  color?: any;
 };
 
 const UpdateNumberField = (props: UpdateNumberFieldProps) => {
@@ -90,15 +91,12 @@ const UpdateNumberField = (props: UpdateNumberFieldProps) => {
       helperText={props.helperText}
       placeholder={props.placeholder}
       disabled={props.disabled}
+      color={props.color}
     />
   );
 
   if (props.tooltip) {
-    return (
-      <Tooltip title={props.tooltip}>
-        {comp}
-      </Tooltip>
-    )
+    return <Tooltip title={props.tooltip}>{comp}</Tooltip>;
   }
 
   return comp;
