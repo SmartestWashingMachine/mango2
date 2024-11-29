@@ -274,9 +274,10 @@ class BasePipeline:
             # Since most fonts don't work well with weird characters.
             target_texts = [t.replace("―", "-").encode("ascii", "ignore").decode("utf-8") for t in target_texts]
 
-            cleaning_output = self.image_cleaning_app.begin_process(
-                rgb_image, speech_bboxes
-            )
+            with logger.begin_event("Image cleaning"):
+                cleaning_output = self.image_cleaning_app.begin_process(
+                    rgb_image, speech_bboxes
+                )
             if isinstance(
                 cleaning_output, tuple
             ):  # Quick fix for adaptive_image_clean.
@@ -289,9 +290,10 @@ class BasePipeline:
             if progress_cb is not None:
                 progress_cb(progress=90)
 
-            rgb_image = self.image_redrawing_app.begin_process(
-                rgb_image, speech_bboxes, target_texts, text_colors
-            )
+            with logger.begin_event("Redrawing"):
+                rgb_image = self.image_redrawing_app.begin_process(
+                    rgb_image, speech_bboxes, target_texts, text_colors
+                )
 
             is_amg = isinstance(
                 rgb_image, dict

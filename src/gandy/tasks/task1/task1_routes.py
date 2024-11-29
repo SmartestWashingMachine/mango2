@@ -51,6 +51,9 @@ def translate_task1_background_job(
             # Auto tiling "deprecated". It's not ideal in most cases.
             is_auto_tiling = config_state.tile_width == 0 and config_state.tile_height == 0
 
+            old_tile_width = None
+            old_tile_height = None
+
             is_vert_splitting = config_state.tile_height == 0
             is_doing_vertical_merging = config_state.tile_height == -1 or is_vert_splitting
             if is_vert_splitting:
@@ -60,8 +63,6 @@ def translate_task1_background_job(
             image_widths = []
             image_heights = []
 
-            vert_split_idx = 0
-
             # List all files.
             for idx, img_file in enumerate(images):
                 img = Image.open(img_file)
@@ -70,28 +71,35 @@ def translate_task1_background_job(
                 image_widths.append(img.width)
                 image_heights.append(img.height)
 
-                if is_vert_splitting:
+                image_streams.append(img)
+
+                try:
+                    if img_file.filename == "" or img_file.filename is None:
+                        image_names.append(f"{idx}")
+                    else:
+                        image_names.append(img_file.filename)
+                except:
+                    image_names.append(f"{idx}")
+
+            images_data = list(zip(image_streams, image_names))
+            images_data = sorted(images_data, key=lambda tup: natsort(tup[1]))
+
+            if is_vert_splitting:
+                new_images_data = []
+                vert_split_idx = 0
+
+                for img_idx, (img, img_name) in enumerate(images_data):
                     chunk_hei = img.width * 3
                     for img_ycoord in range(0, img.height, chunk_hei):
                         img_split = img.crop((0, img_ycoord, img.width, min(img_ycoord + chunk_hei, img.height)))
 
-                        image_streams.append(img_split)
-                        image_names.append(f"{vert_split_idx}")
+                        new_images_data.append([img_split, f"{vert_split_idx}"])
+
+                        ctx.log(f'Vertical splitting image', original_image_name=img_name, new_image_name=vert_split_idx)
 
                         vert_split_idx += 1
-                else:
-                    image_streams.append(img)
 
-                    try:
-                        if img_file.filename == "" or img_file.filename is None:
-                            image_names.append(f"{idx}")
-                        else:
-                            image_names.append(img_file.filename)
-                    except:
-                        image_names.append(f"{idx}")
-
-            images_data = list(zip(image_streams, image_names))
-            images_data = sorted(images_data, key=lambda tup: natsort(tup[1]))
+                images_data = new_images_data
 
             if is_auto_tiling and len(images_data) > 1:
                 old_tile_width = config_state.tile_width
@@ -182,7 +190,7 @@ def translate_task1_background_job(
             socketio.patched_emit("done_translating_task1", { "taskId": task_id, })
             socketio.sleep()
 
-        if is_auto_tiling or is_doing_vertical_merging:
+        if (is_auto_tiling or is_doing_vertical_merging) and (old_tile_width is not None and old_tile_height is not None):
             config_state.tile_width = old_tile_width
             config_state.tile_height = old_tile_height
 
