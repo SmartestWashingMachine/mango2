@@ -61,17 +61,28 @@ def smart_vertical_merging(images: List[Image.Image], detect_in_chunk):
 
     if stk_portion['append_last'] is not None:
       top_slice = img.crop((0, 0, img.width, stk_portion['append_last']))
+
+      old_other_img_size = new_images[idx - 1].size
       new_images[idx - 1] = stack_vertically([new_images[idx - 1], top_slice])
 
       remaining_y1_crop = stk_portion['append_last']
 
+      logger.log_message(f'Appending top slice to previous image.', top_slice=top_slice.size, other_img_size_before=old_other_img_size, other_img_size_after=new_images[idx - 1].size)
+
     if stk_portion['prepend_next'] is not None:
       bottom_slice = img.crop((0, stk_portion['prepend_next'], img.width, img.height))
+
+      old_other_img_size = new_images[idx + 1].size
       new_images[idx + 1] = stack_vertically([bottom_slice, new_images[idx + 1]])
 
       remaining_y2_crop = stk_portion['prepend_next']
 
       stack_with_prev[idx + 1]['append_last'] = None
+
+      if stack_with_prev[idx + 1]['prepend_next'] is not None:
+        stack_with_prev[idx + 1]['prepend_next'] += bottom_slice.height
+
+      logger.log_message(f'Prepending bottom slice to next image.', bottom_size=bottom_slice.size, other_img_size_before=old_other_img_size, other_img_size_after=new_images[idx + 1].size)
 
     remaining_slice = img.crop((0, remaining_y1_crop, img.width, remaining_y2_crop))
     new_images[idx] = remaining_slice
