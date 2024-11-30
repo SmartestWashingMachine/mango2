@@ -40,6 +40,7 @@ export type IStoreClientToServer = {
   tileWidth: number;
   tileHeight: number;
   batchOcr: boolean;
+  cutOcrPunct: boolean;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;

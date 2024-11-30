@@ -127,6 +127,7 @@ def change_multiple_models_route():
             stroke_size=float(data["strokeSize"]),
             bottom_text_only=data["bottomTextOnly"],
             batch_ocr=data["batchOcr"],
+            cut_ocr_punct=data["cutOcrPunct"],
         )
 
         config_state.update_terms(terms=data["terms"])

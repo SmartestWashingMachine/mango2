@@ -37,6 +37,7 @@ const storeDefaults: IStore = {
   tileWidth: 100,
   tileHeight: 100,
   batchOcr: false,
+  cutOcrPunct: false,
 };
 
 export const initializeStore = () => {

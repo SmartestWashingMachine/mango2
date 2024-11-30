@@ -12,6 +12,7 @@ from gandy.utils.fancy_logger import logger
 from uuid import uuid4
 import os
 import cv2
+import regex as re
 
 
 class TrOCRTextRecognitionApp(BaseTextRecognition):
@@ -122,14 +123,28 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
 
         return pixel_values
 
+    def cut_punct(self, s: str):
+        new_s = re.sub(r"[.?!。、”\"'」．,！？]$", '', s)
+
+        logger.log_message('Cut punctuation', old=s, new=new_s)
+        return new_s
+
     def postprocess(self, outp, batched = False):
         if batched:
             decoded = self.tokenizer.batch_decode(outp, skip_special_tokens=True)
 
-            if self.extra_postprocess is not None:
-                decoded = [self.extra_postprocess(d).strip() for d in decoded]
-            else:
-                decoded = [d.strip() for d in decoded]
+            final_decoded = []
+            for d in decoded:
+                if self.extra_postprocess is not None:
+                    d = self.extra_postprocess(d)
+                d = d.strip()
+
+                if config_state.cut_ocr_punct:
+                    d = self.cut_punct(d)
+
+                final_decoded.append(d)
+
+            return final_decoded
         else:
             decoded = self.tokenizer.decode(outp[0, ...], skip_special_tokens=True)
 
@@ -138,7 +153,10 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
 
             decoded = decoded.strip()
 
-        return decoded
+            if config_state.cut_ocr_punct:
+                decoded = self.cut_punct(decoded)
+
+            return decoded
 
     def do_generate(self, image, batched = False):
         x = self.preprocess(image)

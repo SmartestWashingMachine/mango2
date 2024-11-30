@@ -202,6 +202,7 @@ const GlobalOptionsView = () => {
     maxLengthA,
     bottomTextOnly,
     batchOcr,
+    cutOcrPunct,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
@@ -401,6 +402,15 @@ const GlobalOptionsView = () => {
                 defaultValue={batchOcr}
                 helperText="Batch text lines together for faster OCR processing. Uses more memory."
                 label="Batch OCR Lines"
+              />
+            ),
+            "Cut OCR Punctuation": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="cutOcrPunct"
+                defaultValue={cutOcrPunct}
+                helperText="Cut off potentially erroneous end-of-line punctuation from OCR'd texts."
+                label="Cut OCR Punctuation"
               />
             ),
           },
