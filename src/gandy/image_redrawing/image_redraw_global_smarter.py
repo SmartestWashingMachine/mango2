@@ -86,6 +86,8 @@ class CacheDraw():
         self.draw = draw
 
     def do_draw(self, coords, text: str, font, align: str, stroke_width, spacing, item):
+        # coords = (x1, y1)
+        # drawn = (x1, y1, x2, y2)
         drawn = self.draw.multiline_textbbox(coords, text, font, align=align, stroke_width=stroke_width, spacing=spacing)
         self.cache[item] = { 'coords': coords, 'drawn': drawn, }
 
@@ -103,6 +105,24 @@ class CacheDraw():
             # First time this item was seen.
             return self.do_draw(coords, text, font, align, stroke_width, spacing, item)
 
+        # Let's say we draw it from (100, 100). True drawn becomes (70, 80, 150, 170)
+        # Our ultimate formula is [(x1 - x offset), (y1 - y offset), (x1 - x offset) + true width, (y1 - y offset) + true height]
+        # So the true width would be 80 (150 - 70). The true height would be 90 (170 - 80).
+        # Our x offset would be (x1 - drawn x1). Our y offset would be (y1 - drawn y1).
+
+        x1_offset = existing_item['coords'][0] - existing_item['drawn'][0]
+        true_x1 = coords[0] - x1_offset
+
+        y1_offset = existing_item['coords'][1] - existing_item['drawn'][1]
+        true_y1 = coords[1] - y1_offset
+
+        true_width = existing_item['drawn'][2] - existing_item['drawn'][0]
+        true_x2 = true_x1 + true_width
+
+        true_height = existing_item['drawn'][3] - existing_item['drawn'][1]
+        true_y2 = true_y1 + true_height
+
+        return [true_x1, true_y1, true_x2, true_y2]
         return [
             coords[0] + (existing_item['drawn'][0] - existing_item['coords'][0]),
             coords[1] + (existing_item['drawn'][1] - existing_item['coords'][1]),
