@@ -24,10 +24,10 @@ class Action():
     def begin(self,  candidate: TextBox, others: List[TextBox], img: Image):
         return self.process(self.max_iterations, candidate, others, img, original=candidate, original_others=others, iterations_done=1)
 
-    def process(self, time_left: int, candidate: TextBox, others: List[TextBox], img: Image, original: TextBox, original_others: List[TextBox], iterations_done: int):
+    def process(self, time_left: int, candidate: TextBox, others: List[TextBox], img: Image, original: TextBox, original_others: List[TextBox], iterations_done: int, **kwargs):
         print_spam(f'({self.action_name}) PROCESSING for BOX "{candidate.simple()}" with TimeLeft={time_left}')
 
-        new_candidate, new_others = self.action_process(time_left, candidate, others, img, original, iterations_done)
+        new_candidate, new_others = self.action_process(time_left, candidate, others, img, original, iterations_done, **kwargs)
 
         return self.validate(time_left, new_candidate, new_others, img, original, original_others, iterations_done=iterations_done, prev_candidate=candidate)
 
@@ -39,10 +39,13 @@ class Action():
             print_spam(o)
         if time_left <= 0 or self.fatal_error(candidate, others, img, prev_candidate):
             return self.fail(candidate, others, original, original_others, prev_candidate)
-        elif self.non_fatal_error(candidate, others, img):
-            return self.process(time_left - 1, candidate, others, img, original, original_others, iterations_done=(iterations_done + 1))
         else:
-            return self.success(candidate, others)
+            non_fatal_payload = self.non_fatal_error(candidate, others, img)
+
+            if non_fatal_payload != False:
+                return self.process(time_left - 1, candidate, others, img, original, original_others, iterations_done=(iterations_done + 1), non_fatal_payload=non_fatal_payload)
+            else:
+                return self.success(candidate, others)
     
     def fail(self, candidate: TextBox, others: List[TextBox], original: TextBox, original_others: List[TextBox], prev_candidate: TextBox):
         print_spam(f'({self.action_name}) FAILED for BOX "{candidate.simple()}"')

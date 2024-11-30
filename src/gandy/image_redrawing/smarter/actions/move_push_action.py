@@ -38,7 +38,7 @@ class MoveAndPushAction(MoveAction):
 
         return new_others
 
-    def action_process(self, time_left: int, candidate, others, img, original, iterations_done: int):
+    def action_process(self, time_left: int, candidate, others, img, original, iterations_done: int, **kwargs):
         new_candidate = TextBox.shift_from(candidate, offset_pct=self.offset_pct)
         new_others = self.shift_others(new_candidate, others, img)
 

@@ -34,7 +34,7 @@ class ExpandAspectAction(Action):
             return True
         return False
     
-    def action_process(self, time_left: int, candidate, others, img, original, iterations_done: int):
+    def action_process(self, time_left: int, candidate, others, img, original, iterations_done: int, **kwargs):
         new_candidate = TextBox.clone(candidate)
 
         w_offset = self.w_increase_pct * img.tile_width * iterations_done

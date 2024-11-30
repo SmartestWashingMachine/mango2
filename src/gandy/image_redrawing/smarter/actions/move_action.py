@@ -44,12 +44,20 @@ class MoveAction(Action):
         if text_intersects(candidate, others):
             return True
         if text_overflows(candidate, img, direction=self.fatal_error_overlapping_direction):
-            return True
+            return "Overflows Image"
 
         return False
     
-    def action_process(self, time_left: int, candidate, others, img, original, iterations_done: int):
-        new_candidate = TextBox.shift_from(candidate, offset_pct=self.offset_pct)
+    def action_process(self, time_left: int, candidate, others, img, original, iterations_done: int, **kwargs):
+        non_fatal_payload = kwargs.pop('non_fatal_payload', None)
+
+        if non_fatal_payload == "Overflows Image":
+            # Only slight adjustments here.
+            true_offset_pct = [(x * 0.15) for x in self.offset_pct]
+        else:
+            true_offset_pct = self.offset_pct
+
+        new_candidate = TextBox.shift_from(candidate, offset_pct=true_offset_pct)
 
         return new_candidate, others
     

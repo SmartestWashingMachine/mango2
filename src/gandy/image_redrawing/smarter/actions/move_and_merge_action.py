@@ -43,7 +43,7 @@ class MoveAndMergeTextAction(Action):
 
         return False
     
-    def action_process(self, time_left: int, candidate: TextBox, others: List[TextBox], img, original, iterations_done: int):
+    def action_process(self, time_left: int, candidate: TextBox, others: List[TextBox], img, original, iterations_done: int, **kwargs):
         if iterations_done > 1:
             new_candidate = TextBox.shift_from(candidate, offset_pct=self.offset_pct)
         else:

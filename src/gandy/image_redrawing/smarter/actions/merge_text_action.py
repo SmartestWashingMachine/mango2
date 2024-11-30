@@ -21,7 +21,7 @@ class MergeTextAction(Action):
 
         return False
     
-    def action_process(self, time_left: int, candidate: TextBox, others: List[TextBox], img, original, iterations_done: int):
+    def action_process(self, time_left: int, candidate: TextBox, others: List[TextBox], img, original, iterations_done: int, **kwargs):
         new_candidate = TextBox.clone(candidate)
 
         # Shrink other boxes that touch this one.

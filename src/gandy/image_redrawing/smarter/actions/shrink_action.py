@@ -22,7 +22,7 @@ class ShrinkAction(Action):
             return True
         return False
     
-    def action_process(self, time_left: int, candidate, others, img, original, iterations_done: int):
+    def action_process(self, time_left: int, candidate, others, img, original, iterations_done: int, **kwargs):
         new_candidate = TextBox.clone(candidate)
 
         new_fz = max(1, int(new_candidate.font_size * self.shrink_factor))
