@@ -14,6 +14,11 @@ def dedupe_punct(s: str):
     deduped = [re.sub(ri_inner, r"\1", x) if "..." not in x else x for x in split]
     return "".join(deduped)
 
+def fix_quotes(s: str):
+    if s.startswith('"') and s.count('"') == 1:
+        s = s + '"'
+    return s
+
 
 def clean_text_v2(s: str, with_normalize=True):
     if with_normalize:
@@ -88,6 +93,9 @@ def clean_text_v2(s: str, with_normalize=True):
     new_sentence = dedupe_punct(new_sentence)
     # Rare but possible with the Magnus OCR variants:
     new_sentence = new_sentence.replace("◎", "◯")
+
+    # MT models sometimes misplace quotes.
+    new_sentence = fix_quotes(new_sentence)
 
     return new_sentence
 
