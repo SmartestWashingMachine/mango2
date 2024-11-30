@@ -274,7 +274,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                 line_bboxes = None
                 line_texts = None
 
-            if config_state.batch_ocr:
+            if config_state.batch_ocr and text_line_app is not None:
                 cropped_image = np.array(text_region_image) # For logging.
             self.log_text(cropped_image, f"Found complete text", text=text)
             source_texts.append(text)
