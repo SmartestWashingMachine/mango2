@@ -1,7 +1,10 @@
 import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import ReplaceTermsList from "./components/ReplaceTermsList";
-import { setSeed, triggerCircuitBreak } from "../../flaskcomms/optionsViewComms";
+import {
+  setSeed,
+  triggerCircuitBreak,
+} from "../../flaskcomms/optionsViewComms";
 import IReplaceTerm from "../../types/ReplaceTerm";
 import BaseView from "../BaseView";
 import { TEXT_DETECTION_OPTIONS } from "../../utils/appOptions/textDetectionOptions";
@@ -19,7 +22,9 @@ import { OCR_OPTIONS } from "../../utils/appOptions/ocrOptions";
 import { getInstalledModels } from "../../flaskcomms/getInstalledModels";
 import { useAlerts } from "../../components/AlertProvider";
 import { useInstalledModelsRetriever } from "../../utils/useInstalledModelsRetriever";
-import GLOBAL_OPTIONS_PARTIAL_PRESETS, { PresetItem } from "./globalOptionsPartialPresets";
+import GLOBAL_OPTIONS_PARTIAL_PRESETS, {
+  PresetItem,
+} from "./globalOptionsPartialPresets";
 
 const GlobalOptionsView = () => {
   const pushAlert = useAlerts();
@@ -71,7 +76,7 @@ const GlobalOptionsView = () => {
 
     if (doResend) await MainGateway.resendData();
 
-    setLoadedData((d: any) => ({ ...d, [key]: value, }));
+    setLoadedData((d: any) => ({ ...d, [key]: value }));
   };
 
   const updateTerm = (
@@ -124,18 +129,25 @@ const GlobalOptionsView = () => {
     const data = await MainGateway.getStoreData();
     setLoadedData(data);
 
-    pushAlert('Settings reset!');
+    pushAlert("Settings reset!");
   };
 
   const itemEnabled = (x: { name: string; value: string; desc: string }) => {
-    const allowedItems = ["None", "MAP Beam Decoding", "MBR Sampling", "MBR Beam Sampling"];
+    const allowedItems = [
+      "None",
+      "MAP Beam Decoding",
+      "MBR Sampling",
+      "MBR Beam Sampling",
+    ];
     if (allowedItems.includes(x.name)) return true;
     return installedModels.indexOf(x.value) !== -1;
   };
 
   const selectQuickPreset = async (e: any) => {
     const presetName = e.target.value;
-    const preset = GLOBAL_OPTIONS_PARTIAL_PRESETS.find((x) => x.name === presetName);
+    const preset = GLOBAL_OPTIONS_PARTIAL_PRESETS.find(
+      (x) => x.name === presetName
+    );
     if (!preset) return;
 
     for (const [key, value] of Object.entries(preset.opts)) {
@@ -149,15 +161,13 @@ const GlobalOptionsView = () => {
     const { opts } = x;
 
     // Look in all the models used by the preset; if the model is not installed it's a no-go.
-    return Object.keys(opts).every((k: any) => k.includes('ModelName') ? (installedModels.indexOf(opts[k]) > -1) : true);
+    return Object.keys(opts).every((k: any) =>
+      k.includes("ModelName") ? installedModels.indexOf(opts[k]) > -1 : true
+    );
   };
 
   const renderItem = (x: { name: string; value: string; desc: string }) => [
-    <MenuItem
-      value={x.value}
-      dense
-      disabled={!itemEnabled(x)}
-    >
+    <MenuItem value={x.value} dense disabled={!itemEnabled(x)}>
       {x.name}
     </MenuItem>,
     <MenuItem disabled value="" divider dense>
@@ -167,9 +177,34 @@ const GlobalOptionsView = () => {
 
   if (isLoading) return <div></div>;
 
-  const { textLineModelName, textDetectionModelName, textRecognitionModelName, translationModelName, rerankingModelName, spellCorrectionModelName, enableCuda, forceTranslationCPU, forceTdCpu, contextAmount, strokeSize, autoOpenOcrWindow, decodingMode, numBeams, topK, topP, epsilonCutoff, lengthPenalty, noRepeatNgramSize, temperature, repetitionPenalty, maxLengthA, bottomTextOnly, } = loadedData;
+  const {
+    textLineModelName,
+    textDetectionModelName,
+    textRecognitionModelName,
+    translationModelName,
+    rerankingModelName,
+    spellCorrectionModelName,
+    enableCuda,
+    forceTranslationCPU,
+    forceTdCpu,
+    contextAmount,
+    strokeSize,
+    autoOpenOcrWindow,
+    decodingMode,
+    numBeams,
+    topK,
+    topP,
+    epsilonCutoff,
+    lengthPenalty,
+    noRepeatNgramSize,
+    temperature,
+    repetitionPenalty,
+    maxLengthA,
+    bottomTextOnly,
+    batchOcr,
+  } = loadedData;
 
-  const decodingParamsIgnored = decodingMode === 'beam';
+  const decodingParamsIgnored = decodingMode === "beam";
 
   return (
     <BaseView>
@@ -185,7 +220,11 @@ const GlobalOptionsView = () => {
                 select
               >
                 {GLOBAL_OPTIONS_PARTIAL_PRESETS.map((b) => [
-                  <MenuItem value={b.name} key={b.name} disabled={!presetEnabled(b)}>
+                  <MenuItem
+                    value={b.name}
+                    key={b.name}
+                    disabled={!presetEnabled(b)}
+                  >
                     {b.name}
                   </MenuItem>,
                   <MenuItem
@@ -324,17 +363,19 @@ const GlobalOptionsView = () => {
                 </MenuItem>
               </UpdateListField>
             ),
-            "Redrawing Edge Size": (<UpdateNumberField
-              label="Redrawing Edge Size"
-              changeValue={setStoreValue}
-              keyName="strokeSize"
-              defaultValue={strokeSize}
-              helperText="The size of the text edge when automatically redrawing translated images."
-              valueType="float"
-              safeValue={0.5}
-              minValue={0.1}
-              maxValue={150}
-            />),
+            "Redrawing Edge Size": (
+              <UpdateNumberField
+                label="Redrawing Edge Size"
+                changeValue={setStoreValue}
+                keyName="strokeSize"
+                defaultValue={strokeSize}
+                helperText="The size of the text edge when automatically redrawing translated images."
+                valueType="float"
+                safeValue={0.5}
+                minValue={0.1}
+                maxValue={150}
+              />
+            ),
             "Auto Open OCR Window": (
               <UpdateCheckbox
                 changeValue={setStoreValue}
@@ -351,6 +392,15 @@ const GlobalOptionsView = () => {
                 defaultValue={bottomTextOnly}
                 helperText="Only scan the bottom region of the video or images. Can be useful for video translation tasks."
                 label="Bottom Text Only"
+              />
+            ),
+            "Batch OCR Lines": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="batchOcr"
+                defaultValue={batchOcr}
+                helperText="Batch text lines together for faster OCR processing. Uses more memory."
+                label="Batch OCR Lines"
               />
             ),
           },
@@ -526,7 +576,8 @@ const GlobalOptionsView = () => {
                   Open Fonts Folder
                 </Button>
                 <Typography variant="caption" color="info">
-                  Font files can be placed in the folder for image editing purposes, or to change the font used by the OCR / text box.
+                  Font files can be placed in the folder for image editing
+                  purposes, or to change the font used by the OCR / text box.
                 </Typography>
               </>
             ),
@@ -589,7 +640,8 @@ const GlobalOptionsView = () => {
                   Reset Settings
                 </Button>
                 <Typography variant="caption" color="info">
-                  Resets ALL settings - including those related to the OCR boxes. Double click to activate.
+                  Resets ALL settings - including those related to the OCR
+                  boxes. Double click to activate.
                 </Typography>
               </>
             ),

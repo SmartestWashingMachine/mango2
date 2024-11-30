@@ -28,6 +28,8 @@ class ConfigState:
         self.tile_width = 100
         self.tile_height = 100
 
+        self.batch_ocr = False
+
         self._temp_circuit_broken = False # TODO: Use separate state for this.
 
     def set_decoding_params(self, **kwargs):
