@@ -1,127 +1,80 @@
 import { IStoreClientToServer } from "../../types/ElectronStore";
 
+type OptsArr = {
+  textDetectionModelName: string[];
+  translationModelName: string[];
+  textRecognitionModelName: string[];
+  textLineModelName: string[];
+};
+
 export type PresetItem = {
   name: string;
   description: string;
-  opts: Partial<IStoreClientToServer>;
-}
+  opts: Partial<Omit<IStoreClientToServer, keyof OptsArr>> & OptsArr;
+};
 
 const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
   {
-    name: 'Manga / Text Box',
-    description: 'This is a basic set of options for translating Japanese manga panels or for use with the text box.',
+    name: "Manga / Games",
+    description:
+      "This preset is good for translating Japanese manga panels or for playing games with the detached Text Box.",
     opts: {
-      textDetectionModelName: 'yolo_xl',
-      textRecognitionModelName: 'trocr_jbig',
-      translationModelName: 'nllb_jq',
-      textLineModelName: 'none',
-      numBeams: 3,
-      bottomTextOnly: false,
-      contextAmount: "zero",
-    },
-  },
-  {
-    name: 'Advanced Manga',
-    description: 'This is an advanced set of options for translating Japanese manga panels.',
-    opts: {
-      textDetectionModelName: 'detr_xl',
-      textRecognitionModelName: 'trocr_jmassive',
-      translationModelName: 'nllb_jq',
-      textLineModelName: 'none',
+      textDetectionModelName: ["detr_xl", "yolo_xl"],
+      textRecognitionModelName: ["trocr_jmassive", "trocr_jbig"],
+      translationModelName: ["nllb_jq300", "nllb_jq"],
+      textLineModelName: ["none"],
       numBeams: 3,
       bottomTextOnly: false,
       contextAmount: "three",
+      tileWidth: 100,
+      tileHeight: 100,
     },
   },
   {
-    name: 'Advanced Manga Alternative',
-    description: 'This is an advanced set of options for translating Japanese manga panels.',
+    name: "Manga Alternative",
+    description:
+      "This preset is good for translating Japanese manga panels. It uses an additional text line detection model to improve the OCR quality.",
     opts: {
-      textDetectionModelName: 'detr_xl_xxx',
-      textRecognitionModelName: 'trocr_jcomics',
-      translationModelName: 'nllb_jq300',
-      textLineModelName: 'none',
+      textDetectionModelName: ["detr_xl", "yolo_xl"],
+      textRecognitionModelName: ["trocr_jmassive", "trocr_jbig"],
+      translationModelName: ["nllb_jq300", "nllb_jq"],
+      textLineModelName: ["yolo_line_emassive"],
       numBeams: 3,
       bottomTextOnly: false,
       contextAmount: "three",
+      tileWidth: 100,
+      tileHeight: 100,
     },
   },
   {
-    name: 'General Japanese Images',
-    description: 'This is an advanced set of options for translating general Japanese images.',
+    name: "Motion Videos",
+    description:
+      "This preset is good for translating Japanese videos with text drawn on the screen.",
     opts: {
-      textDetectionModelName: 'union_massive_detr',
-      textRecognitionModelName: 'trocr_jmassive',
-      translationModelName: 'nllb_jq',
-      textLineModelName: 'none',
+      textDetectionModelName: ["none"],
+      textRecognitionModelName: ["trocr_jmagnus"],
+      translationModelName: ["nllb_jq300", "nllb_jq"],
+      textLineModelName: ["yolo_line_emassive"],
       numBeams: 3,
       bottomTextOnly: false,
-      contextAmount: "zero",
+      contextAmount: "three",
+      tileWidth: 100,
+      tileHeight: 100,
     },
   },
   {
-    name: 'General Japanese Images Alternative',
-    description: 'This is an advanced set of options for translating general Japanese images.',
+    name: "Korean Webtoons",
+    description: "This preset is good for translating Korean webtoon images.",
     opts: {
-      textDetectionModelName: 'union_massive',
-      textRecognitionModelName: 'trocr_jmassive',
-      translationModelName: 'nllb_jq',
-      textLineModelName: 'none',
+      textDetectionModelName: ["yolo_xl"],
+      textRecognitionModelName: ["k_trocr_massive"],
+      translationModelName: ["nllb_ko"],
+      textLineModelName: ["none"],
       numBeams: 3,
       bottomTextOnly: false,
-      contextAmount: "zero",
-    },
-  },
-  {
-    name: 'Game Videos / Motion Videos',
-    description: 'This is an advanced set of options for translating videos with Japanese texts found near the bottom of the video only.',
-    opts: {
-      textDetectionModelName: 'none',
-      textRecognitionModelName: 'trocr_jmagnus',
-      translationModelName: 'nllb_jq',
-      textLineModelName: 'yolo_line_emassive',
-      numBeams: 3,
-      bottomTextOnly: true,
-      contextAmount: "zero",
-    },
-  },
-  {
-    name: 'General Videos',
-    description: 'This is an advanced set of options for translating videos with Japanese texts found anywhere in the video.',
-    opts: {
-      textDetectionModelName: 'none',
-      textRecognitionModelName: 'trocr_jmagnus',
-      translationModelName: 'nllb_jq',
-      textLineModelName: 'yolo_line_emassive',
-      numBeams: 3,
-      bottomTextOnly: false,
-      contextAmount: "zero",
-    },
-  },
-  {
-    name: 'General Korean Images',
-    description: 'This is an advanced set of options for translating general Korean images.',
-    opts: {
-      textDetectionModelName: 'yolo_xl',
-      textRecognitionModelName: 'k_trocr_massive',
-      translationModelName: 'nllb_ko',
-      textLineModelName: 'none',
-      numBeams: 3,
-      bottomTextOnly: false,
-      contextAmount: "zero",
-    },
-  },
-  {
-    name: 'General Chinese Images',
-    description: 'This is an advanced set of options for translating general Chinese images.',
-    opts: {
-      textDetectionModelName: 'yolo_xl',
-      textRecognitionModelName: 'zh_trocr_massive',
-      translationModelName: 'nllb_zh',
-      textLineModelName: 'none',
-      numBeams: 3,
-      bottomTextOnly: false,
-      contextAmount: "zero",
+      contextAmount: "three",
+      tileWidth: 100,
+      tileHeight: 0,
     },
   },
 ];

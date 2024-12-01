@@ -151,7 +151,18 @@ const GlobalOptionsView = () => {
     if (!preset) return;
 
     for (const [key, value] of Object.entries(preset.opts)) {
-      await setStoreValue(key, value, false);
+      if (Array.isArray(value)) {
+        // Allow for fallbacks in setting most models.
+        for (const potentialModel of value) {
+          if (installedModels.indexOf(potentialModel) > -1) {
+            await setStoreValue(key, potentialModel, false);
+            break;
+          }
+        }
+      } else {
+        // Otherwise just set the value normally.
+        await setStoreValue(key, value, false);
+      }
     }
 
     await MainGateway.resendData();
@@ -161,9 +172,13 @@ const GlobalOptionsView = () => {
     const { opts } = x;
 
     // Look in all the models used by the preset; if the model is not installed it's a no-go.
-    return Object.keys(opts).every((k: any) =>
-      k.includes("ModelName") ? installedModels.indexOf(opts[k]) > -1 : true
-    );
+    return Object.keys(opts).every((k: any) => {
+      if (!k.includes("ModelName")) return true;
+
+      // Is a model; test to see if it or any of the fallbacks are in the installed set.
+      const arr = opts[k] as string[];
+      return arr.some((x) => installedModels.indexOf(x));
+    });
   };
 
   const renderItem = (x: { name: string; value: string; desc: string }) => [
@@ -203,6 +218,7 @@ const GlobalOptionsView = () => {
     bottomTextOnly,
     batchOcr,
     cutOcrPunct,
+    ignoreDetectSingleWords,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
@@ -411,6 +427,15 @@ const GlobalOptionsView = () => {
                 defaultValue={cutOcrPunct}
                 helperText="Cut off potentially erroneous end-of-line punctuation from OCR'd texts."
                 label="Cut OCR Punctuation"
+              />
+            ),
+            "Ignore Single Words In Images": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="ignoreDetectSingleWords"
+                defaultValue={ignoreDetectSingleWords}
+                helperText="Removes potentially erroneous single word detections in image translation jobs."
+                label="Ignore Single Words In Images"
               />
             ),
           },

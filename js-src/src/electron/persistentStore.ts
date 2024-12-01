@@ -38,6 +38,7 @@ const storeDefaults: IStore = {
   tileHeight: 100,
   batchOcr: false,
   cutOcrPunct: false,
+  ignoreDetectSingleWords: false,
 };
 
 export const initializeStore = () => {

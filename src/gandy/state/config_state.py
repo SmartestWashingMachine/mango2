@@ -30,6 +30,7 @@ class ConfigState:
 
         self.batch_ocr = False
         self.cut_ocr_punct = False
+        self.ignore_detect_single_words = False
 
         self._temp_circuit_broken = False # TODO: Use separate state for this.
 

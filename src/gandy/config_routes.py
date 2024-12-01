@@ -128,6 +128,7 @@ def change_multiple_models_route():
             bottom_text_only=data["bottomTextOnly"],
             batch_ocr=data["batchOcr"],
             cut_ocr_punct=data["cutOcrPunct"],
+            ignore_detect_single_words=data["ignoreDetectSingleWords"],
         )
 
         config_state.update_terms(terms=data["terms"])

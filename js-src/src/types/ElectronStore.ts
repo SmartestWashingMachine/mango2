@@ -41,6 +41,7 @@ export type IStoreClientToServer = {
   tileHeight: number;
   batchOcr: boolean;
   cutOcrPunct: boolean;
+  ignoreDetectSingleWords: boolean;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;

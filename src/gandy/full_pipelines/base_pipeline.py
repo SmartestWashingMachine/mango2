@@ -274,6 +274,19 @@ class BasePipeline:
             # Since most fonts don't work well with weird characters.
             target_texts = [t.replace("―", "-").encode("ascii", "ignore").decode("utf-8") for t in target_texts]
 
+            if config_state.ignore_detect_single_words:
+                targets_and_bboxes = zip(target_texts, speech_bboxes)
+                targets_and_bboxes = [t for t in targets_and_bboxes if len(t[0].split(' ')) > 1]
+
+                old_len = len(target_texts)
+                target_texts = []
+                speech_bboxes = []
+                for t, b in targets_and_bboxes:
+                    target_texts.append(t)
+                    speech_bboxes.append(b)
+
+                logger.log_message('Ignoring single words', n_before=old_len, n_after=len(target_texts))
+
             with logger.begin_event("Image cleaning"):
                 cleaning_output = self.image_cleaning_app.begin_process(
                     rgb_image, speech_bboxes
