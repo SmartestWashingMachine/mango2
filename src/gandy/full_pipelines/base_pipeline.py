@@ -166,7 +166,7 @@ class BasePipeline:
                 # Max progress for this part is 80.
                 # Min is 50.
                 progress_cb(
-                    progress=(50 + floor(30 * (idx / len(source_texts))))
+                    progress=(50 + floor(30 * ((idx + 1) / max(1, len(source_texts)))))
                 )
 
         return replace_terms_target_side(target_texts, config_state.target_terms)
@@ -177,12 +177,20 @@ class BasePipeline:
         speech_bboxes,
         forced_image=None,
         return_line_bboxes=False,
+        progress_cb=None,
     ):
         source_texts: List[str] = []
         line_bboxes = None
         line_texts = None
 
         with logger.begin_event("Text recognition"):
+            if progress_cb is not None:
+                # Max progress for this part is 50.
+                # Min is 20.
+                on_box_done = lambda box_idx: progress_cb(
+                    progress=(20 + floor(30 * ((box_idx + 1) / max(1, len(speech_bboxes)))))
+                )
+
             source_texts, line_bboxes, line_texts = self.text_recognition_app.process(
                 rgb_image,
                 speech_bboxes,
@@ -190,6 +198,7 @@ class BasePipeline:
                 # If no lines are found, fallback to scanning the entire cropped image IF that image was cropped by a text detection app.
                 text_line_app_scan_image_if_fails=not self.text_detection_app.get_sel_app_name() == "none",
                 forced_image=forced_image,
+                on_box_done=on_box_done,
             )
 
         if return_line_bboxes:
@@ -237,7 +246,7 @@ class BasePipeline:
                 progress_cb(progress=20)
 
             source_texts, line_bboxes, line_texts = self.get_source_texts_from_bboxes(
-                rgb_image, speech_bboxes, return_line_bboxes=True
+                rgb_image, speech_bboxes, return_line_bboxes=True, progress_cb=progress_cb,
             )
             source_texts = replace_terms_source_side(source_texts, config_state.source_terms)
             if progress_cb is not None:

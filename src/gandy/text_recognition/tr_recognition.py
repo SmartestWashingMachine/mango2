@@ -195,7 +195,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         else:
             logger.log_message(msg, text=text)
 
-    def process(self, image: Image.Image, bboxes, text_line_app, forced_image=None, text_line_app_scan_image_if_fails = True):
+    def process(self, image: Image.Image, bboxes, text_line_app, forced_image=None, text_line_app_scan_image_if_fails = True, on_box_done=None):
         source_texts = []
         if len(bboxes) > 1 and forced_image is not None:
             raise RuntimeError(
@@ -209,7 +209,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
 
         cropped_image = None
 
-        for bbox in bboxes:
+        for bbox_idx, bbox in enumerate(bboxes):
             if text_line_app is not None:
                 logger.log_message(f"Using text line model for preprocessing.")
 
@@ -278,6 +278,9 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                 cropped_image = np.array(text_region_image) # For logging.
             self.log_text(cropped_image, f"Found complete text", text=text)
             source_texts.append(text)
+
+            if on_box_done is not None:
+                on_box_done(bbox_idx)
 
         return source_texts, line_bboxes, line_texts
 
