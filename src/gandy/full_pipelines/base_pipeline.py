@@ -14,11 +14,24 @@ from flask_socketio import SocketIO
 from gandy.utils.fancy_logger import logger
 from gandy.utils.text_processing import merge_texts, pack_context
 from gandy.state.config_state import config_state
+from gandy.state.debug_state import debug_state
 from gandy.utils.join_nearby_speech_bubbles import (
     join_nearby_speech_bubbles_for_source_texts,
 )
 from gandy.utils.image_chunking import detect_image_chunks
 from math import floor
+from uuid import uuid4
+import os
+import json
+
+def dump_task1_debug_data(rgb_image: Image, speech_bboxes):
+    debug_id = uuid4().hex
+    logger.debug_message('Dumping task1 data', category='task1_dump', debug_id=debug_id)
+    os.makedirs('./debugdumps/task1boxes', exist_ok=True)
+
+    rgb_image.save('./debugdumps/task1boxes/image.png')
+    with open('./debugdumps/task1boxes/bboxes.json', 'w', encoding='utf-8') as f:
+        json.dump({ 'bboxes': speech_bboxes, }, f, indent=4)
 
 
 def create_entire_bbox(image: Image):
@@ -243,6 +256,10 @@ class BasePipeline:
             speech_bboxes = self.get_bboxes_from_image(rgb_image)
             if progress_cb is not None:
                 progress_cb(progress=20)
+
+            if debug_state.debug or debug_state.debug_dump_task1:
+                # Dump image and detected BBOX coordinates.
+                dump_task1_debug_data(rgb_image, speech_bboxes)
 
             source_texts, line_bboxes, line_texts = self.get_source_texts_from_bboxes(
                 rgb_image, speech_bboxes, return_line_bboxes=True, progress_cb=progress_cb,

@@ -3,6 +3,7 @@ class DebugState:
         self.debug = False
         self.debug_redraw = False
         self.debug_dump_task5 = False
+        self.debug_dump_task1 = False
 
         self.metadata = {}
 
