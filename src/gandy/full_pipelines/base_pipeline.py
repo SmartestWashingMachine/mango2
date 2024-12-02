@@ -36,6 +36,9 @@ def replace_terms_source_side(sentences, terms):
 def replace_terms_target_side(sentences, terms):
     return replace_terms(sentences, terms, on_side="target")
 
+def compute_progress(cur_step: int, max_steps: int, min_value: int, max_value: int):
+    return (min_value + floor((max_value - min_value) * ((cur_step + 1) / max(1, max_steps))))
+
 
 class DefaultFrameDetectionApp(BaseImageDetection):
     def __init__(self):
@@ -165,9 +168,7 @@ class BasePipeline:
             if progress_cb is not None:
                 # Max progress for this part is 80.
                 # Min is 50.
-                progress_cb(
-                    progress=(50 + floor(30 * ((idx + 1) / max(1, len(source_texts)))))
-                )
+                progress_cb(compute_progress(cur_step=(idx + 1), max_steps=len(source_texts), min_value=50, max_value=80))
 
         return replace_terms_target_side(target_texts, config_state.target_terms)
 
@@ -187,9 +188,7 @@ class BasePipeline:
             if progress_cb is not None:
                 # Max progress for this part is 50.
                 # Min is 20.
-                on_box_done = lambda box_idx: progress_cb(
-                    progress=(20 + floor(30 * ((box_idx + 1) / max(1, len(speech_bboxes)))))
-                )
+                on_box_done = lambda box_idx: progress_cb(compute_progress(cur_step=(box_idx + 1), max_steps=len(speech_bboxes), min_value=20, max_value=50))
 
             source_texts, line_bboxes, line_texts = self.text_recognition_app.process(
                 rgb_image,
