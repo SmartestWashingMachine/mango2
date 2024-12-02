@@ -67,6 +67,7 @@ const ImageProgressList = ({
                 variant="determinate"
                 value={curProgress}
                 sx={{ marginTop: 1 }}
+                key={pendingImageNames[0] || "prog"}
               />
             }
           ></ListItemText>
