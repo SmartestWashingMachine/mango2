@@ -284,7 +284,8 @@ class BasePipeline:
 
             if config_state.ignore_detect_single_words:
                 targets_and_bboxes = zip(target_texts, speech_bboxes)
-                targets_and_bboxes = [t for t in targets_and_bboxes if len(t[0].split(' ')) > 1]
+                puncts = ['.', '!', '?', '-', ')', '"']
+                targets_and_bboxes = [t for t in targets_and_bboxes if len(t[0].split(' ')) > 1 or (any(t[0].endswith(pu) for pu in puncts) and len(t[0]) > 1)]
 
                 old_len = len(target_texts)
                 target_texts = []
