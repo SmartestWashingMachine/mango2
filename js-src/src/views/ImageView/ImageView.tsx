@@ -390,6 +390,7 @@ const ImageView = () => {
       pendingImageNames={pendingImageNames}
       onSaveEditedImage={handleSaveEditedImage}
       selectedPath={selectedPath}
+      canPageWithKeys={!createFolderOpen}
     />
   ) : (
     <ImageInput

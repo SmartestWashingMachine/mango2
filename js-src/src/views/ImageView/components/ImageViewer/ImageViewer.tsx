@@ -34,6 +34,7 @@ export type ImageViewerProps = {
   pendingImageNames: string[];
   onSaveEditedImage: (image: any, imagePath: string) => void;
   selectedPath: string | null; // Only used to change current index.
+  canPageWithKeys: boolean;
 };
 
 // From: https://stackoverflow.com/questions/423376/how-to-get-the-file-name-from-a-full-path-using-javascript
@@ -54,6 +55,7 @@ const ImageViewer = ({
   pendingImageNames,
   onSaveEditedImage,
   selectedPath,
+  canPageWithKeys,
 }: ImageViewerProps) => {
   const onDrop = useCallback(
     (acceptedFiles: any) => {
@@ -88,12 +90,14 @@ const ImageViewer = ({
 
   useEffect(() => {
     const cb = (e: KeyboardEvent) => {
-      if (e.code === "ArrowLeft") {
+      if (!canPageWithKeys) return;
+
+      if (e.code === "ArrowLeft" || e.code == "KeyA") {
         // Left
         setCurIndex((c) => Math.max(0, c - 1));
       }
 
-      if (e.code === "ArrowRight") {
+      if (e.code === "ArrowRight" || e.code == "KeyD") {
         // Right
         setCurIndex((c) => Math.min(imagePaths.length - 1, c + 1));
       }
@@ -103,7 +107,7 @@ const ImageViewer = ({
     return () => {
       document.removeEventListener("keydown", cb);
     };
-  }, [imagePaths.length]);
+  }, [imagePaths.length, canPageWithKeys]);
 
   const handlePageChange = (e: React.ChangeEvent<unknown>, page: number) => {
     // Arrays start at 0. Pages start at 1.
