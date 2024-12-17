@@ -26,6 +26,10 @@ def prepend_qual_mad(s: str):
 def prepend_mad_qual(s: str):
     return f"<2en> {prepend_qual_mad(s)}"
 
+def fix_quotes(s: str):
+    if s.startswith('"') and s.count('"') == 1:
+        s = s + '"'
+    return s
 
 def remove_unnecessary_eng_tokens(s: str):
     s = s.replace("eng_Latn", "").replace(
@@ -35,6 +39,10 @@ def remove_unnecessary_eng_tokens(s: str):
 
     # Had to do this due to a data clean/filter error in our new dataset.
     s = s.replace('$1', '...')
+
+    # MT model sometimes misplaces quotes.
+    s = fix_quotes(s.strip())
+
     return s
 
 def remove_unnecessary_eng_tokens_mad(s: str):
