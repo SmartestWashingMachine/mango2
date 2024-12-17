@@ -27,10 +27,10 @@ import json
 def dump_task1_debug_data(rgb_image: Image, speech_bboxes):
     debug_id = uuid4().hex
     logger.debug_message('Dumping task1 data', category='task1_dump', debug_id=debug_id)
-    os.makedirs('./debugdumps/task1boxes', exist_ok=True)
+    os.makedirs(f'./debugdumps/task1boxes/{debug_id}', exist_ok=True)
 
-    rgb_image.save('./debugdumps/task1boxes/image.png')
-    with open('./debugdumps/task1boxes/bboxes.json', 'w', encoding='utf-8') as f:
+    rgb_image.save(f'./debugdumps/task1boxes/{debug_id}/image.png')
+    with open(f'./debugdumps/task1boxes/{debug_id}/bboxes.json', 'w', encoding='utf-8') as f:
         json.dump({ 'bboxes': speech_bboxes, }, f, indent=4)
 
 
@@ -202,6 +202,8 @@ class BasePipeline:
                 # Max progress for this part is 50.
                 # Min is 20.
                 on_box_done = lambda box_idx: progress_cb(compute_progress(cur_step=(box_idx + 1), max_steps=len(speech_bboxes), min_value=20, max_value=50))
+            else:
+                on_box_done = None
 
             source_texts, line_bboxes, line_texts = self.text_recognition_app.process(
                 rgb_image,

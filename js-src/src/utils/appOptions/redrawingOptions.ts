@@ -14,6 +14,8 @@ export const REDRAWING_OPTIONS = [
     breaks. Recommended for basic use.
     `,
   },
+  /*
+  Not needed with new vertical splitting measures.
   {
     name: "Smart Toons",
     value: "smart_toon",
@@ -21,6 +23,7 @@ export const REDRAWING_OPTIONS = [
     Sometimes better than Smart for certain web toons.
     `,
   },
+  */
   {
     name: "Smart + BG",
     value: "smart_bg",

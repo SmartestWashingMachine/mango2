@@ -21,6 +21,13 @@ export const TEXT_LINE_OPTIONS = [
     `,
   },
   {
+    name: "YOLO Line Light",
+    value: "yolo_line_light",
+    desc: `
+    Fast and filters out noise. Must be used with a Text Detection model.
+    `,
+  },
+  {
     name: "(Legacy) YOLO Line",
     value: "yolo_line",
     desc: `

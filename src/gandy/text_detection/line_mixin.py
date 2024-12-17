@@ -44,6 +44,7 @@ class LineMixin(BaseImageDetection):
             # Here it's assumed that (x1, y1) are the points for each box, and the closest points to the TOP RIGHT of the image come first.
             x_comp = (image_width - x1) ** 2
             y_comp = (y1) ** 2
+
             distances = ((x_comp * x_weight) + (y_comp * y_weight)) ** 0.5
             sorted_indices = np.argsort(
                 distances, axis=0
@@ -111,3 +112,34 @@ class ExpandedLineMixin(LineMixin):
             return frame_bboxes
         else:
             return bboxes
+
+# Expands each line slightly to account for tight fits.
+class ExpandedLineMixinWithMargin(ExpandedLineMixin):
+    def get_images(self, image, return_image_if_fails=True):
+        im_width, im_height = image.size
+        bboxes: np.ndarray = super().get_images(image, return_image_if_fails)
+
+        x1 = bboxes[:, 0]  # [N]
+        y1 = bboxes[:, 1]
+        x2 = bboxes[:, 2]
+        y2 = bboxes[:, 3]
+
+        width = x2 - x1
+        height = y2 - y1
+
+        aspect_ratio = width / height
+        avg_aspect_ratio = aspect_ratio.mean()
+
+        extension_factor = 0.01
+
+        if extension_factor > 0.0:
+            if avg_aspect_ratio <= 1.0:
+                # Vertical. Extend Y1 and Y2.
+                bboxes[:, 1] = np.clip(bboxes[:, 1] - (height * extension_factor), a_min=0, a_max=im_height)
+                bboxes[:, 3] = np.clip(bboxes[:, 3] + (height * extension_factor), a_min=0, a_max=im_height)
+            else:
+                # Horizontal. Extend X1 and X2.
+                bboxes[:, 0] = np.clip(bboxes[:, 0] - (width * extension_factor), a_min=0, a_max=im_width)
+                bboxes[:, 2] = np.clip(bboxes[:, 2] + (width * extension_factor), a_min=0, a_max=im_width)
+
+        return bboxes

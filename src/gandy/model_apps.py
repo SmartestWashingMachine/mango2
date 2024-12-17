@@ -18,6 +18,7 @@ from gandy.image_redrawing.neighbor_redraw import NeighborRedrawApp
 from gandy.image_redrawing.image_redraw_global import ImageRedrawGlobalApp
 # from gandy.image_redrawing.image_redraw_global_smart import ImageRedrawGlobalSmartApp
 from gandy.image_redrawing.image_redraw_global_smarter import ImageRedrawGlobalSmarter
+from gandy.image_redrawing.smarter.policy import ACTIONS, ACTIONS_SMART_TOON
 from gandy.image_redrawing.image_redraw_global_smart_bg import (
     ImageRedrawGlobalSmartBackgroundApp,
 )
@@ -26,6 +27,8 @@ from gandy.image_redrawing.image_redraw_big_global_amg import ImageRedrawBigGlob
 from gandy.text_detection.yolo_image_detection import (
     YOLOTDImageDetectionApp,
     YOLOLineImageDetectionApp,
+    YOLOLineExtendedImageDetectionApp,
+    YOLOLineExtendedImageDetectionApp640
 )
 from gandy.text_detection.rtdetr_image_detection import (
     RTDetrImageDetectionApp,
@@ -51,6 +54,7 @@ from gandy.onnx_models.ebr import (
     QualityRerankerONNX,
 )
 from gandy.reranking.generic_reranker import GenericRerankerApp, BaseRerankingApp
+from gandy.spell_correction.emil_spell_correction import EmilSpellCorrectionApp
 from transformers import NllbTokenizer, T5Tokenizer
 from gandy.utils.set_tokenizer_langs import (
     set_lang_as_j,
@@ -89,6 +93,10 @@ yolo_line_emassive_calibrated = RTDetrExpandedLineImageDetectionApp(
     model_name="yolo_line_emassive", confidence_threshold=0.6, iou_thr=0.15, image_size=1024,
 )
 
+yolo_line_light = YOLOLineExtendedImageDetectionApp640(
+    model_name="yolo_line_light", confidence_threshold=0.52, iou_thr=0.15,
+)
+
 
 TEXT_DETECTION_APP = SwitchApp(
     apps=[
@@ -118,6 +126,7 @@ TEXT_DETECTION_APP = SwitchApp(
         ),
         NoneImageDetectionApp(),
         yolo_line_emassive,
+        yolo_line_light,
     ],
     app_names=[
         "yolo_td",
@@ -131,6 +140,7 @@ TEXT_DETECTION_APP = SwitchApp(
         "union_massive_detr_xxx",
         "none",
         "debug_yolo_line_emassive",
+        "debug_yolo_line_light",
     ],
 )
 
@@ -285,6 +295,14 @@ SPELL_CORRECTION_APP = SwitchApp(
         LangsumeApp(),
         PrependSourceApp(),
         PrependSourceNoContextApp(),
+        EmilSpellCorrectionApp(
+            model_sub_path="_jq/",
+            tokenizer_cls=NllbTokenizer,
+            extra_preprocess=prepend_qual,
+            extra_postprocess=remove_unnecessary_eng_tokens,
+            on_source_encode=set_lang_as_j,
+            target_decode_lang="eng_Latn",
+        )
     ],
     app_names=[
         "default",
@@ -292,6 +310,7 @@ SPELL_CORRECTION_APP = SwitchApp(
         "langsume",
         "prepend_source",
         "prepend_source_noctx",
+        "emil_j",
     ],
 )
 
@@ -329,7 +348,8 @@ IMAGE_REDRAWING_APP = SwitchApp(
         ImageRedrawGlobalApp(),
         ImageRedrawBigGlobalApp(),
         ImageRedrawBigGlobalAMGApp(),
-        ImageRedrawGlobalSmarter(),
+        ImageRedrawGlobalSmarter(ACTIONS),
+        ImageRedrawGlobalSmarter(ACTIONS_SMART_TOON),
         ImageRedrawGlobalSmartBackgroundApp(),
     ],
     app_names=[
@@ -340,6 +360,7 @@ IMAGE_REDRAWING_APP = SwitchApp(
         "big_global",
         "big_global_amg",
         "smart",
+        "smart_toon",
         "smart_bg",
     ],
     # default_idx=-1
@@ -371,8 +392,9 @@ TEXT_LINE_MODEL_APP = SwitchApp(
         YOLOLineImageDetectionApp(model_name="yolo_line_xl", confidence_threshold=0.25),
         yolo_line_e,
         yolo_line_emassive,
+        yolo_line_light,
     ],
-    app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive"],
+    app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive", "yolo_line_light"],
 )
 
 # disable for debug

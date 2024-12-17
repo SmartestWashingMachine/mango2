@@ -7,6 +7,13 @@ export const SPELLING_CORRECTION_OPTIONS = [
     `,
   },
   {
+    name: "Emil Japanese",
+    value: "emil_j",
+    desc: `
+    Translations are edited to appear more "natural". Slow.
+    `,
+  },
+  {
     name: "Fill Pro",
     value: "fillpro",
     desc: `

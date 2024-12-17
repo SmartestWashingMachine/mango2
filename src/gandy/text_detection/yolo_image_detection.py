@@ -6,7 +6,7 @@ import numpy as np
 from gandy.state.config_state import config_state
 from gandy.onnx_models.yolo import YOLOONNX
 from gandy.text_detection.base_image_detection import BaseImageDetection
-from gandy.text_detection.line_mixin import LineMixin
+from gandy.text_detection.line_mixin import LineMixin, ExpandedLineMixinWithMargin
 from gandy.utils.tnms import tnms
 from gandy.utils.fancy_logger import logger
 from gandy.utils.filter_out_overlapping_bboxes import filter_out_overlapping_bboxes
@@ -20,6 +20,38 @@ def gt_min_size(box: np.ndarray):
 
     return box[mask]
 
+def expand_and_filter_boxes(box: np.ndarray, image_width, image_height):
+    width = box[:, 2] - box[:, 0]
+    height = box[:, 3] - box[:, 1]
+
+    aspect_ratio = width / height
+    avg_aspect_ratio = aspect_ratio.mean()
+
+    extension_factor = 0.05
+    if avg_aspect_ratio <= 1.0:
+        # Vertical. Extend Y1 and Y2.
+        box[:, 1] = np.clip(box[:, 1] - (height * extension_factor), a_min=0, a_max=None)
+        box[:, 3] = np.clip(box[:, 3] + (height * extension_factor), a_max=image_height, a_min=None)
+    else:
+        # Horizontal. Extend X1 and X2.
+        box[:, 0] = np.clip(box[:, 0] - (width * extension_factor), a_min=0, a_max=None)
+        box[:, 2] = np.clip(box[:, 2] + (width * extension_factor), a_max=image_width, a_min=None)
+
+    # Try to filter out furigana boxes.
+    req_factor = 0.7
+    if avg_aspect_ratio <= 1.0:
+        # Vertical.
+        # if average width of box <= threshold remove.
+
+        thr = np.mean(width) * req_factor
+        box = box[width >= thr, :]
+    else:
+        # Horizontal.
+        # if average height of box <= threshold remove.
+        thr = np.mean(height) * req_factor
+        box = box[height >= thr, :]
+
+    return box
 
 # This function and scale_boxes is from ultralytics.
 def clip_boxes(boxes: np.ndarray, shape):
@@ -64,6 +96,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
         self.image_size = 640
 
         self.filter_out_overlapping_bboxes = False
+        self.expand_and_filter = False
 
     # The code for this method is from ultralytics YOLO with a bit of tweaks (keeping stride and new_shape fixed).
     def resize_np_img(self, img):
@@ -248,6 +281,9 @@ class YOLOImageDetectionApp(BaseImageDetection):
         bboxes = self.scale_boxes(padded_hw, bboxes, (image_height, image_width))
         bboxes = gt_min_size(bboxes)
 
+        if self.expand_and_filter:
+            bboxes = expand_and_filter_boxes(bboxes, image_width, image_height)
+
         if return_list:
             bboxes = bboxes.tolist()
 
@@ -309,7 +345,7 @@ class YOLOTDImageDetectionApp(YOLOImageDetectionApp):
         return super().unload_model()
 
 
-class YOLOLineImageDetectionApp(YOLOImageDetectionApp, LineMixin):
+class YOLOLineImageDetectionBase(YOLOImageDetectionApp):
     def __init__(self, confidence_threshold=0.25, iou_thr=0.4, model_name="yolo_line", image_size = 640):
         """
         Detects text lines in speech bubbles.
@@ -325,7 +361,7 @@ class YOLOLineImageDetectionApp(YOLOImageDetectionApp, LineMixin):
     def load_model(self):
         if not self.loaded:
             # can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
-            can_cuda = config_state.use_cuda
+            can_cuda = self.check_cuda()
 
             logger.info(
                 f"Loading object line detection model ({self.model_name})... CUDA: {config_state.use_cuda}"
@@ -340,3 +376,29 @@ class YOLOLineImageDetectionApp(YOLOImageDetectionApp, LineMixin):
 
     def can_load(self):
         return super().can_load(f"models/yolo/{self.model_name}.onnx")
+    
+    def check_cuda(self):
+        can_cuda = config_state.use_cuda
+        return can_cuda
+    
+class YOLOLineImageDetectionApp(YOLOLineImageDetectionBase, LineMixin):
+    pass
+
+class YOLOLineExtendedImageDetectionApp(YOLOLineImageDetectionBase, ExpandedLineMixinWithMargin):
+    pass
+
+class YOLOLineExtendedImageDetectionApp640(YOLOLineImageDetectionBase, ExpandedLineMixinWithMargin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.expand_and_filter = True
+
+    def get_image_transform(self):
+        transforms = [
+            #A.Resize(640, 640, interpolation=cv2.INTER_CUBIC, always_apply=True),
+            A.ToGray(always_apply=True),
+        ]
+
+        return A.Compose(transforms)
+    
+
