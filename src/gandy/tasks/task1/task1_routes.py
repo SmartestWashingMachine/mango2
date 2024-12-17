@@ -90,6 +90,11 @@ def translate_task1_background_job(
 
                 for img_idx, (img, img_name) in enumerate(images_data):
                     chunk_hei = img.width * 3
+
+                    hei_remainder = (img.height % chunk_hei)
+                    if hei_remainder <= 100:
+                        chunk_hei += hei_remainder
+
                     for img_ycoord in range(0, img.height, chunk_hei):
                         img_split = img.crop((0, img_ycoord, img.width, min(img_ycoord + chunk_hei, img.height)))
 
