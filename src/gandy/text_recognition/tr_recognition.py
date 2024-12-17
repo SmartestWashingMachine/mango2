@@ -124,7 +124,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         return pixel_values
 
     def cut_punct(self, s: str):
-        new_s = re.sub(r"[.?!。、”\"'」．,！？]$", '', s)
+        new_s = re.sub(r"[.?!。、”\"'」·．,！？]$", '', s)
 
         logger.log_message('Cut punctuation', old=s, new=new_s)
         return new_s
