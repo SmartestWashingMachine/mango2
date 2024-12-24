@@ -41,6 +41,9 @@ Observations and Quibbles
     - [In the case of gradient accumulating...](#in-the-case-of-gradient-accumulating)
     - [How can we fix this issue?](#how-can-we-fix-this-issue)
 - [Make sure the LM head and tokenized input samples are divisible by 8. Usually.](#make-sure-the-lm-head-and-tokenized-input-samples-are-divisible-by-8-usually)
+- [Full/Pure BF16 Training is finnicky.](#fullpure-bf16-training-is-finnicky)
+- [Make sure `use_reentrant` is False when freezing input embedding layers while using gradient checkpointing.](#make-sure-use_reentrant-is-false-when-freezing-input-embedding-layers-while-using-gradient-checkpointing)
+- [D-FINE is way better than YOLO and DETR.](#d-fine-is-way-better-than-yolo-and-detr)
 
 
 ## Tiny machine translation (MT) models on distant language pairs (e.g: Chinese-to-English, Japanese-to-English) fail to train without absolute positional embeddings.
@@ -430,3 +433,49 @@ Likewise, if we are inputting a sequence of total length `14`, maybe pad it so t
 It's a bit flaky when and when not a speedup actually occurs, but in my runs I've usually seen slightly faster training times when doing this.
 
 (Also: Do not try to profile the tensor core activation rate manually unless you enjoy pulling your hair out. Just profile or track the general training time instead)
+
+## Full/Pure BF16 Training is finnicky.
+
+Training a model with pure BF16 precision (loaded in bfloat16) can be a headache. My suggestions:
+
+1. Ensure no AMP (automatic mixed precision) code is active on the training script. Most AMP implementations end up creating an additional clone of the model to handle high precision updates, which leads to additional memory cost. Since we're doing full half-precision training this doesn't matter. Make sure AMP is off.
+2. Use stochastic rounding. Stochastic rounding makes pure BF16 training made my experiments *much* better (stable). This library is fantastic as it already implements it alongside a 4 bit Adam optimizer: https://github.com/pytorch/ao
+3. If using that AO package (you should if memory saving is the goal... why else would you be here?): Keep in mind that package implements both Adam **and** AdamW optimizers. Make sure to use the right one (which is probably AdamW - though it uses more memory than Adam...)
+4. Do **not** initialize new layers or weights while the model is loaded in half precision. If you want to expand the model, do it while it's still loaded in full precisoin, *then* load the newly expanded model in half precision. Failing to do this will usually lead to NaN gradients or weights.
+5. Be careful with `torch.compile` - it can sometimes lead to **increased** memory usage with half precision models. Not sure what's going on there...
+6. Be careful with custom loss implementations (e.g: certain libraries implementing fused linear cross entropy functions): These implementations sometimes assume that the model is in full precision or AMP and can cause weird errors on full BF16 training.
+
+## Make sure `use_reentrant` is False when freezing input embedding layers while using gradient checkpointing.
+
+Title. If use_reentrant is True and this happens, most of the layers that interact with the input embedding layers will fail to receive gradients. No training will be done.
+
+## D-FINE is way better than YOLO and DETR.
+
+D-FINE is a new object detection model inspired by DETR. It blows almost every other detection model out of the water (at least, from my experiments). The library can be a pain to configure, but it's worth it. It's worth it.
+
+https://github.com/Peterande/D-FINE
+
+Unlike a certain other object detection model, D-FINE can adapt to objects of various and abnormal aspect ratios (such as text lines) without having to mess around with the anchor boxes or other priors.
+
+Unlike another certain object detection model, it doesn't kill itself if the learning rate is 0.000001 higher than it should be - it's relatively robust to hyperparameter choice. In fact, the defaults given in the library work wonderfully!
+
+Unlike a certain object detection library, it comes with ready-made scripts to perfectly use it in deployment libraries such as ONNX.
+
+But keep in mind that the ONNX deployment script assumes the images were resized in a certain manner that preserves the aspect ratio, so you probably want to ensure that same or similar resize is done for your training images. These augmentations from Albumentations did the trick for me:
+```
+    A.LongestMaxSize(1024, interpolation=cv2.INTER_CUBIC),
+    A.PadIfNeeded(1024, 1024, border_mode=cv2.BORDER_CONSTANT, value=0),
+```
+
+Also you probably want to have an actual progress bar while training, so modify the training loop in the `det_engine.py` file.
+
+I imported TQDM and then modified the line that iterates over the data loader to use the TQDM progress bar:
+```
+for i, (samples, targets) in tqdm(enumerate(metric_logger.log_every(data_loader, print_freq, header)), total=len(data_loader)):
+```
+
+You can also implement gradient accumulation in that very same file if you so wish (but you'll need to adjust the `yaml` config files to account for the additional warmup "steps").
+
+**This model is awesome.** In just 2 epochs it already blew YOLO and DETR out of the water.
+
+Last caveat: The model has a tendency to "overpredict" objects, such as predicting a bounding box around a dog, but then predicting another smaller bounding box around that same dog - one box is right inside the other. Using simple postprocessing methods like NMS can fix that.
