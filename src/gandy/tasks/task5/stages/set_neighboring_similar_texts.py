@@ -4,11 +4,18 @@ from typing import List
 from gandy.tasks.task5.a_is_close_substring_of_b import a_is_close_substring_of_b
 from gandy.utils.cosine_sim import cos_sim
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
+import regex as re
 
 USE_HEURISTICS = True
 
 USE_MT_EMBEDDINGS = True
-EMB_THR = 0.9
+EMB_THR = 0.85 # Used to be 0.9.
+
+# NOTE: Maybe adding the dots (.) is a bad idea.
+def strip_punct(s: str):
+    s = re.sub(r']|\"|\.|!|\?|,|\)|\(|\[', '', s)
+    s = re.sub(' +', ' ', s)
+    return s
 
 def set_neighboring_similar_texts(app_container: AdvancedPipeline, frame_source_texts: List[str], every_secs: float, fps: float, total_frames: float, mt_progress_callback):
     """
@@ -87,8 +94,8 @@ def set_neighboring_similar_texts(app_container: AdvancedPipeline, frame_source_
             if prev == cur or prev is None or cur is None or len(prev) == 0 or len(cur) == 0:
                 continue
 
-            prev_emb = _get_from_prev_embs(prev)
-            cur_emb = _get_from_prev_embs(cur)
+            prev_emb = _get_from_prev_embs(strip_punct(prev))
+            cur_emb = _get_from_prev_embs(strip_punct(cur))
             if prev_emb is None:
                 prev_emb = app_container.embed_text(prev)
             if cur_emb is None:

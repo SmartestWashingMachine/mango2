@@ -12,7 +12,7 @@ from gandy.tasks.task5.stages.set_neighboring_similar_texts import set_neighbori
 from gandy.tasks.task5.stages.translate_text_in_frames import translate_text_in_frames
 from gandy.state.debug_state import debug_state
 from gandy.state.config_state import config_state
-from gandy.utils.text_processing import pack_context
+from gandy.utils.text_processing import pack_context, pack_context_dedupe
 
 """
 
@@ -134,7 +134,7 @@ def process_task5(
         set_neighboring_similar_texts(app_container, frame_source_texts, every_secs, fps, total_frames, mt_progress_callback)
 
     # Add context as needed.
-    frame_source_texts = pack_context(frame_source_texts, config_state.n_context)
+    frame_source_texts = pack_context_dedupe(frame_source_texts, config_state.n_context)
 
     # Replace source-terms.
     frame_source_texts = replace_terms_source_side(frame_source_texts, config_state.source_terms)
