@@ -28,6 +28,27 @@ export const TEXT_DETECTION_OPTIONS = [
     `,
   },
   {
+    name: "D-FINE Medium",
+    value: "dfine_m",
+    desc: `
+    Fast and usually better than the DETR and YOLO models.
+    `,
+  },
+  {
+    name: "D-FINE Large",
+    value: "dfine_l",
+    desc: `
+    A good all-around pick. Generally better than the DETR and YOLO models.
+    `,
+  },
+  {
+    name: "D-FINE Large Denoise",
+    value: "dfine_l_denoise",
+    desc: `
+    Similar to D-FINE Large but laser-focused on detecting speech bubbles. Less false positives.
+    `,
+  },
+  {
     name: "Union YOLO",
     value: "union",
     desc: `
@@ -60,6 +81,20 @@ export const TEXT_DETECTION_OPTIONS = [
     value: "union_massive_detr_xxx",
     desc: `
     Merges results from DETR-XL-XXX and DETR Line EX-Massive to give even better results. Very slow.
+    `,
+  },
+  {
+    name: "Union D-FINE Large Noisy",
+    value: "union_dfine_noisy",
+    desc: `
+    Slow but is almost sure to find missing text boxes... and more by merging results from D-FINE & Line EXO-Massive.
+    `,
+  },
+  {
+    name: "Union D-FINE Large Denoise",
+    value: "union_dfine_denoise",
+    desc: `
+    Slow but usually gives the best results by merging results from D-FINE Denoise and D-FINE Line EXO-Massive.
     `,
   },
   {

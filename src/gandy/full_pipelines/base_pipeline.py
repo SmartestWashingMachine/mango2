@@ -272,7 +272,7 @@ class BasePipeline:
 
             # This is the only task fn that can merge nearby lines if certain text line model variants are used (YOLO Ex).
             # Task5 merges all texts into one regardless of the model being used.
-            special_apps = ["yolo_line_e", "yolo_line_emassive"]
+            special_apps = ["yolo_line_e", "yolo_line_emassive", "dfine_line_emassive"]
             if (
                 self.text_line_app.get_sel_app_name() in special_apps
                 and self.text_detection_app.get_sel_app_name() == "none"

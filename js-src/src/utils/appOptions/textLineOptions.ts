@@ -28,6 +28,13 @@ export const TEXT_LINE_OPTIONS = [
     `,
   },
   {
+    name: "D-FINE Line EXO-Massive",
+    value: "dfine_line_emassive",
+    desc: `
+    Works like DETR Line EX but usually better.
+    `,
+  },
+  {
     name: "(Legacy) YOLO Line",
     value: "yolo_line",
     desc: `

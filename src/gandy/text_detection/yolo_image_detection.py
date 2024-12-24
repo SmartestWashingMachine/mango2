@@ -1,6 +1,5 @@
 import numpy as np
 import albumentations as A
-import logging
 import cv2
 import numpy as np
 from gandy.state.config_state import config_state

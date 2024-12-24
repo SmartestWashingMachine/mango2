@@ -37,6 +37,7 @@ from gandy.text_detection.rtdetr_image_detection import (
 )
 from gandy.text_detection.none_image_detection import NoneImageDetectionApp
 from gandy.text_detection.union_image_detection import UnionImageDetectionApp
+from gandy.text_detection.dfine_image_detection import DFineImageDetectionApp, DFineLineImageDetectionApp
 from gandy.text_recognition.tr_recognition import TrOCRTextRecognitionApp, MagnusTextRecognitionApp
 from gandy.translation.seq2seq_translation import (
     Seq2SeqTranslationApp,
@@ -80,12 +81,33 @@ detr_xl_xxx = RTDetrImageDetectionApp(
     model_name="detr_xl_xxx", confidence_threshold=0.35, iou_thr=0.5, image_size=1024, filter_out_overlapping_bboxes=False,
 )
 
+dfine_m = DFineImageDetectionApp(
+    model_name="dfine_m", confidence_threshold=0.5, iou_thr=0.3, image_size=1024, filter_out_overlapping_bboxes=True,
+)
+
+dfine_l = DFineImageDetectionApp(
+    model_name="dfine_l", confidence_threshold=0.4, iou_thr=0.3, image_size=1024, filter_out_overlapping_bboxes=True,
+)
+
+dfine_l_denoise = DFineImageDetectionApp(
+    model_name="dfine_l_denoise", confidence_threshold=0.5, iou_thr=0.3, image_size=1024, filter_out_overlapping_bboxes=True,
+)
+
 yolo_line_e = RTDetrLineImageDetectionApp(
     model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15,
 )
 
 yolo_line_emassive = RTDetrExpandedLineImageDetectionApp(
     model_name="yolo_line_emassive", confidence_threshold=0.4, iou_thr=0.15, image_size=1024,
+)
+
+dfine_line_emassive = DFineLineImageDetectionApp(
+    model_name="dfine_line_emassive", confidence_threshold=0.4, iou_thr=0.15, image_size=1024,
+)
+
+# For Union usage only.
+dfine_line_emassive_calibrated = DFineLineImageDetectionApp(
+    model_name="dfine_line_emassive", confidence_threshold=0.65, iou_thr=0.15, image_size=1024,
 )
 
 # Better LTR sorting.
@@ -127,6 +149,18 @@ TEXT_DETECTION_APP = SwitchApp(
         NoneImageDetectionApp(),
         yolo_line_emassive,
         yolo_line_light,
+        dfine_m,
+        dfine_l,
+        dfine_l_denoise,
+        dfine_line_emassive,
+        UnionImageDetectionApp(
+            td_model_app=dfine_l,
+            line_model_app=dfine_line_emassive_calibrated,
+        ),
+        UnionImageDetectionApp(
+            td_model_app=dfine_l_denoise,
+            line_model_app=dfine_line_emassive_calibrated,
+        ),
     ],
     app_names=[
         "yolo_td",
@@ -141,6 +175,12 @@ TEXT_DETECTION_APP = SwitchApp(
         "none",
         "debug_yolo_line_emassive",
         "debug_yolo_line_light",
+        "dfine_m",
+        "dfine_l",
+        "dfine_l_denoise",
+        "debug_dfine_line_emassive",
+        "union_dfine_noisy",
+        "union_dfine_denoise",
     ],
 )
 
@@ -393,8 +433,9 @@ TEXT_LINE_MODEL_APP = SwitchApp(
         yolo_line_e,
         yolo_line_emassive,
         yolo_line_light,
+        dfine_line_emassive,
     ],
-    app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive", "yolo_line_light"],
+    app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive", "yolo_line_light", "dfine_line_emassive"],
 )
 
 # disable for debug
