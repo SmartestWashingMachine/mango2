@@ -19,7 +19,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     description:
       "This preset is good for translating Japanese manga panels or for playing games with the detached Text Box.",
     opts: {
-      textDetectionModelName: ["detr_xl", "yolo_xl"],
+      textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["trocr_jmassive", "trocr_jbig"],
       translationModelName: ["nllb_jq300", "nllb_jq"],
       textLineModelName: ["none"],
@@ -33,12 +33,12 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
   {
     name: "Manga Alternative",
     description:
-      "This preset is good for translating Japanese manga panels. It uses an additional text line detection model to improve the OCR quality.",
+      "This preset is also good for translating Japanese manga panels. It uses an additional text line detection model to improve the OCR quality.",
     opts: {
-      textDetectionModelName: ["detr_xl", "yolo_xl"],
+      textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["trocr_jmassive", "trocr_jbig"],
       translationModelName: ["nllb_jq300", "nllb_jq"],
-      textLineModelName: ["yolo_line_emassive"],
+      textLineModelName: ["dfine_line_emassive", "yolo_line_emassive"],
       numBeams: 3,
       bottomTextOnly: false,
       contextAmount: "three",
@@ -54,7 +54,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       textDetectionModelName: ["none"],
       textRecognitionModelName: ["trocr_jmagnus"],
       translationModelName: ["nllb_jq300", "nllb_jq"],
-      textLineModelName: ["yolo_line_emassive"],
+      textLineModelName: ["dfine_line_emassive", "yolo_line_emassive"],
       numBeams: 3,
       bottomTextOnly: false,
       contextAmount: "three",
@@ -66,7 +66,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     name: "Korean Webtoons",
     description: "This preset is good for translating Korean webtoon images.",
     opts: {
-      textDetectionModelName: ["yolo_xl"],
+      textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["k_trocr_massive"],
       translationModelName: ["nllb_ko"],
       textLineModelName: ["none"],
