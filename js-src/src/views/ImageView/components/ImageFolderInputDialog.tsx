@@ -8,9 +8,8 @@ import {
   Tooltip,
 } from "@mui/material";
 import React, { useEffect, useState, useCallback, useRef } from "react";
+import isValidFilename from "valid-filename";
 import FileInfo from "../../../types/FileInfo";
-
-const FOLDER_NAME_REGEX = /^[a-zA-Z0-9_ -]+$/;
 
 type ImageFolderInputDialogProps = {
   onDone: (folderName: string) => void;
@@ -31,9 +30,10 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
   const onChange = (e: any) => setFolderName(e.currentTarget.value);
 
   const badFolderName =
-    folderName.trim().length === 0 || !FOLDER_NAME_REGEX.test(folderName);
+    folderName.trim().length === 0 || !isValidFilename(folderName);
 
   const handleDone = () => {
+    // Existing folders can still be used - it's just a warning.
     if (badFolderName) return;
 
     props.onDone(folderName.trim());
@@ -52,6 +52,10 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
       (c) => c.fileName.toLowerCase() === folderName.toLowerCase().trim()
     );
 
+  let errorMessage = " ";
+  if (badFolderName) errorMessage = "Invalid file name.";
+  if (folderExists) errorMessage = "This folder already exists.";
+
   return (
     <Dialog open={props.open} onClose={props.onClose}>
       <DialogTitle>Folder Name</DialogTitle>
@@ -67,16 +71,13 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
         fullWidth
         variant="standard"
         inputRef={ref}
-        error={folderExists}
-        helperText={folderExists ? "This folder already exists." : undefined}
+        error={badFolderName}
+        helperText={errorMessage}
         onKeyDown={onKeyDown}
+        color={folderExists ? "warning" : undefined}
       />
       <DialogActions>
-        <Button
-          onClick={handleDone}
-          fullWidth
-          disabled={folderName.length === 0}
-        >
+        <Button onClick={handleDone} fullWidth disabled={badFolderName}>
           Done
         </Button>
       </DialogActions>

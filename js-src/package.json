@@ -91,7 +91,8 @@
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.5.1",
     "utf-8-validate": "^5.0.10",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "valid-filename": "^4.0.0"
   },
   "build": {
     "appId": "mango",
