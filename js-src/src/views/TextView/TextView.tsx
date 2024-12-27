@@ -35,12 +35,17 @@ import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 
 const SPLIT_AND_QUEUES = [/(?=「)/, "　"];
 
+const NEW_LINE_SPLITS = [/\r\n|\r|\n/g];
+
 type TextViewProps = {
   onOpenOcrSettings: () => void;
 };
 
 const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   const pushAlert = useAlerts();
+
+  // Retrieved from store. Used when pushing context automatically or from text splitting.
+  const [maxContextAmount, setMaxContextAmount] = useState(0);
 
   // Side view mode is more user-friendly for big text, or users who don't care for the backlog.
   const [isSideView, setIsSideView] = useState(false);
@@ -105,16 +110,16 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
 
   const pushContext = useCallback(
     (uuid: string) => {
-      // Adds to context but limits it such that there is only ever up to 3 auto pushed context sentences.
+      // Adds to context but limits it such that there is only ever up to N auto pushed context sentences.
       // Note that the user can manually have more context sentences, but that is buggy and may crash the model.
 
-      if (contextIds.length >= 3) {
+      if (contextIds.length > maxContextAmount) {
         setContextIds((c) => [...c.slice(1), uuid]);
       } else {
         setContextIds((c) => [...c, uuid]);
       }
     },
-    [contextIds]
+    [contextIds, maxContextAmount]
   );
 
   const transformInput = useCallback(
@@ -133,7 +138,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     async (sourceText: string | null, targetText: string | null) => {
       if (!sourceText || !targetText) return;
 
-      const split = sourceText.split(/<SEP>/);
+      const split = sourceText.split(/<SEP>|<TSOS>/);
       const lastSource = split[split.length - 1].trim();
 
       // Add to texts.
@@ -196,7 +201,8 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     }
 
     let allInps = [curSourceText];
-    if (splitBy && splitBy.length > 0 && curSourceText.length > 75) {
+
+    if (splitBy && splitBy.length > 0 && curSourceText.length > 4) {
       // Find the first split character that matters.
       for (const char of splitBy) {
         allInps = splitByChar(curSourceText, char);
@@ -204,10 +210,28 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
       }
     }
 
+    // NOTE: This ignores the settings and always uses up to 3 context TODO
+    let ctxQueue: string[] = [];
+
     for (const curInputText of allInps) {
+      if (curInputText.trim().length === 0) continue;
+
       // Combine curInputText with the context.
-      // NOTE: Due to react async shenanigans, context will not be applied here (it uses whatever is known for the "first text")
-      const inp = transformInput(curInputText);
+      let inp = "";
+
+      if (contextIds.length > 0) {
+        // NOTE: Due to react async shenanigans, context will not be applied here (it uses whatever is known for the "first text")
+        inp = transformInput(curInputText);
+      } else {
+        // But in this case (no context pushing and no prior human selected context), contexts will be used within this chunk of text.
+        // This is the ideal case when splitting (such as when pasting a large block of text from a novel, separated by newlines).
+        inp = pTransformerJoin([...ctxQueue, curInputText]);
+
+        // Add to queue.
+        ctxQueue.push(curInputText);
+        // ... But keep the queue bounded in length.
+        if (ctxQueue.length > maxContextAmount) ctxQueue = ctxQueue.slice(1);
+      }
 
       startTranslating(); // Ensure the client is loading.
 
@@ -223,7 +247,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
       if (loading) return;
       e.preventDefault();
 
-      await handleProcessTextClick();
+      await handleProcessTextClick(undefined, NEW_LINE_SPLITS);
     }
   };
 
@@ -288,7 +312,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     if (contextIds.indexOf(uuid) > -1) {
       setContextIds((s) => s.filter((x) => x !== uuid));
     } else {
-      if (contextIds.length >= 6) {
+      if (contextIds.length > maxContextAmount) {
         setContextIds((s) => [...s.slice(1), uuid]);
       } else {
         setContextIds((s) => [...s, uuid]);
@@ -311,13 +335,31 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   }, []);
 
   // If the "auto open OCR window" feature is on, automatically open that window on start.
+  // Also initialize a state value from the store state (the max context amount - used for context pushing and auto text splitting).
   useEffect(() => {
     let canceled = false;
 
     const asyncCb = async () => {
       const data = await MainGateway.getStoreData();
+      if (canceled) return;
 
-      if (!canceled && data.autoOpenOcrWindow) handleOpenBoxClick();
+      if (data.autoOpenOcrWindow) handleOpenBoxClick();
+
+      if (!data.contextAmount) return;
+
+      const cAmt = data.contextAmount;
+      let newCtxValue = 0;
+      if (cAmt === "one") {
+        newCtxValue = 1;
+      } else if (cAmt === "two") {
+        newCtxValue = 2;
+      } else if (cAmt === "three") {
+        newCtxValue = 3;
+      } else if (cAmt === "packed") {
+        newCtxValue = 24; // Arbitrary number.
+      }
+
+      setMaxContextAmount(newCtxValue);
     };
 
     asyncCb();
@@ -489,6 +531,8 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
                 size="small"
                 placeholder="Type text here... Using Textractor instead? Click the purple button above!"
                 value={inputText}
+                multiline
+                maxRows={3}
                 onChange={handleInputChange}
                 onKeyDown={handleProcessTextEnter}
                 InputProps={{
