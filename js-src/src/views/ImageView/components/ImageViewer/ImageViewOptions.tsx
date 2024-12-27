@@ -13,7 +13,7 @@ import { REDRAWING_OPTIONS } from "../../../../utils/appOptions/redrawingOptions
 import UpdateNumberField from "../../../../components/UpdateNumberField";
 
 const chunkTip =
-  "Images can be split into small chunks for better text detection at the cost of speed. The translated image chunks will then be merged for the final image. Translating webtoons? Try setting the Tile Height to -1.";
+  "Images can be split into small chunks for better text detection at the cost of speed. The translated image chunks will then be merged for the final image. Translating webtoons? Try setting the Tile Height to 0.";
 
 export type ImageViewOptionsProps = {
   cleaningMode: string;
