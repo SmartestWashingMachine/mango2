@@ -62,7 +62,8 @@ from gandy.utils.set_tokenizer_langs import (
     set_lang_as_k,
     set_lang_as_c,
     prepend_qual,
-    prepend_mad_qual,
+    prepend_mad_qual_ja,
+    prepend_mad_qual_generic,
     remove_unnecessary_eng_tokens,
     remove_unnecessary_eng_tokens_mad,
 )
@@ -286,10 +287,11 @@ TRANSLATION_APP = SwitchApp(
         Seq2SeqTranslationApp(
             model_sub_path="_jmad/",
             encoder_tokenizer_cls=T5Tokenizer,
-            extra_preprocess=prepend_mad_qual,
+            extra_preprocess=prepend_mad_qual_ja,
             extra_postprocess=remove_unnecessary_eng_tokens_mad,
             target_decode_lang=None,
             max_length=200,
+            tokenizer_kwargs={ 'use_fast': False, }
         ),
         Seq2SeqTranslationApp(
             model_sub_path="_jq300/",
@@ -303,18 +305,20 @@ TRANSLATION_APP = SwitchApp(
         Seq2SeqTranslationApp(
             model_sub_path="_komad/",
             encoder_tokenizer_cls=T5Tokenizer,
-            extra_preprocess=prepend_mad_qual,
+            extra_preprocess=prepend_mad_qual_generic,
             extra_postprocess=remove_unnecessary_eng_tokens_mad,
             target_decode_lang=None,
             max_length=200,
+            tokenizer_kwargs={ 'use_fast': False, }
         ),
         Seq2SeqTranslationApp(
             model_sub_path="_zhmad/",
             encoder_tokenizer_cls=T5Tokenizer,
-            extra_preprocess=prepend_mad_qual,
+            extra_preprocess=prepend_mad_qual_generic,
             extra_postprocess=remove_unnecessary_eng_tokens_mad,
             target_decode_lang=None,
             max_length=200,
+            tokenizer_kwargs={ 'use_fast': False, }
         ),
     ],
     app_names=[

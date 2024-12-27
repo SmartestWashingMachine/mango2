@@ -24,9 +24,12 @@ class Seq2SeqTranslationApp(BaseTranslation):
         extra_postprocess=None,
         on_source_encode=None,
         target_decode_lang=None,
+        tokenizer_kwargs={},
         max_length=476,
     ):
         super().__init__()
+
+        self.tokenizer_kwargs = tokenizer_kwargs
 
         self.encoder_tokenizer_cls = encoder_tokenizer_cls
         self.decoder_tokenizer_cls = decoder_tokenizer_cls
@@ -51,7 +54,7 @@ class Seq2SeqTranslationApp(BaseTranslation):
     ):
         s = "titanmt" + self.model_sub_path
 
-        logger.info("Loading translation model...")
+        logger.info(f"Loading translation model ({s})...")
 
         can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
 
@@ -93,11 +96,13 @@ class Seq2SeqTranslationApp(BaseTranslation):
         self.source_tokenizer = self.encoder_tokenizer_cls.from_pretrained(
             f"models/{s}tokenizer_src",
             truncation_side="left",
+            **self.tokenizer_kwargs,
         )
 
         if self.decoder_tokenizer_cls is not None:
             self.target_tokenizer = self.decoder_tokenizer_cls.from_pretrained(
-                f"models/{s}tokenizer_en"
+                f"models/{s}tokenizer_en",
+                **self.tokenizer_kwargs,
             )
         else:
             self.target_tokenizer = self.source_tokenizer
