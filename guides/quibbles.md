@@ -44,6 +44,7 @@ Observations and Quibbles
 - [Full/Pure BF16 Training is finnicky.](#fullpure-bf16-training-is-finnicky)
 - [Make sure `use_reentrant` is False when freezing input embedding layers while using gradient checkpointing.](#make-sure-use_reentrant-is-false-when-freezing-input-embedding-layers-while-using-gradient-checkpointing)
 - [D-FINE is way better than YOLO and DETR.](#d-fine-is-way-better-than-yolo-and-detr)
+- [Be careful when using LoRA or other low rank adapters on the input embedding layers.](#be-careful-when-using-lora-or-other-low-rank-adapters-on-the-input-embedding-layers)
 
 
 ## Tiny machine translation (MT) models on distant language pairs (e.g: Chinese-to-English, Japanese-to-English) fail to train without absolute positional embeddings.
@@ -439,11 +440,12 @@ It's a bit flaky when and when not a speedup actually occurs, but in my runs I'v
 Training a model with pure BF16 precision (loaded in bfloat16) can be a headache. My suggestions:
 
 1. Ensure no AMP (automatic mixed precision) code is active on the training script. Most AMP implementations end up creating an additional clone of the model to handle high precision updates, which leads to additional memory cost. Since we're doing full half-precision training this doesn't matter. Make sure AMP is off.
-2. Use stochastic rounding. Stochastic rounding makes pure BF16 training made my experiments *much* better (stable). This library is fantastic as it already implements it alongside a 4 bit Adam optimizer: https://github.com/pytorch/ao
+2. Use stochastic rounding. Stochastic rounding made my pure BF16 experiments *much* better (stable). This library is fantastic as it already implements it alongside a 4 bit Adam optimizer: https://github.com/pytorch/ao
 3. If using that AO package (you should if memory saving is the goal... why else would you be here?): Keep in mind that package implements both Adam **and** AdamW optimizers. Make sure to use the right one (which is probably AdamW - though it uses more memory than Adam...)
 4. Do **not** initialize new layers or weights while the model is loaded in half precision. If you want to expand the model, do it while it's still loaded in full precisoin, *then* load the newly expanded model in half precision. Failing to do this will usually lead to NaN gradients or weights.
 5. Be careful with `torch.compile` - it can sometimes lead to **increased** memory usage with half precision models. Not sure what's going on there...
 6. Be careful with custom loss implementations (e.g: certain libraries implementing fused linear cross entropy functions): These implementations sometimes assume that the model is in full precision or AMP and can cause weird errors on full BF16 training.
+7. **When finetuning: Only process losses below a certain gradient norm threshold** - Rarely the lower-precision model may receive an update with an extremely large gradient norm (sometimes over 9000!). Gradient clipping stops the model from breaking for good, but it does **not stop the model from "forgetting" a lot of knowledge.** As a hacky fix, I skipped the optimization step (but still zero'd the gradients) if the update gradient norm was above some absurd threshold, and it made the finetuning process much safer and happier. Note that since the start of finetuning/pretraining will almost always have large gradient norms initially, it might be best to add this threshold after the gradients have gone down to a relatively sane number.
 
 ## Make sure `use_reentrant` is False when freezing input embedding layers while using gradient checkpointing.
 
@@ -479,3 +481,15 @@ You can also implement gradient accumulation in that very same file if you so wi
 **This model is awesome.** In just 2 epochs it already blew YOLO and DETR out of the water.
 
 Last caveat: The model has a tendency to "overpredict" objects, such as predicting a bounding box around a dog, but then predicting another smaller bounding box around that same dog - one box is right inside the other. Using simple postprocessing methods like NMS can fix that.
+
+## Be careful when using LoRA or other low rank adapters on the input embedding layers.
+
+I experimented with using loRA on the input embeddings themselves (alongside the usual suspects: all attention components, feed forward, LM head). It *kind of worked?*
+
+The models would give a generally good answer or output at times, but at others it would give completely different or nonsensical answers that don't relate to the input at all?
+
+For example, I tuned a T5 model to translate text. I would give it a basic sentence to translate. Instead of the translation, I got a date string? "2024/06/20 15:05:30" (paraphrasing but you get the point)
+
+No, it wasn't a data issue - LoRA training without the embedding layers didn't cause this issue (though it had slightly sadder general performance...)
+
+I'm not saying it's bad to adapt the embedding layers - but please keep an eye open for weird behavior.
