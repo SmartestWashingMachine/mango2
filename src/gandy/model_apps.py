@@ -207,6 +207,7 @@ TEXT_RECOGNITION_APP = SwitchApp(
         TrOCRTextRecognitionApp(
             model_sub_path="_komassive/",
             do_resize=False,
+            join_lines_with=" ",
             gen_kwargs={
                 "num_beams": 5,
                 "no_repeat_ngram_size": 7,

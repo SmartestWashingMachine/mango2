@@ -24,6 +24,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         do_resize=True,
         do_stretch=False,
         extra_postprocess=None,
+        join_lines_with=""
     ):
         super().__init__()
 
@@ -69,6 +70,8 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         self.feature_extractor_cls = feature_extractor_cls
 
         self.extra_postprocess = extra_postprocess
+        
+        self.join_lines_with = join_lines_with
 
     def load_dataloader(self, tokenizer_path, feature_extractor_path):
         self.feature_extractor = self.feature_extractor_cls.from_pretrained(
@@ -261,6 +264,10 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                         self.log_text(cropped_image, f"Found partial text.", text=outp)
 
                         line_texts.append(outp)
+
+                if self.join_lines_with is not None and len(line_texts) > 1:
+                    for lt_idx in range(len(line_texts[:-1])):
+                        line_texts[lt_idx] = str(line_texts[lt_idx]) + self.join_lines_with
 
                 text = "".join(line_texts)
             else:
