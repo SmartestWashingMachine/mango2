@@ -45,6 +45,22 @@ Observations and Quibbles
 - [Make sure `use_reentrant` is False when freezing input embedding layers while using gradient checkpointing.](#make-sure-use_reentrant-is-false-when-freezing-input-embedding-layers-while-using-gradient-checkpointing)
 - [D-FINE is way better than YOLO and DETR.](#d-fine-is-way-better-than-yolo-and-detr)
 - [Be careful when using LoRA or other low rank adapters on the input embedding layers.](#be-careful-when-using-lora-or-other-low-rank-adapters-on-the-input-embedding-layers)
+- [How to fit a bigger model for full-parameter training on one GPU.](#how-to-fit-a-bigger-model-for-full-parameter-training-on-one-gpu)
+  - [1. Gradient Checkpointing](#1-gradient-checkpointing)
+  - [2. Reduced Batch Size](#2-reduced-batch-size)
+  - [3. Memory Efficient Optimizers](#3-memory-efficient-optimizers)
+      - [3.1: Adafactor (without momentum)](#31-adafactor-without-momentum)
+      - [3.2: AdamW 8bit bitsandbytes](#32-adamw-8bit-bitsandbytes)
+      - [3.3: Adam (NOT AdamW) 8bit TorchAO](#33-adam-not-adamw-8bit-torchao)
+      - [3.4: Adam (NOT AdamW) 4bit TorchAO](#34-adam-not-adamw-4bit-torchao)
+      - [3.5: AdamW 8/4bit TorchAO (I like AdamW 4bit - my favorite)](#35-adamw-84bit-torchao-i-like-adamw-4bit---my-favorite)
+  - [4. torch.compile the model AND loss](#4-torchcompile-the-model-and-loss)
+  - [5. Optimized cross entropy loss functions](#5-optimized-cross-entropy-loss-functions)
+      - [5.1. Liger Kernel Linear Fused Cross Entropy](#51-liger-kernel-linear-fused-cross-entropy)
+      - [5.2 Another Fused Linear Cross Entropy](#52-another-fused-linear-cross-entropy)
+  - [6. Reduce the model vocabulary (input and output embedding size).](#6-reduce-the-model-vocabulary-input-and-output-embedding-size)
+  - [7. Modify the attention logic if it's unoptimized - maybe it can use SDPA?](#7-modify-the-attention-logic-if-its-unoptimized---maybe-it-can-use-sdpa)
+  - [8. Pure BF16 Training.](#8-pure-bf16-training)
 
 
 ## Tiny machine translation (MT) models on distant language pairs (e.g: Chinese-to-English, Japanese-to-English) fail to train without absolute positional embeddings.
@@ -442,10 +458,11 @@ Training a model with pure BF16 precision (loaded in bfloat16) can be a headache
 1. Ensure no AMP (automatic mixed precision) code is active on the training script. Most AMP implementations end up creating an additional clone of the model to handle high precision updates, which leads to additional memory cost. Since we're doing full half-precision training this doesn't matter. Make sure AMP is off.
 2. Use stochastic rounding. Stochastic rounding made my pure BF16 experiments *much* better (stable). This library is fantastic as it already implements it alongside a 4 bit Adam optimizer: https://github.com/pytorch/ao
 3. If using that AO package (you should if memory saving is the goal... why else would you be here?): Keep in mind that package implements both Adam **and** AdamW optimizers. Make sure to use the right one (which is probably AdamW - though it uses more memory than Adam...)
-4. Do **not** initialize new layers or weights while the model is loaded in half precision. If you want to expand the model, do it while it's still loaded in full precisoin, *then* load the newly expanded model in half precision. Failing to do this will usually lead to NaN gradients or weights.
+4. Do **not** initialize new layers or weights while the model is loaded in half precision. If you want to expand the model, do it while it's still loaded in full precision, *then* load the newly expanded model in half precision. Failing to do this will usually lead to NaN gradients or weights.
 5. Be careful with `torch.compile` - it can sometimes lead to **increased** memory usage with half precision models. Not sure what's going on there...
 6. Be careful with custom loss implementations (e.g: certain libraries implementing fused linear cross entropy functions): These implementations sometimes assume that the model is in full precision or AMP and can cause weird errors on full BF16 training.
-7. **When finetuning: Only process losses below a certain gradient norm threshold** - Rarely the lower-precision model may receive an update with an extremely large gradient norm (sometimes over 9000!). Gradient clipping stops the model from breaking for good, but it does **not stop the model from "forgetting" a lot of knowledge.** As a hacky fix, I skipped the optimization step (but still zero'd the gradients) if the update gradient norm was above some absurd threshold, and it made the finetuning process much safer and happier. Note that since the start of finetuning/pretraining will almost always have large gradient norms initially, it might be best to add this threshold after the gradients have gone down to a relatively sane number.
+7. **When finetuning: Only process losses below a certain gradient norm threshold** - Rarely the lower-precision model may receive an update with an extremely large gradient norm (sometimes over 9000!). Gradient clipping stops the model from breaking for good, but it does **not stop the model from "forgetting" a lot of knowledge.** As a hacky fix, I skipped the optimization step (but still zero'd the gradients) if the update gradient norm was above some absurd threshold, and it made the finetuning process much safer and happier. Note that since the start of finetuning/pretraining will almost always have large gradient norms initially, it might be best to add this threshold after the gradients have gone down to a relatively sane number. You might not need this if you follow the step below though...
+8. **Increase the Adam epsilon value to a safer value, such as 1e-4.** If you don't, then training on half-precision models will be *much* less stable. Every now and then there will be a **massive** gradient norm spike in the training due to the lower precision in our models and/or Adam itself. There are several discussions online that go into more detail on why this might be the case. The basic gist is that the default epsilon values (1e-7 or 1e-8) can underflow (or just make Adam less stable in general), causing Adam to divide by zero or near zero, which can cause massive gradient norms and catastrophic forgetting (or the model just bricks).
 
 ## Make sure `use_reentrant` is False when freezing input embedding layers while using gradient checkpointing.
 
@@ -493,3 +510,91 @@ For example, I tuned a T5 model to translate text. I would give it a basic sente
 No, it wasn't a data issue - LoRA training without the embedding layers didn't cause this issue (though it had slightly sadder general performance...)
 
 I'm not saying it's bad to adapt the embedding layers - but please keep an eye open for weird behavior.
+
+## How to fit a bigger model for full-parameter training on one GPU.
+
+We all hate CUDA OOM messages. This is what I usually do to fit bigger models:
+
+### 1. Gradient Checkpointing
+
+(+) Reduced VRAM
+(-) Reduced Speed
+
+### 2. Reduced Batch Size
+
+(+) Reduced VRAM
+(-) Reduced Speed
+
+If we aren't using BatchNorm, we can usually get the same or similar accuracy or stability of a larger batch size by using gradient accumulation.
+
+Training a Seq2Seq model or not using sequence packing? We can also reduce the token count for each sequence.
+
+### 3. Memory Efficient Optimizers
+
+##### 3.1: Adafactor (without momentum)
+
+(+++) Reduced VRAM (-) Reduced Speed (--) Potentially Lower Quality
+
+##### 3.2: AdamW 8bit bitsandbytes
+
+(++) Reduced VRAM (-) Potentially Lower Quality
+
+https://github.com/bitsandbytes-foundation/bitsandbytes
+
+##### 3.3: Adam (NOT AdamW) 8bit TorchAO
+
+(+++) Reduced VRAM (--) Potentially Lower Quality
+
+https://github.com/pytorch/ao
+
+##### 3.4: Adam (NOT AdamW) 4bit TorchAO
+
+(++++) Reduced VRAM (---) Potentially Lower Quality
+
+##### 3.5: AdamW 8/4bit TorchAO (I like AdamW 4bit - my favorite)
+
+(+ to +++) Reduced VRAM (-) Potentially Lower Quality
+
+### 4. torch.compile the model AND loss
+
+(+ to -) Reduced VRAM (+ to -) Improved/Reduced Speed
+
+### 5. Optimized cross entropy loss functions
+
+(This is only for models that use cross entropy, and has a *much* larger effect on models with a large vocabulary size)
+
+That said, I usually don't use either of these loss functions due to weird bugs and quirks.
+
+##### 5.1. Liger Kernel Linear Fused Cross Entropy
+
+(+) Reduced VRAM (-) Reduced Speed (but it can be faster with a good batch size) (-) Buggy/Conflicting with torch.compile
+
+https://github.com/linkedin/Liger-Kernel
+
+##### 5.2 Another Fused Linear Cross Entropy
+
+(+) Reduced VRAM (-) Buggy
+
+https://github.com/apple/ml-cross-entropy
+
+### 6. Reduce the model vocabulary (input and output embedding size).
+
+We can trim the vocabulary of a pretrained model to make a model faster and more lightweight. 
+
+Most trimming logic will need to be done with custom scripts, but we can reference other implementations to make it a bit easier:
+
+https://github.com/airaria/TextPruner
+
+A trimmed model should also work (mostly well) out of the box if we trimmed it right, without any additional training needed. 
+
+Make sure the trimmed model still works before finetuning, as it is incredibly easy to mess up the trimming logic.
+
+### 7. Modify the attention logic if it's unoptimized - maybe it can use SDPA?
+
+(Small +) Reduced VRAM usage. (-) Will have little effect on a small batch and sequence length.
+
+### 8. Pure BF16 Training.
+
+(++++++) Reduced VRAM usage. (+++) Improved Speed (---) Potentially Lower Quality (---) Moderately unstable.
+
+Please make sure to use stochastic rounding on an optimizer if going this route.
