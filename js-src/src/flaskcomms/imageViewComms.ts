@@ -51,7 +51,8 @@ export const pollTranslateImagesStatus = (
     image: string,
     imageName: string,
     annotations?: any,
-    remainingImages?: number
+    remainingImages?: number,
+    isFirst?: boolean
   ) => void,
   doneCb: () => void,
   taskId: string

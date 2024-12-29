@@ -56,10 +56,10 @@ const processFilesAction: GatewayAction = {
     );
 
     const foundFiles = await retrieveFilesInLibrary();
-    const filesInFolder = await retrieveFilesInFolder(folderPath);
+    //const filesInFolder = await retrieveFilesInFolder(folderPath);
     return {
       rootItem: foundFiles,
-      imagePaths: filesInFolder.map((x) => x.fullPath),
+      //imagePaths: filesInFolder.map((x) => x.fullPath),
       folderPath,
     };
   },
@@ -76,7 +76,7 @@ const saveCsvFileAction: GatewayAction = {
 
     const dataToJson: any[] = [];
     for (const c of csvRows) {
-      dataToJson.push({ 'SourceText': c[0], 'TargetText': c[1][0], })
+      dataToJson.push({ SourceText: c[0], TargetText: c[1][0] });
     }
 
     const data = JSON.stringify(dataToJson, null, 4);
@@ -173,21 +173,24 @@ const importTermsAction: GatewayAction = {
   command: ElectronCommands.IMPORT_TERMS,
   commandType: "handle",
   fn: async (e, win, state, store) => {
-    const terms = store.get('terms');
+    const terms = store.get("terms");
 
-    const result = await dialog.showOpenDialog({ 'defaultPath': DOWNLOADS_PATH, properties: ['openFile'] });
-    if (result.canceled || !result.filePaths || result.filePaths.length === 0) return;
+    const result = await dialog.showOpenDialog({
+      defaultPath: DOWNLOADS_PATH,
+      properties: ["openFile"],
+    });
+    if (result.canceled || !result.filePaths || result.filePaths.length === 0)
+      return;
 
     try {
       const data = await fs.readFile(result.filePaths[0]);
       const jsonData = JSON.parse(data.toString());
 
       console.log(`Importing terms as: ${result.filePaths[0]}`);
-      store.set('terms', jsonData);
+      store.set("terms", jsonData);
 
       await initializeModelNames(store.store);
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err);
       return;
     }
@@ -198,9 +201,9 @@ const exportTermsAction: GatewayAction = {
   command: ElectronCommands.EXPORT_TERMS,
   commandType: "handle",
   fn: async (e, win, state, store) => {
-    const terms = store.get('terms');
+    const terms = store.get("terms");
 
-    const result = await dialog.showSaveDialog({ 'defaultPath': DOWNLOADS_PATH });
+    const result = await dialog.showSaveDialog({ defaultPath: DOWNLOADS_PATH });
     if (result.canceled || !result.filePath) return;
 
     console.log(`Exporting terms as: ${result.filePath}`);

@@ -70,7 +70,11 @@ const ImageView = () => {
 
   const [rootItem, setRootItem] = useState<FileInfo | null>(null);
 
-  const [viewingImagePaths, setViewingImagePaths] = useState<string[]>([]);
+  const [rootItemMap, setRootItemMap] = useState<{ [key: string]: FileInfo }>(
+    {}
+  );
+
+  //const [viewingImagePaths, setViewingImagePaths] = useState<string[]>([]);
 
   // While loading (processing images in the backend), further uploading will be disabled.
   const { loading, setLoading } = useLoader();
@@ -80,19 +84,24 @@ const ImageView = () => {
 
   const installedModels = useInstalledModelsRetriever();
 
+  // For easy lookups (just to add a feature in doneTranslatingOne... omg)
+  useEffect(() => {
+    const newMap: any = {};
+
+    const populateMap = (item: FileInfo | null | undefined) => {
+      if (!item) return;
+
+      newMap[item.fullPath] = item;
+      for (const ch of item.childrenItems) populateMap(ch);
+    };
+
+    populateMap(rootItem);
+
+    setRootItemMap(newMap);
+  }, [rootItem]);
+
   const handleChangeSelectedPath = async (f: FileInfo) => {
     setSelectedPath(f.fullPath);
-
-    if (f.childrenItems.length > 0) {
-      setViewingImagePaths(
-        f.childrenItems
-          .filter((c) => c.childrenItems.length === 0)
-          .map((c) => c.fullPath)
-      );
-    } else {
-      // Case 2: The selected item is a file (non-folder). Only add the file.
-      setViewingImagePaths([f.fullPath]);
-    }
     // NOTE: viewingImagePaths must be updated whenever renaming/deleting a file.
   };
 
@@ -106,26 +115,27 @@ const ImageView = () => {
       folderName: string,
       fileName: string,
       annotations?: any[],
-      remainingImages: number = 100
+      remainingImages: number = 100,
+      isFirst = false
     ) => {
       if (!base64Image) return;
 
       const w = window as any;
 
-      const { rootItem, imagePaths, folderPath } =
-        await w.electronAPI.saveBase64Files(
-          [base64Image],
-          folderName,
-          fileName,
-          annotations
-        );
+      const { rootItem, folderPath } = await w.electronAPI.saveBase64Files(
+        [base64Image],
+        folderName,
+        fileName,
+        annotations
+      );
 
       // Update the rootItem so that the new image file name is displayed on the right pane.
       setRootItem(rootItem);
 
       // Then update the left pane stuff.
-      setViewingImagePaths(imagePaths);
-      setSelectedPath(folderPath);
+      if (isFirst) {
+        setSelectedPath(folderPath);
+      }
 
       // Images in the backend are always processed in order, so we can safely remove the first image in the pending list.
       // setPendingImageNames((l) => (l.length > 0 ? l.slice(1) : []));
@@ -186,6 +196,10 @@ const ImageView = () => {
 
       startTranslating(); // Ensure the client is loading.
 
+      // The first item processed for this task will have this set to true.
+      // (This is done so that the ImageView only navigates to the new folder once - on the first item.)
+      let isFirst = true;
+
       const doneWithOne = (
         base64Image: string,
         fileName: string,
@@ -197,10 +211,12 @@ const ImageView = () => {
           folderName,
           fileName,
           annotations,
-          remainingImages
+          remainingImages,
+          isFirst
         );
 
         pushAlert(`Saved "${fileName}".`);
+        isFirst = false;
       };
 
       setPendingImageTasks((t) => t + 1);
@@ -280,14 +296,12 @@ const ImageView = () => {
     const rootItem = await w.electronAPI.retrieveFiles();
     if (rootItem) {
       setRootItem(rootItem);
-      setViewingImagePaths([]);
       setSelectedPath(null);
     }
   };
 
   const handleBackClick = () => {
     setSelectedPath(null);
-    setViewingImagePaths([]);
   };
 
   const handleChangeCleaningMode = (m: string) => {
@@ -340,10 +354,24 @@ const ImageView = () => {
       const { rootItem } = await w.electronAPI.saveImage(pat, image);
       setRootItem(rootItem);
       setSelectedPath(null);
-      setViewingImagePaths([]);
     },
     [getFolderFromImage]
   );
+
+  // ??? should be a reserved file name so it's alright.
+  const selectedItem = rootItemMap[selectedPath || "???"] || null;
+  let viewingImagePaths: string[] = [];
+  if (selectedItem) {
+    // Case 1: The selected item is a folder. Add all child files (depth 1).
+    if (selectedItem.childrenItems.length > 0) {
+      viewingImagePaths = selectedItem.childrenItems
+        .filter((c) => c.childrenItems.length === 0)
+        .map((c) => c.fullPath);
+    } else {
+      // Case 2: The selected item is a file (non-folder). Only add the file.
+      viewingImagePaths = [selectedItem.fullPath];
+    }
+  }
 
   const rightPane = (
     <RightPane
