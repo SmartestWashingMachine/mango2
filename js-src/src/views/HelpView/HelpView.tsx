@@ -14,7 +14,7 @@ const questions = [
       A detached black text window will appear on the screen.
       This window will automagically translate any text in the clipboard and show the translation.
       `,
-      `Load Textractor and enable the "Copy to clipboard" extension in it.`,
+      `Then, load Textractor and enable the "Copy to clipboard" extension in it. Now when Textractor hooks into a game, it will read and copy untranslated text into the clipboard, and Mango will translate it.`,
     ],
   },
   {
@@ -40,7 +40,7 @@ const questions = [
     ],
   },
   {
-    title: "How do I use this to translate EPUB files?",
+    title: "(Buggy) How do I use this to translate EPUB files?",
     steps: [
       `Navigate to the "Book" tab, and then drag and drop ONE EPUB file into the box.`,
       `The process will take some time, but every now and then a partially translated EPUB will be created for the reader. The output will be saved under Windows Documents - look for a folder called "Mango" in the documents folder.`,
@@ -49,8 +49,7 @@ const questions = [
   {
     title: "How do I translate from a different language?",
     steps: [
-      `Navigate to the "Settings" tab, and then change the translation model and text recognition model.`,
-      `Restart the app afterwards for the changes to take effect.`,
+      `Navigate to the "Settings" tab, and then change the translation model and text recognition model. Or just change the Preset to one that uses your desired language.`,
     ],
   },
   {
@@ -58,20 +57,22 @@ const questions = [
     steps: [
       `Take a look at the "Settings" tab! There are a lot of things you can configure, such as...`,
       'A. Using a spelling correction model (e.g: "ProFill").',
-      "B. Translating images? Try using a line detection model in addition to a text detection model!",
+      'B. Translating images? Try using a line detection model (like "D-FINE Line EXO-Massive") in addition to a text detection model!',
       "C. Increasing / decreasing max context might help increase the quality.",
-      "D. Tinkering with the decoding parameters can improve quality too. Try setting the beam size to 10 (or even 15 if you're daring...).",
+      "D. Tinkering with the decoding parameters can improve quality too. Try setting the beam size to 5 or 10 (or even 15 if you're daring...)",
       "E. Enabling a reranker model and using MBR decoding can sometimes improve quality too.",
-      "F. If using the detached text window to translate, you may want to use Textractor (to avoid any potential OCR errors).",
+      "F. If using the detached text window to translate games, you may want to use Textractor (to avoid any potential OCR errors).",
+      'G. Use a bigger translation model, such as "Japanese-2-English Madness".',
     ],
   },
   {
     title: "How can I speed up the process?",
     steps: [
       `Take a look at the "Settings" tab! There are a lot of things you can configure, such as...`,
-      "A. Decreasing max context will moderately improve speed.",
+      "A. Decreasing max context will slightly improve speed.",
       "B. Reducing beam size will improve speed. (e.g: setting beam size to 1)",
       "C. (The big one!) Enable CUDA. In CUDA mode, processing can be MUCH faster (sometimes even up to 10x!), but it requires a CUDA compatible GPU.",
+      "D. Using smaller models (such as using no text line detection model, or a smaller OCR model).",
     ],
   },
   {
@@ -82,6 +83,7 @@ const questions = [
       "You probably only want to translate text within certain HTML elements. You can use CSS selectors to only translate certain elements (see the syntax from BeautifulSoup docs).",
       `When you're done, simply select a text field and press "Enter".`,
       'By default, "Preview Selected Elements" is on. This way, the UNTRANSLATED text will be retrieved so that you can ensure only the expected text is retrieved with CSS selectors.',
+      'Alternatively, you can manually copy all the desired text on a web page and just paste it all in the bottom box in the "Text" tab.',
     ],
   },
   {
