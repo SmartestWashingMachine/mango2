@@ -30,7 +30,7 @@ class DFineONNX(BaseONNXModel):
             T.ToTensor(),
         ])
 
-    def forward(self, x: Image):
+    def forward(self, x: Image.Image):
         resized_im_pil, ratio, pad_w, pad_h = resize_with_aspect_ratio(x, 1024)
         orig_size = torch.tensor([[resized_im_pil.size[1], resized_im_pil.size[0]]])
 
@@ -55,6 +55,12 @@ class DFineONNX(BaseONNXModel):
                 # Add confidence.
                 scr,
             ]
+
+            # Clip - rarely DETR goes under/over.
+            bb[0] = max(0, bb[0])
+            bb[1] = max(0, bb[1])
+            bb[2] = min(x.width, bb[2])
+            bb[3] = min(x.height, bb[3])
 
             bboxes.append(bb)
 
