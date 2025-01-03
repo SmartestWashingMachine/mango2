@@ -39,6 +39,7 @@ const storeDefaults: IStore = {
   batchOcr: false,
   cutOcrPunct: false,
   ignoreDetectSingleWords: false,
+  sortTextFromTopLeft: false,
 };
 
 export const initializeStore = () => {

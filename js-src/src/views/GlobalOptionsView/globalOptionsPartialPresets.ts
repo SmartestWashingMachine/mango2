@@ -28,6 +28,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       contextAmount: "three",
       tileWidth: 100,
       tileHeight: 100,
+      sortTextFromTopLeft: false,
     },
   },
   {
@@ -44,6 +45,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       contextAmount: "three",
       tileWidth: 100,
       tileHeight: 100,
+      sortTextFromTopLeft: false,
     },
   },
   {
@@ -60,6 +62,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       contextAmount: "three",
       tileWidth: 100,
       tileHeight: 100,
+      sortTextFromTopLeft: false,
     },
   },
   {
@@ -75,6 +78,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       contextAmount: "three",
       tileWidth: 100,
       tileHeight: 0,
+      sortTextFromTopLeft: true,
     },
   },
 ];

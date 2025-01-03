@@ -4,7 +4,7 @@ from typing import List
 from PIL import Image
 import numpy as np
 import copy
-
+from gandy.state.config_state import config_state
 
 class BaseImageDetection(BaseApp):
     def __init__(self):
@@ -16,7 +16,7 @@ class BaseImageDetection(BaseApp):
     def begin_process(self, *args, **kwargs) -> List[SpeechBubble]:
         return super().begin_process(*args, **kwargs)
 
-    # Sorts a group of bbox tensors such that the tensors with the highest top-right values are first.
+    # Sorts a group of bbox tensors such that the tensors with the highest top-right / top-left values are first.
     # Note: This does not modify in place.
     def sort_bboxes(self, bboxes, image_width, image_height):
         # Create copy of bboxes C
@@ -26,8 +26,12 @@ class BaseImageDetection(BaseApp):
             # No boxes to sort.
             return new_bboxes
 
-        # Distance from (image_width, 0) point.
-        x = (image_width - bboxes[:, 2]) ** 2
+        if config_state.sort_text_from_top_left:
+            # Distance of x1 from (0, 0) point. (Mainly for Korean images)
+            x = (bboxes[:, 0]) ** 2
+        else:
+            # Distance of x2 from (image_width, 0) point.
+            x = (image_width - bboxes[:, 2]) ** 2
 
         # This still isn't perfect, but it gives slightly better ordering results on average.
         y = (

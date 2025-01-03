@@ -219,6 +219,7 @@ const GlobalOptionsView = () => {
     batchOcr,
     cutOcrPunct,
     ignoreDetectSingleWords,
+    sortTextFromTopLeft,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
@@ -436,6 +437,15 @@ const GlobalOptionsView = () => {
                 defaultValue={ignoreDetectSingleWords}
                 helperText="Removes potentially erroneous single word detections in image translation jobs."
                 label="Ignore Single Words In Images"
+              />
+            ),
+            "Sort Texts Left-to-Right": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="sortTextFromTopLeft"
+                defaultValue={sortTextFromTopLeft}
+                helperText="When scanning images, texts are assumed to be read from left-to-right instead of right-to-left. This is used to decide how context is added."
+                label="Sort Texts Left-to-Right"
               />
             ),
           },

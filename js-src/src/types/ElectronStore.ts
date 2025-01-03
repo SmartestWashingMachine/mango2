@@ -42,6 +42,7 @@ export type IStoreClientToServer = {
   batchOcr: boolean;
   cutOcrPunct: boolean;
   ignoreDetectSingleWords: boolean;
+  sortTextFromTopLeft: boolean;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;
