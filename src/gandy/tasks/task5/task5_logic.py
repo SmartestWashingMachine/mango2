@@ -13,7 +13,7 @@ from gandy.tasks.task5.stages.translate_text_in_frames import translate_text_in_
 from gandy.state.debug_state import debug_state
 from gandy.state.config_state import config_state
 from gandy.utils.text_processing import pack_context, pack_context_dedupe
-
+from uuid import uuid4
 """
 
 I didn't think I would need to write a pseudo design document for this task, but there are a lot of heuristics involved here, so I want to
@@ -150,7 +150,9 @@ def process_task5(
     video_stride = every_secs * fps
     maker = SubtitleMaker(video_fps=fps, sub_duration=video_stride)
 
-    file_name = os.path.basename(os.path.splitext(video_file_path)[0])
+    # There are too many illegal characters that aren't documented in FFMpeg... don't even bother.
+    # file_name = os.path.basename(os.path.splitext(video_file_path)[0])
+    file_name = uuid4().hex
 
     srt_path = f"{save_subtitles_path}/{file_name}.srt"
     srt_content = maker.create_srt_content(segments)
