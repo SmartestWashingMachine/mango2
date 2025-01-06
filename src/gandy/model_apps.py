@@ -102,8 +102,10 @@ yolo_line_emassive = RTDetrExpandedLineImageDetectionApp(
     model_name="yolo_line_emassive", confidence_threshold=0.4, iou_thr=0.15, image_size=1024,
 )
 
+# 0.4 = medium
+# 0.52 = large
 dfine_line_emassive = DFineLineImageDetectionApp(
-    model_name="dfine_line_emassive", confidence_threshold=0.4, iou_thr=0.15, image_size=1024,
+    model_name="dfine_line_emassive", confidence_threshold=0.52, iou_thr=0.15, image_size=1024,
 )
 
 # For Union usage only.
