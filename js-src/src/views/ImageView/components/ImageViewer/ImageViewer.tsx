@@ -65,7 +65,7 @@ const ImageViewer = ({
     [onFilesSelected]
   );
 
-  const { viewingMode } = useImageViewMode();
+  const { viewingMode, changeViewingMode } = useImageViewMode();
 
   const [curIndex, setCurIndex] = useState(0);
 
@@ -235,11 +235,13 @@ const ImageViewer = ({
               : "imagePreviewContainer"
           }
         >
-          <div className="imagePreviewTitle">
-            <Typography variant="h6" align="center">
-              {getFileName(imagePaths[curIndex])}
-            </Typography>
-          </div>
+          {viewingMode === "one" && (
+            <div className="imagePreviewTitle">
+              <Typography variant="h6" align="center">
+                {getFileName(imagePaths[curIndex])}
+              </Typography>
+            </div>
+          )}
           {curIndex < imagePaths.length && viewingMode === "one" && (
             <AnnotatedImage
               annotations={curAnnotations}
@@ -248,6 +250,7 @@ const ImageViewer = ({
               originalImageWidth={originalWidth}
               originalImageHeight={originalHeight}
               fitImage={true}
+              onClick={changeViewingMode}
             />
           )}
           {imagePaths.length > 0 &&
@@ -266,6 +269,7 @@ const ImageViewer = ({
                 originalImageHeight={originalHeight}
                 key={imagePaths[idx] || idx}
                 fitImage={false}
+                onClick={changeViewingMode}
               />
             ))}
           {isDragActive && (

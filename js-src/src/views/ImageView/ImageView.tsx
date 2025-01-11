@@ -36,8 +36,13 @@ const RightPane = memo(
     installedModels,
     tileWidth,
     tileHeight,
+    display,
   }: any) => (
-    <Stack spacing={2} sx={{ height: "100%" }} key="library-stack">
+    <Stack
+      spacing={2}
+      sx={{ height: "100%", display: display ? "initial" : "none" }}
+      key="library-stack"
+    >
       <FileListPane
         rootItem={rootItem}
         selectedPath={selectedPath}
@@ -376,25 +381,25 @@ const ImageView = () => {
     }
   }
 
-  const rightPane =
-    viewingMode === "one" ? (
-      <RightPane
-        handleChangeSelectedPath={handleChangeSelectedPath}
-        handleRefresh={handleRefresh}
-        handleBackClick={handleBackClick}
-        rootItem={rootItem}
-        selectedPath={selectedPath}
-        handleChangeCleaningMode={handleChangeCleaningMode}
-        handleChangeRedrawingMode={handleChangeRedrawingMode}
-        cleaningMode={cleaningMode}
-        redrawingMode={redrawingMode}
-        installedModels={installedModels}
-        tileWidth={tileWidth}
-        tileHeight={tileHeight}
-        handleChangeTileWidth={handleChangeTileWidth}
-        handleChangeTileHeight={handleChangeTileHeight}
-      />
-    ) : undefined;
+  const rightPane = (
+    <RightPane
+      handleChangeSelectedPath={handleChangeSelectedPath}
+      handleRefresh={handleRefresh}
+      handleBackClick={handleBackClick}
+      rootItem={rootItem}
+      selectedPath={selectedPath}
+      handleChangeCleaningMode={handleChangeCleaningMode}
+      handleChangeRedrawingMode={handleChangeRedrawingMode}
+      cleaningMode={cleaningMode}
+      redrawingMode={redrawingMode}
+      installedModels={installedModels}
+      tileWidth={tileWidth}
+      tileHeight={tileHeight}
+      handleChangeTileWidth={handleChangeTileWidth}
+      handleChangeTileHeight={handleChangeTileHeight}
+      display={viewingMode === "one"}
+    />
+  );
 
   useEffect(() => {
     const cb = (e: KeyboardEvent) => {
@@ -434,7 +439,11 @@ const ImageView = () => {
   );
 
   return (
-    <BaseView rightPane={rightPane}>
+    <BaseView
+      rightPane={rightPane}
+      leftXs={viewingMode === "one" ? 9 : 12}
+      rightXs={viewingMode === "one" ? 0 : 3}
+    >
       {leftPane}
       <ImageFolderInputDialog
         open={createFolderOpen}

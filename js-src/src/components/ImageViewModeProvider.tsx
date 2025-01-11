@@ -11,6 +11,7 @@ export type ViewingModes = "one" | "vertical";
 
 const ImageViewModeContext = createContext({
   viewingMode: "one" as ViewingModes,
+  changeViewingMode: () => {},
 });
 
 type ImageViewModeProviderProps = {
@@ -21,25 +22,14 @@ const ImageViewModeProvider = ({ children }: ImageViewModeProviderProps) => {
   const [viewingMode, setViewingMode] = useState<ViewingModes>("one");
   const pushAlert = useAlerts();
 
-  // A little safety hatch!
-  useEffect(() => {
-    const cb = async (e: KeyboardEvent) => {
-      if (e.shiftKey) {
-        setViewingMode((v) => (v === "one" ? "vertical" : "one"));
+  const changeViewingMode = useCallback(() => {
+    setViewingMode((v) => (v === "one" ? "vertical" : "one"));
 
-        pushAlert("Changed viewing mode!");
-      }
-    };
-
-    document.addEventListener("keydown", cb);
-
-    return () => {
-      document.removeEventListener("keydown", cb);
-    };
-  }, []);
+    pushAlert("Changed viewing mode!");
+  }, [pushAlert]);
 
   return (
-    <ImageViewModeContext.Provider value={{ viewingMode }}>
+    <ImageViewModeContext.Provider value={{ viewingMode, changeViewingMode }}>
       {children}
     </ImageViewModeContext.Provider>
   );

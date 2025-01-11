@@ -16,6 +16,7 @@ type AnnotatedImageProps = {
   originalImageWidth: number;
   originalImageHeight: number;
   fitImage: boolean;
+  onClick?: () => void;
 };
 
 const AnnotatedImage = ({
@@ -25,6 +26,7 @@ const AnnotatedImage = ({
   originalImageWidth,
   originalImageHeight,
   fitImage,
+  onClick,
 }: AnnotatedImageProps) => {
   const calcWidth = (a: Annotation) => {
     const width = a.x2 - a.x1;
@@ -49,7 +51,7 @@ const AnnotatedImage = ({
   return (
     <div className={fitImage ? "imagePreviewBoxOuter" : undefined}>
       <div className={fitImage ? "imagePreviewBox" : undefined}>
-        <img src={src} className={className} />
+        <img src={src} className={className} onClick={onClick} />
         {annotations.map((a, idx) => (
           <Tooltip
             title={
