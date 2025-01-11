@@ -15,6 +15,7 @@ import GlobalOptionsView from "./views/GlobalOptionsView/GlobalOptionsView";
 import AlertProvider from "./components/AlertProvider";
 import { MainGateway } from "./utils/mainGateway";
 import { appTheme } from "./appTheme";
+import ImageViewModeProvider from "./components/ImageViewModeProvider";
 
 const transitionTimeouts = {
   enter: 300,
@@ -111,7 +112,11 @@ const App = () => {
                       {curView === "Text" && (
                         <TextView onOpenOcrSettings={selSettingsTab} />
                       )}
-                      {curView === "Image" && <ImageView />}
+                      {curView === "Image" && (
+                        <ImageViewModeProvider>
+                          <ImageView />
+                        </ImageViewModeProvider>
+                      )}
                       {curView === "Book" && <BookView />}
                       {curView === "Settings" && (
                         <OptionsView goTextTab={selTextTab} />

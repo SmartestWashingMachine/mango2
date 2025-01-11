@@ -18,6 +18,7 @@ import { useAlerts } from "../../components/AlertProvider";
 import ImageFolderInputDialog from "./components/ImageFolderInputDialog";
 import { useInstalledModelsRetriever } from "../../utils/useInstalledModelsRetriever";
 import { v4 as uuidv4 } from "uuid";
+import { useImageViewMode } from "../../components/ImageViewModeProvider";
 
 const RightPane = memo(
   ({
@@ -61,6 +62,8 @@ const RightPane = memo(
 
 const ImageView = () => {
   const pushAlert = useAlerts();
+
+  const { viewingMode } = useImageViewMode();
 
   const [showingImages, setShowingImages] = useState(false);
 
@@ -373,24 +376,25 @@ const ImageView = () => {
     }
   }
 
-  const rightPane = (
-    <RightPane
-      handleChangeSelectedPath={handleChangeSelectedPath}
-      handleRefresh={handleRefresh}
-      handleBackClick={handleBackClick}
-      rootItem={rootItem}
-      selectedPath={selectedPath}
-      handleChangeCleaningMode={handleChangeCleaningMode}
-      handleChangeRedrawingMode={handleChangeRedrawingMode}
-      cleaningMode={cleaningMode}
-      redrawingMode={redrawingMode}
-      installedModels={installedModels}
-      tileWidth={tileWidth}
-      tileHeight={tileHeight}
-      handleChangeTileWidth={handleChangeTileWidth}
-      handleChangeTileHeight={handleChangeTileHeight}
-    />
-  );
+  const rightPane =
+    viewingMode === "one" ? (
+      <RightPane
+        handleChangeSelectedPath={handleChangeSelectedPath}
+        handleRefresh={handleRefresh}
+        handleBackClick={handleBackClick}
+        rootItem={rootItem}
+        selectedPath={selectedPath}
+        handleChangeCleaningMode={handleChangeCleaningMode}
+        handleChangeRedrawingMode={handleChangeRedrawingMode}
+        cleaningMode={cleaningMode}
+        redrawingMode={redrawingMode}
+        installedModels={installedModels}
+        tileWidth={tileWidth}
+        tileHeight={tileHeight}
+        handleChangeTileWidth={handleChangeTileWidth}
+        handleChangeTileHeight={handleChangeTileHeight}
+      />
+    ) : undefined;
 
   useEffect(() => {
     const cb = (e: KeyboardEvent) => {

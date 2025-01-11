@@ -15,6 +15,7 @@ type AnnotatedImageProps = {
   className?: string;
   originalImageWidth: number;
   originalImageHeight: number;
+  fitImage: boolean;
 };
 
 const AnnotatedImage = ({
@@ -23,6 +24,7 @@ const AnnotatedImage = ({
   className,
   originalImageWidth,
   originalImageHeight,
+  fitImage,
 }: AnnotatedImageProps) => {
   const calcWidth = (a: Annotation) => {
     const width = a.x2 - a.x1;
@@ -45,12 +47,16 @@ const AnnotatedImage = ({
   };
 
   return (
-    <div className="imagePreviewBoxOuter">
-      <div className="imagePreviewBox">
+    <div className={fitImage ? "imagePreviewBoxOuter" : undefined}>
+      <div className={fitImage ? "imagePreviewBox" : undefined}>
         <img src={src} className={className} />
         {annotations.map((a, idx) => (
           <Tooltip
-            title={<h4 style={{ 'fontSize': '1.5em', 'fontWeight': 'normal', }}>{a.text}</h4>}
+            title={
+              <h4 style={{ fontSize: "1.5em", fontWeight: "normal" }}>
+                {a.text}
+              </h4>
+            }
             key={`${a.x1}-${a.y1}-${a.x2}-${a.y2}`}
             enterDelay={0}
             arrow

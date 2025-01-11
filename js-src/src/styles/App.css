@@ -241,6 +241,14 @@ body,
   margin-bottom: 8px;
 }
 
+.imagePreviewContainerVertical {
+  display: grid;
+  position: relative;
+  margin-top: 2px;
+  margin-bottom: 8px;
+  max-width: 65vw;
+}
+
 .imageViewerControls {
   margin-top: auto;
   width: 100%;

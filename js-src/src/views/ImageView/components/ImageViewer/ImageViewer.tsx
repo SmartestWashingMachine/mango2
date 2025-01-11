@@ -12,6 +12,7 @@ import ImageProgressList from "./ImageProgressList";
 import AnnotatedImage from "./AnnotatedImage";
 import ImageEditor from "../ImageEditor/ImageEditor";
 import { MainGateway } from "../../../../utils/mainGateway";
+import { useImageViewMode } from "../../../../components/ImageViewModeProvider";
 
 const checkAmg = (fullPath: string) =>
   fullPath ? fullPath.endsWith(".amg") : false;
@@ -63,6 +64,8 @@ const ImageViewer = ({
     },
     [onFilesSelected]
   );
+
+  const { viewingMode } = useImageViewMode();
 
   const [curIndex, setCurIndex] = useState(0);
 
@@ -225,28 +228,53 @@ const ImageViewer = ({
           />
         </Collapse>
         <input {...getInputProps()} />
-        <div className="imagePreviewContainer">
+        <div
+          className={
+            viewingMode === "vertical"
+              ? "imagePreviewContainerVertical"
+              : "imagePreviewContainer"
+          }
+        >
           <div className="imagePreviewTitle">
             <Typography variant="h6" align="center">
               {getFileName(imagePaths[curIndex])}
             </Typography>
           </div>
-          {curIndex < imagePaths.length && (
+          {curIndex < imagePaths.length && viewingMode === "one" && (
             <AnnotatedImage
               annotations={curAnnotations}
               className={imgClasses}
               src={isAmg ? `data:image/jpeg;base64,${curImage}` : curImage}
               originalImageWidth={originalWidth}
               originalImageHeight={originalHeight}
+              fitImage={true}
             />
           )}
+          {imagePaths.length > 0 &&
+            !isAmg && // TODO: Add AMG support for vertical stuff. Though I doubt anyone will use it?
+            viewingMode === "vertical" &&
+            [...Array(imagePaths.length).keys()].map((_, idx) => (
+              <AnnotatedImage
+                annotations={curAnnotations}
+                className={imgClasses}
+                src={
+                  isAmg
+                    ? `data:image/jpeg;base64,${imagePaths[idx]}`
+                    : imagePaths[idx]
+                }
+                originalImageWidth={originalWidth}
+                originalImageHeight={originalHeight}
+                key={imagePaths[idx] || idx}
+                fitImage={false}
+              />
+            ))}
           {isDragActive && (
             <Typography variant="h4" className="imageInputText" align="center">
               Drop files here...
             </Typography>
           )}
         </div>
-        {imagePaths.length > 1 && (
+        {imagePaths.length > 1 && viewingMode === "one" && (
           <div className="imageViewerControls">
             <Pagination
               count={imagePaths.length}
@@ -270,7 +298,7 @@ const ImageViewer = ({
             />
           </div>
         )}
-        {isAmg && (
+        {isAmg && viewingMode === "one" && (
           <Button
             variant="text"
             color="primary"
