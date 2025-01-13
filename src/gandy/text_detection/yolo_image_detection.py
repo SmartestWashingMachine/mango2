@@ -199,8 +199,11 @@ class YOLOImageDetectionApp(BaseImageDetection):
         # So we manually filter out insane boxes via gt_min_size later on.
 
         return boxes
+    
+    def process_before_tnms(self, bboxes_scores, bboxes_pos, image_width, image_height):
+        return bboxes_pos, bboxes_scores
 
-    def fuse_boxes(self, bboxes_data, padded_hw, image_height):
+    def fuse_boxes(self, bboxes_data, padded_hw, image_width, image_height):
         logger.log_message(
             f"Using non maximum suppression to postprocess object detections..."
         )
@@ -208,7 +211,12 @@ class YOLOImageDetectionApp(BaseImageDetection):
         # bboxes_data for YOLO = [1, 5, 8400] where the 2nd axis (5 elements) represents the coordinates and the confidence score.
         bboxes_data = bboxes_data[0]  # Remove batch. [5, 8400]
 
+        # [n_boxes, 4] and [n_boxes]
+        # pos = [x1, y1, x2, y2]
         bboxes_pos, bboxes_scores = self.map_bboxes_data(bboxes_data, padded_hw)
+
+        # For D-FINE.
+        bboxes_pos, bboxes_scores = self.process_before_tnms(bboxes_scores, bboxes_pos, image_width, image_height)
 
         # NMS
         keep = tnms(
@@ -270,7 +278,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
         dict_output, padded_hw = self.detect_bboxes(image)
 
         logger.log_message("Fusing boxes...")
-        bboxes = self.fuse_boxes(dict_output, padded_hw, image_height)
+        bboxes = self.fuse_boxes(dict_output, padded_hw, image_width, image_height)
 
         logger.log_message("Sorting boxes...")
         if do_sort:
