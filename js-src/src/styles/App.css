@@ -18,14 +18,27 @@ input::-webkit-inner-spin-button {
   display: flex;
 }
 
-.appContainerLeft {
+.appContainerLeftNoHeight {
   display: grid;
   padding-right: 8px;
   row-gap: 24px;
   justify-items: center;
 }
 
+.appContainerLeft {
+  display: grid;
+  padding: 8px;
+  row-gap: 24px;
+  min-height: calc(100vh - 72px);
+  justify-items: center;
+}
+
 .appContainerRight {
+  row-gap: 24px;
+  display: block;
+}
+
+.appContainerRightNoHeight {
   row-gap: 24px;
   height: 85vh;
   display: flex;

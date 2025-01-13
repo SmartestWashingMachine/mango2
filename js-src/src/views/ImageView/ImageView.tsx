@@ -443,6 +443,7 @@ const ImageView = () => {
       rightPane={rightPane}
       leftXs={viewingMode === "one" ? 9 : 12}
       rightXs={viewingMode === "one" ? 0 : 3}
+      noHeight
     >
       {leftPane}
       <ImageFolderInputDialog

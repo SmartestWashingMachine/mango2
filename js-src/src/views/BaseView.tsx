@@ -7,6 +7,7 @@ type BaseViewProps = {
   noPadding?: boolean;
   leftXs?: number;
   rightXs?: number;
+  noHeight?: boolean;
 };
 
 const BaseView = ({
@@ -15,18 +16,25 @@ const BaseView = ({
   noPadding,
   leftXs,
   rightXs,
+  noHeight,
 }: BaseViewProps) => {
   return (
     <Grid container className={noPadding ? "" : "appContainer"} id="base-view">
       <Grid
         item
         xs={!!rightPane ? leftXs || 9 : 12}
-        className="appContainerLeft"
+        className={noHeight ? "appContainerLeftNoHeight" : "appContainerLeft"}
       >
         {children}
       </Grid>
       {!!rightPane && (
-        <Grid item xs={rightXs || 3} className="appContainerRight">
+        <Grid
+          item
+          xs={rightXs || 3}
+          className={
+            noHeight ? "appContainerRightNoHeight" : "appContainerRight"
+          }
+        >
           {rightPane}
         </Grid>
       )}
