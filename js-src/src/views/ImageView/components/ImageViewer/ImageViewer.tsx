@@ -43,7 +43,7 @@ const getFileName = (filePath: string) => {
   const s = filePath?.split("\\")?.pop()?.split("/")?.pop();
   if (!s) return s;
 
-  if (s.length > 12) {
+  if (s.length > 24) {
     return `${s.substring(0, 9)}...`;
   } else return s;
 };
@@ -234,6 +234,12 @@ const ImageViewer = ({
               ? "imagePreviewContainerVertical"
               : "imagePreviewContainer"
           }
+          style={{
+            marginTop:
+              pendingImageNames && pendingImageNames.length > 0
+                ? "2px"
+                : "-18px",
+          }}
         >
           {viewingMode === "one" && (
             <div className="imagePreviewTitle">

@@ -40,7 +40,7 @@ const RightPane = memo(
   }: any) => (
     <Stack
       spacing={2}
-      sx={{ height: "90vh", width: "100%", display: display ? "flex" : "none" }}
+      sx={{ width: "100%", display: display ? "flex" : "none" }}
       key="library-stack"
     >
       <FileListPane

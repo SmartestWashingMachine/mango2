@@ -20,15 +20,15 @@ input::-webkit-inner-spin-button {
 
 .appContainerLeft {
   display: grid;
-  padding: 8px;
+  padding-right: 8px;
   row-gap: 24px;
-  min-height: calc(100vh - 72px);
   justify-items: center;
 }
 
 .appContainerRight {
   row-gap: 24px;
-  display: block;
+  height: 85vh;
+  display: flex;
 }
 
 .inputBox {
