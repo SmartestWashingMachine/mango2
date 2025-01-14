@@ -4,9 +4,9 @@ import IStore from "../types/ElectronStore";
 const storeDefaults: IStore = {
   boxes: [],
   textLineModelName: "none",
-  translationModelName: "nllb_jq",
-  textDetectionModelName: "yolo_xl",
-  textRecognitionModelName: "trocr_jbig",
+  translationModelName: "nllb_jq300",
+  textDetectionModelName: "dfine_l_denoise",
+  textRecognitionModelName: "trocr_jmassive",
   spellCorrectionModelName: "default",
   rerankingModelName: "none",
   contextAmount: "three",
@@ -27,9 +27,9 @@ const storeDefaults: IStore = {
   translationThreads: 2, // TODO: remove
   forceTranslationCPU: true,
   forceTdCpu: false,
-  cleaningMode: "simple",
+  cleaningMode: "blur",
   redrawingMode: "smart",
-  currentView: "Text",
+  currentView: "Image",
   autoOpenOcrWindow: false,
   spellCorrectionSeparate: false, // TODO: Unused. Probably don't need it either.
   strokeSize: 1.0,
