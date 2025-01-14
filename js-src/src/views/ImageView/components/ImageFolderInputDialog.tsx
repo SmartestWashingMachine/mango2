@@ -29,7 +29,8 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
 
   const onChange = (e: any) => setFolderName(e.currentTarget.value);
 
-  const badFolderName = !isValidFilename(folderName);
+  const badFolderName =
+    !isValidFilename(folderName) && folderName.trim().length > 0;
 
   const handleDone = () => {
     // Existing folders can still be used - it's just a warning.
