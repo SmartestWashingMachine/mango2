@@ -511,6 +511,17 @@ No, it wasn't a data issue - LoRA training without the embedding layers didn't c
 
 I'm not saying it's bad to adapt the embedding layers - but please keep an eye open for weird behavior.
 
+NEW NOTE: I "pretrained" another model using LoRA like above, and then tried full parameter finetuning that model afterwards - it failed horrifically: The training would randomly diverge due to **massive** gradient norm spikes every now and then. I tried to rectify this by:
+
+1. Increasing the weight decay. No dice.
+2. Lowering the learning rate. Made the breaking spikes less frequent for some time, but the model eventually diverged anyways.
+3. Increasing warmup steps. Only delayed the inevitable.
+4. Increasing AdamW epsilon. Only delayed the inevitable - but it delayed it much longer than (2) and (3).
+5. More aggressive gradient clipping. No dice. (Why does gradient clipping almost always fail me? This was your time to shine, dude...)
+6. Ignoring batches where the gradient norm spikes. This "worked". The training remained stable, but over time the gradient norm would spike more and more, so I had to drop more and more batches to keep it stable - not efficient at all.
+
+I will never use LoRA on embeddings again.
+
 ## How to fit a bigger model for full-parameter training on one GPU.
 
 We all hate CUDA OOM messages. This is what I usually do to fit bigger models:
