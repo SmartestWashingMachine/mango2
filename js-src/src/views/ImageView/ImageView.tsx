@@ -444,6 +444,9 @@ const ImageView = () => {
       leftXs={viewingMode === "one" ? 9 : 12}
       rightXs={viewingMode === "one" ? 0 : 3}
       noHeight
+      rightClassName={
+        viewingMode === "one" ? undefined : "_overwritten_class_name_"
+      }
     >
       {leftPane}
       <ImageFolderInputDialog
