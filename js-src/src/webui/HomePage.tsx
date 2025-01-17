@@ -170,9 +170,14 @@ const HomePage = () => {
 
     pushAlert("Processing zip file...");
 
-    const output = await fetch(`${API_URL}/webui/processziptask1`, {
+    let LOGIC_API_URL = window.location.protocol;
+    if (LOGIC_API_URL.includes("http")) LOGIC_API_URL = LOGIC_API_URL + "//";
+    LOGIC_API_URL += window.location.hostname + ":5000";
+
+    const output = await fetch(`${LOGIC_API_URL}/webui/processziptask1`, {
       method: "POST",
       body: formData,
+      mode: "no-cors",
       headers: {
         Accept: "application/json",
       },

@@ -1,5 +1,5 @@
 from flask import send_from_directory, abort, render_template, request
-from gandy.app import app
+from gandy.app import app, web_app
 from gandy.get_envs import ENABLE_WEB_UI
 from gandy.tasks.task1.task1_routes import translate_task1_background_job, socketio
 import os
@@ -69,17 +69,17 @@ if ENABLE_WEB_UI:
 
         return send_from_directory(fol_path, file_name, mimetype=mimetype)
 
-    @app.route("/webui", methods=["GET"])
+    @web_app.route("/webui", methods=["GET"])
     def webui_route():
         return render_template("index.html")
     
     ### IMAGES
 
-    @app.route("/webui/list", methods=["GET"])
+    @web_app.route("/webui/list", methods=["GET"])
     def list_files_route():
         return list_files(folder_name="images", file_extension="png")
 
-    @app.route("/webui/resources/<folder_name>/<file_name>", methods=["GET"])
+    @web_app.route("/webui/resources/<folder_name>/<file_name>", methods=["GET"])
     def get_file_route(folder_name: str, file_name: str):
         if folder_name is None:
             raise RuntimeError('Bad folder name.')
@@ -88,14 +88,15 @@ if ENABLE_WEB_UI:
     
     ### VIDEOS
 
-    @app.route("/webui/videolist", methods=["GET"])
+    @web_app.route("/webui/videolist", methods=["GET"])
     def list_video_files_route():
         return list_files(folder_name="videos", file_extension="mp4")
 
-    @app.route("/webui/videoresources/<folder_name>/<file_name>", methods=["GET"])
+    @web_app.route("/webui/videoresources/<folder_name>/<file_name>", methods=["GET"])
     def get_video_file_route(folder_name: str, file_name: str):
         return get_file("videos", user_folder_name=None, file_name=file_name, mimetype="video/mp4")
     
+    # Note that this route uses the main app - not the web app.
     @app.route("/webui/processziptask1", methods=["POST"])
     def process_zipped_images():
         zip_file = request.files.getlist("file")

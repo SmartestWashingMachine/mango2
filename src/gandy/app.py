@@ -1,5 +1,6 @@
 __version__ = "2.0.0"
 
+import threading
 from waitress import serve
 from time import strftime
 import logging
@@ -22,7 +23,8 @@ from gandy.utils.fancy_logger import logger
 import socketio as socketio_pkg
 from time import sleep
 
-app = Flask(__name__, template_folder=os.getcwd() + '/templates', static_folder=os.getcwd() + '/static')
+app = Flask(__name__)
+web_app = Flask(__name__, template_folder=os.getcwd() + '/templates', static_folder=os.getcwd() + '/static')
 
 # ONNX seems to be funky with asynchronous logick magick. With the default ping timeout (5000ms), it's likely that the client will drop the connection midway through the process.
 # Of course, a long ping timeout is not ideal either.
@@ -70,7 +72,14 @@ if ENABLE_WEB_UI:
 
 
 def run_server():
-    serve(app, host='0.0.0.0', port=5000, threads=1)
+    if ENABLE_WEB_UI:
+        logic_thread = threading.Thread(target=lambda: serve(app, host='0.0.0.0', port=5000, threads=1))
+        web_thread = threading.Thread(target=lambda: serve(web_app, host='0.0.0.0', port=5100))
+
+        logic_thread.start()
+        web_thread.start()
+    else:
+        serve(app, host='0.0.0.0', port=5000, threads=1)
     # app.run(host="0.0.0.0", debug=False)
 
 
