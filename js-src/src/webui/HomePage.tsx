@@ -13,6 +13,9 @@ import {
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import usePagination from "./usePagination";
+import { useAlerts } from "../components/AlertProvider";
+
+// Yeah, this is messy. It's just for development purposes though.
 
 const ITEMS_PER_PAGE = 20;
 
@@ -45,6 +48,7 @@ const API_URL = "";
 const PASS_CODE = "not4u";
 
 const HomePage = () => {
+  const pushAlert = useAlerts();
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -157,10 +161,29 @@ const HomePage = () => {
     window.scrollTo(0, 0);
   }, [visListPage]);
 
+  const handleZipUpload = async (e: any) => {
+    const formData = new FormData() as any;
+
+    if (!e.target.files || e.target.files.length !== 1) return;
+    const foundFile = e.target.files[0];
+    formData.append("file", foundFile);
+
+    pushAlert("Processing zip file...");
+
+    const output = await fetch(`${API_URL}/webui/processziptask1`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        Accept: "application/json",
+      },
+    });
+  };
+
   const NUM_COLS = matchDownMd ? 2 : 4;
   const ROW_HEIGHT = matchDownMd ? 150 : 300;
   const ROW_GAP = matchDownMd ? 32 : 64;
 
+  // Dev login view..
   if (!didLogin) {
     return (
       <Stack
@@ -180,6 +203,7 @@ const HomePage = () => {
     );
   }
 
+  // List library view.
   if (!selFolder) {
     const folKeys = Object.keys(folderMap);
 
@@ -201,7 +225,7 @@ const HomePage = () => {
             href="?media=video"
             variant="text"
             color="info"
-            sx={{ marginRight: 16, }}
+            sx={{ marginRight: 16 }}
           >
             Videos
           </Button>
@@ -220,6 +244,15 @@ const HomePage = () => {
             variant="standard"
           />
         </div>
+        <Button variant="outlined" color="primary" component="label">
+          Upload Zip
+          <input
+            type="file"
+            onChange={handleZipUpload}
+            style={{ display: "none" }}
+            accept="application/zip,application/x-zip,application/x-zip-compressed,application/octet-stream"
+          />
+        </Button>
         <ImageList
           sx={{
             width: "100%",
@@ -243,6 +276,7 @@ const HomePage = () => {
               <img
                 src={`${API_URL}/webui/resources/${f}/${folderMap[f][0]}`}
                 style={{}}
+                loading="lazy"
               />
               <ImageListItemBar title={f} />
             </ImageListItem>
@@ -262,11 +296,6 @@ const HomePage = () => {
     curFolder && curFolder.length > idxToUse
       ? `${API_URL}/webui/resources/${selFolder}/${curFolder[idxToUse]}`
       : null;
-
-  // For non-infinite
-  const imgSrc = getImagePath(trueCurIdx);
-
-  const isInfinite = true;
 
   // Selected image view:
 
@@ -292,48 +321,16 @@ const HomePage = () => {
           >
             Back
           </Button>
-          {!isInfinite && (
-            <>
-              <TextField
-                onChange={(e: any) => onChangeCurIdx(e, maxCurIdx)}
-                value={visCurIdx}
-                variant="standard"
-                sx={{ width: "100px !important" }}
-              />
-              <Typography
-                variant="body2"
-                sx={{ marginLeft: 4, marginRight: 2 }}
-              >
-                of {maxCurIdx}
-              </Typography>
-            </>
-          )}
         </div>
       </Fade>
-      {isInfinite ? (
-        Array.from(new Array(maxCurIdx), (_, idx) => (
-          <img
-            src={getImagePath(idx) || undefined}
-            className="imageInnerInfinite"
-            loading="lazy"
-            key={`${idx}img`}
-          />
-        ))
-      ) : (
-        <div
-          className={
-            showImageOptions ? "imageContainer" : "imageContainerExpanded"
-          }
-        >
-          {imgSrc && <img src={imgSrc} className="imageInner" />}
-          <div className="imageLeft" onClick={prevImage}></div>
-          <div
-            className="imageMiddle"
-            onClick={() => setShowImageOptions((s) => !s)}
-          ></div>
-          <div className="imageRight" onClick={nextImage}></div>
-        </div>
-      )}
+      {Array.from(new Array(maxCurIdx), (_, idx) => (
+        <img
+          src={getImagePath(idx) || undefined}
+          className="imageInnerInfinite"
+          loading="lazy"
+          key={`${idx}img`}
+        />
+      ))}
     </Stack>
   );
 };

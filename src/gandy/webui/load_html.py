@@ -1,9 +1,14 @@
-from flask import send_from_directory, abort, render_template
+from flask import send_from_directory, abort, render_template, request
 from gandy.app import app
 from gandy.get_envs import ENABLE_WEB_UI
+from gandy.tasks.task1.task1_routes import translate_task1_background_job, socketio
 import os
 from glob import glob
 from gandy.utils.natsort import natsort
+import zipfile
+from uuid import uuid4
+from PIL import Image
+from io import BytesIO
 
 if ENABLE_WEB_UI:
     print('CWD:')
@@ -90,3 +95,37 @@ if ENABLE_WEB_UI:
     @app.route("/webui/videoresources/<folder_name>/<file_name>", methods=["GET"])
     def get_video_file_route(folder_name: str, file_name: str):
         return get_file("videos", user_folder_name=None, file_name=file_name, mimetype="video/mp4")
+    
+    @app.route("/webui/processziptask1", methods=["POST"])
+    def process_zipped_images():
+        zip_file = request.files.getlist("file")
+        if zip_file is None or not isinstance(zip_file, list) or len(zip_file) > 1:
+            return {}, 400
+        
+        zip_file = zip_file[0]
+
+        files = []
+        with zipfile.ZipFile(zip_file, 'r') as f:
+            for file_name in f.namelist():
+                file_data = f.read(file_name)
+                file_data = BytesIO(file_data)
+                files.append(file_data)
+
+        task_id = uuid4().hex
+
+        images_folder_path = os.path.expanduser(f"~/Documents/Mango/images/")
+
+        def _on_image_done(image: Image.Image, img_idx: int, img_name_no_ext: str):
+            new_fol = f'{images_folder_path}/{task_id}/'
+            os.makedirs(new_fol, exist_ok=True)
+
+            image.save(f'{new_fol}{img_name_no_ext}.png')
+
+        socketio.start_background_task(
+            translate_task1_background_job,
+            files,
+            task_id,
+            _on_image_done
+        )
+
+        return {}, 200

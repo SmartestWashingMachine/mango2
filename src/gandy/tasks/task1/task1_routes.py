@@ -42,6 +42,7 @@ def on_progress(progress: int, socketio):
 def translate_task1_background_job(
     images,
     task_id: str,
+    on_image_done = None,
 ):
     with logger.begin_event("Task1") as ctx:
         try:
@@ -161,29 +162,32 @@ def translate_task1_background_job(
 
                 img_name_no_ext = os.path.splitext(img_name)[0]
 
-                with logger.begin_event('Base64 encode image'):
-                    if is_amg:
-                        new_image_base64 = encode_image(new_image["image"])
-                        annotations = new_image["annotations"]
+                if on_image_done is None:
+                    with logger.begin_event('Base64 encode image'):
+                        if is_amg:
+                            new_image_base64 = encode_image(new_image["image"])
+                            annotations = new_image["annotations"]
 
-                        new_img_name = f"{img_name_no_ext}.amg"
-                    else:
-                        new_image_base64 = encode_image(new_image)
-                        annotations = []
+                            new_img_name = f"{img_name_no_ext}.amg"
+                        else:
+                            new_image_base64 = encode_image(new_image)
+                            annotations = []
 
-                        new_img_name = f"{img_name_no_ext}.png"
+                            new_img_name = f"{img_name_no_ext}.png"
 
-                socketio.patched_emit(
-                    "item_task1",
-                    {
-                        "image": new_image_base64,
-                        "imageName": new_img_name,
-                        "annotations": annotations,
-                        "taskId": task_id,
-                        "remainingImages": len(images_data) - (1 + img_idx)
-                    },
-                )
-                socketio.sleep()
+                    socketio.patched_emit(
+                        "item_task1",
+                        {
+                            "image": new_image_base64,
+                            "imageName": new_img_name,
+                            "annotations": annotations,
+                            "taskId": task_id,
+                            "remainingImages": len(images_data) - (1 + img_idx)
+                        },
+                    )
+                    socketio.sleep()
+                else:
+                    on_image_done(new_image['image'], img_idx, img_name_no_ext)
 
             socketio.patched_emit("done_translating_task1", { "taskId": task_id, })
             socketio.sleep()

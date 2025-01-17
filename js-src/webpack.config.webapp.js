@@ -14,7 +14,7 @@ module.exports = [
         {
           test: /\.ts(x?)$/,
           include: /src/,
-          use: [{ loader: 'ts-loader' }]
+          use: [{ loader: 'ts-loader', options: { 'transpileOnly': true, } }]
         },
         {
           test: /\.css$/i,
