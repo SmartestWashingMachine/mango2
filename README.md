@@ -1,6 +1,6 @@
 # Mango 2
 
-Mango 2 allows you to machine translate Japanese manga images to English. It can also be used for games if you have Textractor setup, or some other tool that can copy game text to the clipboard. All the translation models support using previous sentences as additional contextual info.
+Mango 2 is a tool to machine translate Japanese manga images to English. It can also be used for games if you have Textractor setup, or some other tool that can copy game text to the clipboard. All the translation models support using previous sentences as additional contextual info.
 
 **All the AI models are installed locally** - no need to worry about rate limits!
 
@@ -44,11 +44,11 @@ These models are still in the process of tuning - results not final.
     <img src="examples/s3.jpg" width="500" style="margin-bottom: 8px" />
     <img src="examples/s4.jpg" width="500" />
 </p>
-<span style="font-size: 8px; font-style: italic;">(No way we can trust this guy, right?)</span>
+<span style="font-size: 8px; font-style: italic; display: block;">(No way we can trust this guy, right?)</span>
 
 # Installation
 
-1. [Download MangoBase.ZIP.](https://drive.google.com/file/d/1JQ2L5WAU8c54LQRUZm7EZMt9uDMrC37o/view?usp=sharing)
+1. [Download MangoBase2.1.ZIP.](https://drive.google.com/file/d/1JQ2L5WAU8c54LQRUZm7EZMt9uDMrC37o/view?usp=sharing)
 2. Unzip the file.
 3. Open "mango.exe"
 
@@ -57,7 +57,6 @@ These models are still in the process of tuning - results not final.
 - Windows 11 (some users report it working with older Windows versions... not 100% sure on this)
 - 10GB disk space
 - 8GB RAM
-
 
 A Nvidia GPU should **NOT** be required for CPU usage. In fact, the translation model was optimized for CPU usage. A Nvidia GPU is only required if you want even faster translations (4GB VRAM if accelerating Detection and OCR models only, ~16GB VRAM for accelerating everything).
 
@@ -73,20 +72,37 @@ Mango 2 comes preinstalled with a basic model pack. All of the model packs here 
 
 Unzipping a model pack will reveal a `models` folder. Drag this `models` folder to where `mango.exe` is located.
 
-- Additional text box and line models [coming soon]
-- Japanese-2-English Qualia v5.4 [on hold - busy experimenting with Madness]
-- ~~Japanese-2-English Radical v1.2 [coming way later...? Results unsatisfactory so far]~~ [Thrown out - very poor]
-- Japanese-2-English Madness v1.0 [coming soon]
-- Japanese Lite OCR v0.5 + Japanese Massive OCR v1.0 [coming very soon]
-- Escalator v0.1 [coming probably never. Very hard to tune this one to a satisfactory level]
-- Reranking models v0.9 [coming soon]
-- Pronoun post editing models v0.2 [coming soon]
-- Inpainting edge model v0.1 [coming soon, but of poor quality]
-- Paintball v1.0 [coming soon... maybe? It's still speculative]
-- Korean-2-English OCR + Madness models [coming soon]
-- Chinese-2-English OCR + Madness models [coming soon]
-- Korean-2-English Qualia v1.0 [coming soon maybe?]
-- Chinese-2-English Qualia v1.0 [coming soon maybe?]
+- Additional speech bubble and line models [Useful for fanart or CG images]
+- Japanese-2-English Qualia [Not recommended - this is the old model.]
+- Japanese-2-English Madness v2.1
+- Other Japanese OCR models
+- Escalator v0.1 [Coming probably never. Very hard to tune this one to a satisfactory level]
+- Korean-2-English Madness models [coming soon]
+- Chinese-2-English Madness models [coming soon]
+- Korean-2-English OCRs [coming soon]
+- Chinese-2-English OCR [coming soon maybe?]
+
+#### Poor model packs
+
+- ~~Japanese-2-English Radical v1.2 [coming way later...? Results unsatisfactory so far]~~ [Thrown out - very poor. RoPE does not generalize well in MT.]
+- ~~Reranking models v0.9 [coming soon.]~~ (Of questionable quality)
+- ~~Pronoun post editing models v0.2 [coming soon, but of questionable quality]~~ (Mediocre)
+- ~~Inpainting edge model v0.1 [coming soon, but of poor quality]~~ (Poor quality, only good variant would be a diffusion model but that's too heavy for general use.)
+- ~~Paintball v1.0 [coming soon... maybe? It's still speculative]~~
+- ~~Korean-2-English Qualia~~ [Does not generalize well - going to skip it and go straight for Madness.]
+- ~~Chinese-2-English Qualia~~ [Does not generalize well - going to skip it and go straight for Madness.]
+
+# API usage
+
+While Mango 2 is open, you can also translate strings by making a `GET` call to `localhost:5000/translate` with the string to translate being the query parameter `text`. 
+
+For example:
+
+`localhost:5000/translate?text=こんにちは` would translate `こんにちは`, returning a string (body) with response code `200`.
+
+Errors return the string `ERROR (search logs for "Task7 Error")` with response code `201`.
+
+The currently active translation model will be used to translate the string, regardless of what language the input string is in. You can change the active model in the options menu.
 
 # Where are the benchmarks?
 

@@ -8,6 +8,7 @@ from gandy.utils.fancy_logger import logger
 
 
 @app.route("/processtask7", methods=["GET"])
+@app.route("/translate", methods=["GET"])
 def process_task7_route():
     with logger.begin_event("Task7") as ctx:
         try:
