@@ -19,6 +19,7 @@ import ImageFolderInputDialog from "./components/ImageFolderInputDialog";
 import { useInstalledModelsRetriever } from "../../utils/useInstalledModelsRetriever";
 import { v4 as uuidv4 } from "uuid";
 import { useImageViewMode } from "../../components/ImageViewModeProvider";
+import { getDirName } from "../../utils/getDirName";
 
 const RightPane = memo(
   ({
@@ -184,7 +185,7 @@ const ImageView = () => {
 
   // Used when uploading images to be translated.
   const [files, setFiles] = useState<any>(null);
-  const [createFolderOpen, setCreateFolderOpen] = useState(false);
+  const [createFolderName, setCreateFolderName] = useState<string | null>(null);
 
   const [cleaningMode, setCleaningMode] = useState("simple");
   const [redrawingMode, setRedrawingMode] = useState("amg_convert");
@@ -193,14 +194,14 @@ const ImageView = () => {
   const [tileHeight, setTileHeight] = useState(-2000);
 
   const handleCeateFolderNameClose = () => {
-    setCreateFolderOpen(false);
+    setCreateFolderName(null);
   };
 
   const handleCreateFolderNameDone = useCallback(
     async (folderName: string) => {
       const taskId = uuidv4();
 
-      setCreateFolderOpen(false);
+      setCreateFolderName(null);
 
       startTranslating(); // Ensure the client is loading.
 
@@ -257,9 +258,14 @@ const ImageView = () => {
   );
 
   const handleSelectFiles = useCallback(async (newFiles: any) => {
+    if (newFiles.length === 0) return;
+
     setFiles(newFiles);
 
-    setCreateFolderOpen(true);
+    const firstFilePath = newFiles[0].path;
+
+    const firstFileFolder = getDirName(firstFilePath);
+    setCreateFolderName(firstFileFolder);
   }, []);
 
   useEffect(() => {
@@ -427,7 +433,7 @@ const ImageView = () => {
       pendingImageNames={pendingImageNames}
       onSaveEditedImage={handleSaveEditedImage}
       selectedPath={selectedPath}
-      canPageWithKeys={!createFolderOpen}
+      canPageWithKeys={createFolderName === null}
     />
   ) : (
     <ImageInput
@@ -450,10 +456,12 @@ const ImageView = () => {
     >
       {leftPane}
       <ImageFolderInputDialog
-        open={createFolderOpen}
+        open={createFolderName !== null}
         onDone={handleCreateFolderNameDone}
         onClose={handleCeateFolderNameClose}
         rootItem={rootItem}
+        folderName={createFolderName}
+        setFolderName={setCreateFolderName}
       />
     </BaseView>
   );

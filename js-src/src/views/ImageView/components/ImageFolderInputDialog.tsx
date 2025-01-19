@@ -16,18 +16,24 @@ type ImageFolderInputDialogProps = {
   open: boolean;
   rootItem: FileInfo | null;
   onClose: () => void;
+  folderName: string | null;
+  setFolderName: (s: string) => void;
 };
 
 const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
-  const [folderName, setFolderName] = useState("");
+  let { folderName, setFolderName } = props;
+  folderName = folderName || "";
+
   const ref = useRef<any>(null);
 
   useEffect(() => {
-    setFolderName("");
+    // setFolderName("");
     ref.current?.focus();
   }, [open]);
 
-  const onChange = (e: any) => setFolderName(e.currentTarget.value);
+  const onChange = (e: any) => {
+    props.setFolderName(e.currentTarget.value);
+  };
 
   const badFolderName =
     !isValidFilename(folderName) && folderName.trim().length > 0;
