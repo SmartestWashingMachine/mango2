@@ -11,7 +11,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import usePagination from "./usePagination";
 import { useAlerts } from "../components/AlertProvider";
 
@@ -52,8 +52,9 @@ const HomePage = () => {
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [didLogin, setDidLogin] = useState(false);
-  const [passcode, setPasscode] = useState("");
+  const [currentView, setCurrentView] = useState<"loading" | "list" | "page">(
+    "loading"
+  );
 
   const [search, setSearch] = useState("");
 
@@ -66,9 +67,6 @@ const HomePage = () => {
   // Date for each folder in folderMap.
   const [folderDates, setFolderDates] = useState<Record<string, number>>({});
 
-  // Current selected image IDX.
-  const [visCurIdx, trueCurIdx, flipCurIdx, onChangeCurIdx] = usePagination();
-
   const [showImageOptions, setShowImageOptions] = useState(true);
 
   const curFolder =
@@ -76,87 +74,74 @@ const HomePage = () => {
 
   const maxCurIdx = curFolder?.length || 1;
 
-  const nextImage = () => {
-    const didSucceed = flipCurIdx(trueCurIdx + 1, false, maxCurIdx);
-    if (didSucceed) changeSearchParams(selFolder, trueCurIdx + 1);
-  };
+  // For the "base" list view.
+  const retrieveListOfImages = useCallback(() => {
+    let canceled = false;
 
-  const prevImage = () => {
-    const didSucceed = flipCurIdx(trueCurIdx - 1, false, maxCurIdx);
-    if (didSucceed) changeSearchParams(selFolder, trueCurIdx - 1);
-  };
+    const asyncCb = async () => {
+      const output = await fetch(`${API_URL}/webui/list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+      if (output.status !== 200) throw Error("Invalid status code.");
 
-  // Called once on page load. For listing all data.
-  useEffect(() => {
-    if (didLogin) {
-      let canceled = false;
+      const data = await output.json();
+      if (!data || !data.folderMap) throw Error("Invalid data.");
+      if (canceled) return;
+      setFolderMap(data.folderMap);
+      setFolderDates(data.folderDates);
+    };
 
-      const asyncCb = async () => {
-        const output = await fetch(`${API_URL}/webui/list`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        });
-        if (output.status !== 200) throw Error("Invalid status code.");
+    asyncCb();
 
-        const data = await output.json();
-        if (!data || !data.folderMap) throw Error("Invalid data.");
-        if (canceled) return;
-        setFolderMap(data.folderMap);
-        setFolderDates(data.folderDates);
-      };
+    return () => {
+      canceled = true;
+    };
+  }, []);
 
-      asyncCb();
-
-      return () => {
-        canceled = true;
-      };
-    }
-  }, [didLogin]);
-
-  // Called once on page load. For new tabs.
-  useEffect(() => {
-    if (didLogin && Object.keys(folderMap).length > 0) {
+  // For new tabs.
+  const retrieveImagesFromRouteParams = useCallback(() => {
+    if (Object.keys(folderMap).length > 0) {
       let canceled = false;
 
       const params = new URLSearchParams(window.location.search);
       const routeFolder = params.get("r");
-      const routeCurIdx = params.get("i");
 
-      if (routeFolder && routeCurIdx && !canceled) {
+      if (routeFolder && !canceled) {
         setSelFolder(routeFolder);
-        // We assume the index is within max bounds here.
-        flipCurIdx(parseInt(routeCurIdx, 10), false, 1000);
       }
 
       return () => {
         canceled = true;
       };
     }
-  }, [didLogin, folderMap]);
+  }, [folderMap]);
+
+  // Called once on page load. For listing all data.
+  useEffect(() => {
+    const noItemsInList = !folderMap || Object.keys(folderMap).length === 0;
+    const currentlyViewingImage = true; //true;//selFolder !== null && selFolder !== undefined;
+
+    if (noItemsInList) {
+      // && !currentlyViewingImage) {
+      retrieveListOfImages();
+    }
+
+    if (currentlyViewingImage) {
+      retrieveImagesFromRouteParams();
+    }
+  }, [retrieveImagesFromRouteParams, selFolder, folderMap]);
 
   const selectFolder = (f: string) => {
-    flipCurIdx(0, false, maxCurIdx);
-
     setShowImageOptions(true);
     setSelFolder(f);
     changeSearchParams(f);
   };
 
-  const authenticate = () => {
-    if (passcode === PASS_CODE) {
-      setDidLogin(true);
-      localStorage.setItem("passcode", passcode);
-    }
-  };
-
-  useEffect(() => {
-    const stored = localStorage.getItem("passcode");
-    if (stored === PASS_CODE) setDidLogin(true);
-  }, []);
-
+  // Scroll on new list page.
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [visListPage]);
@@ -187,26 +172,6 @@ const HomePage = () => {
   const NUM_COLS = matchDownMd ? 2 : 4;
   const ROW_HEIGHT = matchDownMd ? 150 : 300;
   const ROW_GAP = matchDownMd ? 32 : 64;
-
-  // Dev login view..
-  if (!didLogin) {
-    return (
-      <Stack
-        spacing={2}
-        sx={{ padding: 4, height: "100vh", justifyContent: "center" }}
-      >
-        <TextField
-          onChange={(e: any) => setPasscode(e.currentTarget.value)}
-          value={passcode}
-          variant="filled"
-          label="Passcode"
-        />
-        <Button color="primary" onClick={authenticate}>
-          Login
-        </Button>
-      </Stack>
-    );
-  }
 
   // List library view.
   if (!selFolder) {
@@ -249,7 +214,7 @@ const HomePage = () => {
             variant="standard"
           />
         </div>
-        <Button variant="outlined" color="primary" component="label">
+        <Button variant="outlined" color="primary" component="label" fullWidth>
           Upload Zip
           <input
             type="file"
@@ -275,7 +240,7 @@ const HomePage = () => {
                 e.preventDefault();
                 selectFolder(f);
               }}
-              href={`?r=${f}&i=0`}
+              href={`?r=${f}`}
               component="a"
             >
               <img
@@ -305,7 +270,10 @@ const HomePage = () => {
   // Selected image view:
 
   return (
-    <Stack spacing={2} sx={{ padding: 0, overflowY: "hidden !important" }}>
+    <Stack
+      spacing={2}
+      sx={{ padding: 0, overflowY: "hidden !important", marginBottom: "4px" }}
+    >
       <Fade
         mountOnEnter
         unmountOnExit
