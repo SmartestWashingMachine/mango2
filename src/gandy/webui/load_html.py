@@ -1,4 +1,4 @@
-from flask import send_from_directory, abort, render_template, request
+from flask import send_from_directory, send_file, abort, render_template, request
 from gandy.app import app, web_app
 from gandy.get_envs import ENABLE_WEB_UI
 from gandy.tasks.task1.task1_routes import translate_task1_background_job, socketio
@@ -67,7 +67,13 @@ if ENABLE_WEB_UI:
         if not os.path.exists(fol_path) or not os.path.exists(file_path):
             abort(404)
 
-        return send_from_directory(fol_path, file_name, mimetype=mimetype)
+        img = Image.open(file_path)
+
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+
+        return send_file(buffer, mimetype='image/jpeg')
 
     @web_app.route("/webui", methods=["GET"])
     def webui_route():
