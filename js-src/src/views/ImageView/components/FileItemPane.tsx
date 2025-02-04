@@ -37,6 +37,12 @@ export type FileItemProps = BaseFileItem & {
   onRootSelect: () => void;
 };
 
+const trimFileName = (s: string) => {
+  if (s.length > 20) {
+    return `${s.substring(0, 20)}...`;
+  } else return s;
+};
+
 const FileItemPane = ({
   fileName,
   fullPath,
@@ -69,7 +75,7 @@ const FileItemPane = ({
   return (
     <StyledTreeItem
       itemId={fullPath}
-      label={isRoot ? "Library" : fileName}
+      label={isRoot ? "Library" : trimFileName(fileName)}
       onClick={handleClick}
       className={divClasses}
       onContextMenu={handleMenuOpen}
