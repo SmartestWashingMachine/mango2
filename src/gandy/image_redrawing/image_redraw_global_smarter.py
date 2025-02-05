@@ -133,16 +133,26 @@ class CacheDraw():
 
 SCALE_FACTOR = 4 # Scale image up then down for sharper looking texts. Ridiculous, isn't it? Thanks PIL...
 
-def upscale_items(image: Image.Image, bboxes):
+def create_upscaled_text_canvas(image: Image.Image, bboxes):
     mapped_bboxes = [[b[0] * SCALE_FACTOR, b[1] * SCALE_FACTOR, b[2] * SCALE_FACTOR, b[3] * SCALE_FACTOR] for b in bboxes]
 
-    up_image = image.resize((int(image.width * SCALE_FACTOR), int(image.height * SCALE_FACTOR)), resample=Image.LANCZOS)
+    up_image = Image.new('RGBA', (int(image.width * SCALE_FACTOR), int(image.height * SCALE_FACTOR)), (255, 255, 255, 0))
     up_image.tile_width = int(up_image.width * SCALE_FACTOR)
     up_image.tile_height = int(up_image.height * SCALE_FACTOR)
 
     return up_image, mapped_bboxes
 
-def downscale_items(image: Image.Image):
+def create_text_canvas(image: Image.Image):
+    text_canvas = Image.new('RGBA', (image.width, image.height),  (255, 255, 255, 0))
+
+    # We might be tiling the image (e.g: a long vertical comic),
+    # in which case we want to shift the boxes by the size of a TILE, rather than the entire large IMAGE size.
+    text_canvas.tile_width = int(image.width * (config_state.tile_width / 100))
+    text_canvas.tile_height = int(image.height * (config_state.tile_height / 100))
+
+    return text_canvas
+
+def downscale_text_canvas(image: Image.Image):
     # By the point we downscale we don't care for the tile sizes anymore.
     return image.resize((int(image.width // SCALE_FACTOR), int(image.height // SCALE_FACTOR)), resample=Image.LANCZOS)
 
@@ -208,28 +218,24 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         target_texts: List[str],
         text_colors: List[str],
     ):
+        # return image # DEV TODO
+
+        original_image_width = image.width
+        original_image_height = image.height
+        should_upscale = original_image_width < 10000 and original_image_height < 10000
+
         with logger.begin_event("Copy image"):
             if debug_state.debug or debug_state.debug_redraw:
                 self.save_recording(image, bboxes, target_texts, text_colors)
             # Initialize the TextBoxes and other vars.
 
-            original_image_width = image.width
-            original_image_height = image.height
-            if original_image_width < 10000 and original_image_height < 10000:
-                new_image = image.copy().convert('RGB')
+        with logger.begin_event("Create upscaled text canvas"):
+            if should_upscale:
+                text_canvas, bboxes = create_upscaled_text_canvas(image, bboxes) # Tile sizes are changed here too accordingly.
             else:
-                new_image = image.convert('RGB')
+                text_canvas = create_text_canvas(image)
 
-        with logger.begin_event("Upscale image"):
-            # We might be tiling the image (e.g: a long vertical comic),
-            # in which case we want to shift the boxes by the size of a TILE, rather than the entire large IMAGE size.
-            new_image.tile_width = int(new_image.width * (config_state.tile_width / 100))
-            new_image.tile_height = int(new_image.height * (config_state.tile_height / 100))
-
-            if original_image_width < 10000 and original_image_height < 10000:
-                new_image, bboxes = upscale_items(new_image, bboxes) # Tile sizes are changed here too accordingly.
-
-        draw = ImageDraw.Draw(new_image)
+        draw = ImageDraw.Draw(text_canvas)
         draw.fontmode = "L"
 
         def _make_metadata(bb: SpeechBubble, t: str):
@@ -240,25 +246,25 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
 
         with logger.begin_event("Compute font size"):
             cached_draw = CacheDraw(draw=draw)
-            container_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=cached_draw, img=new_image, container='make', metadata={}) for (bb, t) in zip(bboxes, target_texts)]
-            text_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=cached_draw, img=new_image, container='make', metadata=_make_metadata(bb, t)) for (bb, t) in zip(bboxes, target_texts)]
+            container_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=cached_draw, img=text_canvas, container='make', metadata={}) for (bb, t) in zip(bboxes, target_texts)]
+            text_boxes = [TextBox.from_speech_bubble(bb, t, font_size=-1, draw=cached_draw, img=text_canvas, container='make', metadata=_make_metadata(bb, t)) for (bb, t) in zip(bboxes, target_texts)]
 
             # Get the acceptable font size range.
-            min_font_size, max_font_size = compute_min_max_font_sizes(new_image)
+            min_font_size, max_font_size = compute_min_max_font_sizes(text_canvas)
 
             # Then pick a font size.
             # The font size is set in each text box inside this method.
             # Actually... Only the max font size is used to account for in this method.
-            picked_font_size = declutter_font_size(text_boxes, min_font_size, max_font_size, new_image, container_boxes)
+            picked_font_size = declutter_font_size(text_boxes, min_font_size, max_font_size, text_canvas, container_boxes)
             for idx, b in enumerate(text_boxes):
                 # container_boxes is used to compute the X and Y offsets to center the box.
                 # container_text_boxes is used to determine if the text box is nearby the original detection area.
                 # the metadata here is used for recentering the box after all actions are performed on all boxes.
-                b.metadata['container_text_box'] = TextBox.from_speech_bubble(b.metadata['bb'], b.metadata['t'], font_size=picked_font_size, draw=draw, img=new_image, container='make', metadata={})
+                b.metadata['container_text_box'] = TextBox.from_speech_bubble(b.metadata['bb'], b.metadata['t'], font_size=picked_font_size, draw=draw, img=text_canvas, container='make', metadata={})
                 b.metadata['container_box'] = container_boxes[idx]
 
         with logger.begin_event("Compute box positions"):
-            top_right_corner = (new_image.width, 0)
+            top_right_corner = (text_canvas.width, 0)
             def _dist(p1, p2):
                 return (((p1[0] - p2[0]) ** 2) + (p1[1] - p2[1]) ** 2) ** 0.5
 
@@ -269,24 +275,28 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
                 cur_box = text_boxes[idx]
                 others = text_boxes[:idx] + text_boxes[(idx + 1):]
 
-                better_box, other_boxes = self.better_box(cur_box, others, new_image)
+                better_box, other_boxes = self.better_box(cur_box, others, text_canvas)
                 # text_boxes[idx] = better_box
 
                 text_boxes = [better_box] + other_boxes
 
-            text_boxes = try_center_boxes(new_image, text_boxes)
-            text_boxes = try_center_boxes(new_image, text_boxes) # Center again! (As some of the next boxes need to be centered first)
+            text_boxes = try_center_boxes(text_canvas, text_boxes)
+            text_boxes = try_center_boxes(text_canvas, text_boxes) # Center again! (As some of the next boxes need to be centered first)
 
         # Actually draw the text on the image.
         with logger.begin_event("Draw text"):
-            self.redraw_from_tboxes(new_image, draw, text_boxes, text_colors)
+            self.redraw_from_tboxes(text_canvas, draw, text_boxes, text_colors)
 
         print_spam('Drawn Boxes:')
         print_spam(text_boxes)
 
-        with logger.begin_event("Downscale image", original_size=[original_image_width, original_image_height], cur_size=new_image.size):
-            if original_image_width < 10000 and original_image_height < 10000:
-                new_image = downscale_items(new_image)
+        with logger.begin_event("Downscale text canvas", original_size=[original_image_width, original_image_height], cur_size=text_canvas.size):
+            if should_upscale:
+                text_canvas = downscale_text_canvas(text_canvas)
+
+        with logger.begin_event("Paste text canvas onto image"):
+            new_image = Image.alpha_composite(image.convert('RGBA'), text_canvas)
+
         return new_image
 
     def save_recording(self, image, bboxes, target_texts, text_colors):
