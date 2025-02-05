@@ -143,7 +143,7 @@ def create_upscaled_text_canvas(image: Image.Image, bboxes):
     return up_image, mapped_bboxes
 
 def create_text_canvas(image: Image.Image):
-    text_canvas = Image.new('RGBA', (image.width, image.height),  (255, 255, 255, 0))
+    text_canvas = Image.new('RGBA', (image.width, image.height), (255, 255, 255, 0))
 
     # We might be tiling the image (e.g: a long vertical comic),
     # in which case we want to shift the boxes by the size of a TILE, rather than the entire large IMAGE size.
@@ -154,7 +154,7 @@ def create_text_canvas(image: Image.Image):
 
 def downscale_text_canvas(image: Image.Image):
     # By the point we downscale we don't care for the tile sizes anymore.
-    return image.resize((int(image.width // SCALE_FACTOR), int(image.height // SCALE_FACTOR)), resample=Image.LANCZOS)
+    return image.resize((int(image.width // SCALE_FACTOR), int(image.height // SCALE_FACTOR)), resample=Image.BILINEAR)
 
 class ImageRedrawGlobalSmarter(BaseImageRedraw):
     def __init__(self, actions: List[MoveAction]):
