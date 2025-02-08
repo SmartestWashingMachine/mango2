@@ -12,6 +12,7 @@ export type BoxOptionsFrontend = {
   removeSpeaker: boolean; // Removes speaker in string format: <SPEAKER>: <TEXT>
   hideKey: string;
   enabled: boolean;
+  autoEnterTime: number;
 };
 
 export type BoxOptionsBackend = {

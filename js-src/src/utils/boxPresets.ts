@@ -37,6 +37,7 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
       hideKey: "Escape",
       spellingCorrectionKey: "Escape",
       enabled: true,
+      autoEnterTime: 0,
     },
   },
   {
@@ -69,6 +70,7 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
       hideKey: "Escape",
       spellingCorrectionKey: "Escape",
       enabled: true,
+      autoEnterTime: 0,
     },
   },
   {
@@ -101,6 +103,7 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
       hideKey: "Escape",
       spellingCorrectionKey: "Escape",
       enabled: true,
+      autoEnterTime: 0,
     },
   },
 ];

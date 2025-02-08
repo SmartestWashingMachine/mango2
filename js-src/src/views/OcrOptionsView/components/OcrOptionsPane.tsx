@@ -47,6 +47,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
     changeValue("fadeAwayTime", parsed);
   };
 
+  const updateAutoEnterTime = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.currentTarget;
+    const parsed = parseInt(value, 10);
+
+    if (!Number.isSafeInteger(parsed) || parsed < 0) return;
+
+    changeValue("autoEnterTime", parsed);
+  };
+
   const updateActivationKey = (key: string) =>
     changeValue("activationKey", key);
 
@@ -280,6 +289,19 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               tooltip="Automatically translate the box contents whenever the clipboard has changed, using the clipboard as the contents."
               label="Listen to Clipboard"
             />
+          ),
+          "Auto Enter": (
+            <Tooltip
+              title="If greater than 0, then after being translated, the ENTER key will be automatically pressed after that many seconds."
+              placement="top-start"
+            >
+              <TextField
+                label="Auto Enter"
+                variant="standard"
+                onChange={updateAutoEnterTime}
+                defaultValue={props.autoEnterTime}
+              />
+            </Tooltip>
           ),
         },
         Performance: {

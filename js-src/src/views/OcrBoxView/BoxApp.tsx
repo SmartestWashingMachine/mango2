@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { CssBaseline } from "@mui/material";
 import OcrBoxPane from "./components/BoxPane";
-import { listenTask3Updates } from "../../flaskcomms/ocrBoxFrontendComms";
+import {
+  listenTask3Updates,
+  triggerEnter,
+} from "../../flaskcomms/ocrBoxFrontendComms";
 import { BoxOptionsFrontend } from "../../types/BoxOptions";
 import { MainGateway } from "../../utils/mainGateway";
 
@@ -27,6 +30,10 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
 
   const [hide, setHide] = useState(false);
   const [pause, setPause] = useState(false);
+
+  const [autoEnterTimerId, setAutoEnterTimerId] =
+    useState<NodeJS.Timeout | null>();
+  const [autoEnterTime, setAutoEnterTime] = useState<number | null>(null);
 
   useEffect(() => {
     document.body.style.backgroundColor = "rgba(255, 255, 255, 0.0)"; // for fade-in. this gives a transparent window.
@@ -65,7 +72,14 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
       await MainGateway.connectedOcrBox(boxId, false);
     };
 
-    const socket = listenTask3Updates(boxId, beginCb, doneCb, streamCb, connectCb, disconnectCb);
+    const socket = listenTask3Updates(
+      boxId,
+      beginCb,
+      doneCb,
+      streamCb,
+      connectCb,
+      disconnectCb
+    );
 
     const cleanup = () => {
       socket.disconnect();
@@ -78,6 +92,30 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
       cleanup();
     };
   }, [removeSpeaker, useStream, boxId]);
+
+  useEffect(() => {
+    if (!loading && autoEnterTime !== null && autoEnterTime > 0) {
+      const timerId = setTimeout(() => {
+        triggerEnter();
+        setAutoEnterTimerId(null);
+      }, autoEnterTime * 1000);
+
+      setAutoEnterTimerId(timerId);
+    }
+  }, [loading, autoEnterTime]);
+
+  useEffect(() => {
+    if (loading && autoEnterTimerId) {
+      clearTimeout(autoEnterTimerId);
+      setAutoEnterTimerId(null);
+    }
+
+    return () => {
+      if (autoEnterTimerId) {
+        clearTimeout(autoEnterTimerId);
+      }
+    };
+  }, [loading, autoEnterTimerId]);
 
   /**
    * Retrieve initial box data from the electron backend.
@@ -96,6 +134,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
         setOptions(boxOptions);
         setRemoveSpeaker(boxOptions?.removeSpeaker);
         setUseStream(boxOptions?.useStream);
+        setAutoEnterTime(boxOptions?.autoEnterTime);
 
         if (boxOptions.listenClipboard) {
           setText(CLIPBOARD_COPY_DEFAULT_TEXT);

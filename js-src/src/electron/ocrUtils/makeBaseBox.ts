@@ -26,6 +26,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   hideKey: "Escape",
   spellingCorrectionKey: "Escape",
   enabled: true,
+  autoEnterTime: 0,
 };
 
 export const makeBaseBox = (boxId: string) => {

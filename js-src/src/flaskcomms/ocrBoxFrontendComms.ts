@@ -6,16 +6,16 @@ export const listenTask3Updates = (
   doneCb: (sourceText: string[], targetText: string[]) => void,
   streamCb?: (targetText: string) => void,
   connectCb?: () => void,
-  disconnectCb?: () => void,
+  disconnectCb?: () => void
 ) => {
-  const socket = makeSocket({ transports: ["websocket"], upgrade: false, }); // Disable long polling fallback, as SocketIO does not force a re-upgrade on failure.
+  const socket = makeSocket({ transports: ["websocket"], upgrade: false }); // Disable long polling fallback, as SocketIO does not force a re-upgrade on failure.
 
-  socket.on('connect', () => {
+  socket.on("connect", () => {
     if (!connectCb) return;
     connectCb();
   });
 
-  socket.on('disconnect', () => {
+  socket.on("disconnect", () => {
     if (!disconnectCb) return;
     disconnectCb();
   });
@@ -73,4 +73,16 @@ export const listenTask3Updates = (
   });
 
   return socket;
+};
+
+export const triggerEnter = async () => {
+  const apiUrl = "http://localhost:5000/triggerenter";
+
+  await fetch(apiUrl, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
 };
