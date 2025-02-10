@@ -36,7 +36,17 @@ const addToTextHistory: GatewayAction = {
         uuid: newIds !== null && newIds !== undefined ? newIds[i] : uuidv4(),
       };
 
-      state.texts.push(text);
+      // Replace instead if the last ID is the same. Used for generic translation tasks (/translate).
+      if (
+        state.texts.length > 0 &&
+        state.texts[state.texts.length - 1].uuid === text.uuid &&
+        state.texts[state.texts.length - 1].targetText[0].length < // Nested lists. I forgot why.
+          text.targetText[0].length
+      ) {
+        state.texts[state.texts.length - 1] = text;
+      } else {
+        state.texts.push(text);
+      }
     }
 
     // TODO: Use typing.

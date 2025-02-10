@@ -5,7 +5,7 @@ from gandy.utils.replace_terms import replace_many
 
 class SocketStreamer(TextStreamer):
     def __init__(
-        self, tokenizer=None, skip_prompt: bool = False, box_id=None, **decode_kwargs
+        self, tokenizer=None, skip_prompt: bool = False, box_id=None, metadata={}, **decode_kwargs
     ):
         decode_kwargs["skip_special_tokens"] = True
 
@@ -13,6 +13,7 @@ class SocketStreamer(TextStreamer):
 
         self.box_id = box_id
         self.old_text = None
+        self.metadata = metadata
 
     # This is a slightly more optimized put for our models.
     # Most code from TextStreamer.
@@ -51,14 +52,17 @@ class SocketStreamer(TextStreamer):
 
         text = replace_many(text, config_state.target_terms, ctx=None)
 
+        data_to_send = {
+            "text": text,
+            "boxId": self.box_id,
+            "sourceText": [],
+            **self.metadata,
+        }
+
         # This is where the "magic" happens.
         socketio.patched_emit(
             "item_stream",
-            {
-                "text": text,
-                "boxId": self.box_id,
-                "sourceText": [],
-            },
+            data_to_send,
         )
         socketio.sleep()
 

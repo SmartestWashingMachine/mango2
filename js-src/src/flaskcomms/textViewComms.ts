@@ -83,7 +83,7 @@ export const pollTranslateTextStatus = (
   });
 
 export const pollGenericTranslateStatus = (
-  itemCb: (sourceText: string, targetText: string) => void
+  streamCb: (genericId: string, sourceText: string, text: string) => void
 ) => {
   const socket = makeSocket();
 
@@ -95,10 +95,13 @@ export const pollGenericTranslateStatus = (
     }
   };
 
-  socket.on("done_translating_generic", (data) => {
-    if (data && data.text && data.sourceText) {
-      itemCb(data.sourceText, data.text);
-    }
+  socket.on("item_stream", (data) => {
+    if (!streamCb) return;
+
+    // The genericId is the key here - it tells us that this is a generic translation task (not one related to an OCR box).
+    if (!data || !data.genericId || !data.text || !data.sourceText) return;
+
+    streamCb(data.genericId, data.sourceText, data.text);
   });
 
   return cleanupFn;

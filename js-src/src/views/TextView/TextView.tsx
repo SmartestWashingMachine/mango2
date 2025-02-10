@@ -375,7 +375,28 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
 
   // Poll calls to the /translate endpoint, logging them here (only while the TextView is active though).
   useEffect(() => {
-    const cleanup = pollGenericTranslateStatus(doneTranslatingOne);
+    const cleanup = pollGenericTranslateStatus(
+      (genericId, sourceText, targetText) => {
+        let lastSource: string = "";
+        try {
+          const split = sourceText.split(/<SEP>|<TSOS>/);
+          lastSource = split[split.length - 1].trim();
+        } catch (err) {
+          // Only the finalized translation has a sourceText to split on. It's usually empty.
+          lastSource = "Loading...";
+        }
+
+        const w = window as any;
+
+        w.electronAPI.addToTextHistory(
+          [[targetText]], // I forgot why, but we need a nested list here.
+          [lastSource],
+          [genericId]
+        );
+
+        // No context pushing here - the entity sending the translation GET request should handle adding context.
+      }
+    );
 
     return () => {
       cleanup();

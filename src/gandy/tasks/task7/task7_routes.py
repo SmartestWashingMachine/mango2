@@ -1,6 +1,9 @@
 from flask import request
 from gandy.app import app, translate_pipeline, socketio
 from gandy.utils.fancy_logger import logger
+from gandy.state.config_state import config_state
+from uuid import uuid4
+from gandy.utils.socket_stream import SocketStreamer
 
 # Task7 - translate text into text (from a query parameter. Context must be provided by user).
 # This can probably be used for Unity.AutoTranslator - need further testing. TODO
@@ -14,20 +17,32 @@ def process_task7_route():
         try:
             text = request.args.get("text")
 
+            generic_id = uuid4().hex
+            metadata = {"genericId": generic_id, }
+
+            use_stream = SocketStreamer(box_id="", metadata=metadata) if config_state.num_beams == 1 else None
+
             (
                 new_text,
                 processed_source_text,
             ) = translate_pipeline.text_to_text(
                 text,
-                use_stream=None,
+                use_stream=use_stream,
                 return_source_text=True,
             )
 
-            output = {
-                "text": new_text,
-                "sourceText": text,
+            # Send one final update.
+            data_to_send = {
+                "text": new_text[0],
+                "boxId": "",
+                "sourceText": processed_source_text[0],
+                **metadata,
             }
-            socketio.patched_emit("done_translating_generic", output)
+            socketio.patched_emit(
+                "item_stream",
+                data_to_send,
+            )
+            socketio.sleep()
 
             return new_text[0], 200
         except Exception:
