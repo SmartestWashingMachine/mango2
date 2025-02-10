@@ -76,6 +76,9 @@ class Seq2SeqTranslationApp(BaseTranslation):
             session_options.add_session_config_entry(
                 "session.intra_op.allow_spinning", "1"
             )
+            session_options.enable_mem_pattern = False # This causes very strange issues. What the fudge ONNX?
+            session_options.enable_cpu_mem_arena = True
+            session_options.enable_mem_reuse = True
 
             logger.log(
                 f"Loading MT model with threads N={session_options.intra_op_num_threads}"
@@ -233,6 +236,7 @@ class Seq2SeqTranslationApp(BaseTranslation):
         x_dict = self.source_encode(inp)
 
         predictions = self.do_generate(x_dict, extra_kwargs)
+
         predictions = [self.strip_padding(p) for p in predictions]
 
         if self.extra_postprocess is not None:
