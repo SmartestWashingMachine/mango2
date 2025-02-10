@@ -105,7 +105,9 @@ def read_text_in_frames(app_container: AdvancedPipeline, frame_image_paths: List
         with logger.begin_event(
             "Finding source text in frame", seconds=seconds_state, hms=timestamp
         ) as ctx:
-            image = Image.open(frame_path).convert("RGB")
+            image = Image.open(frame_path)
+            if image.mode != "RGB":
+                image = image.convert("RGB")
 
             source_text = _get_source_text_from_frame(
                 app_container, image, image_cache, ctx, seconds_state

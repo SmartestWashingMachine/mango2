@@ -25,7 +25,8 @@ class DFineImageDetectionApp(YOLOTDImageDetectionApp):
             self.loaded = True
 
     def detect_bboxes(self, image):
-        image = image.convert("RGB")  # Needs 3 channels.
+        if image.mode != "RGB":
+            image = image.convert("RGB")  # Needs 3 channels.
 
         logger.log_message(
             "Passing image into DFINE object detection model..."
@@ -78,7 +79,8 @@ class DFineLineImageDetectionApp(DFineImageDetectionApp, ExpandedLineMixin):
         return can_cuda
     
     def detect_bboxes(self, image):
-        image = image.convert("RGB")  # Needs 3 channels.
+        if image.mode != "RGB":
+            image = image.convert("RGB")
 
         image = self.transform(image=np.array(image))['image']
         image = Image.fromarray(image)

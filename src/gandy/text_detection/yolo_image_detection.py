@@ -255,7 +255,8 @@ class YOLOImageDetectionApp(BaseImageDetection):
         return boxes
 
     def detect_bboxes(self, image):
-        image = image.convert("RGB")  # Needs 3 channels.
+        if image.mode != "RGB":
+            image = image.convert("RGB")  # Needs 3 channels
 
         logger.log_message(
             "Transforming image before passing it into object detection model..."
