@@ -15,6 +15,7 @@ import IHistoryText from "../../types/HistoryText";
 import { v4 as uuidv4 } from "uuid";
 import DownloadIcon from "@mui/icons-material/Download";
 import {
+  pollGenericTranslateStatus,
   pollTranslateTextStatus,
   translateText,
 } from "../../flaskcomms/textViewComms";
@@ -73,6 +74,9 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
 
   // Users can make the history list smaller for easier navigation.
   const [briefHistory, setBriefHistory] = useState(false);
+
+  // Users can hide the buttons and input field at the bottom if they're simply listening to calls to the /translate endpoint.
+  const [showingControls, setShowingControls] = useState(true);
 
   const prevClipboardRef = useRef<string | null>();
   const [readClipboardDelay, setReadClipboardDelay] = useState<number | null>(
@@ -369,6 +373,30 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     };
   }, [handleOpenBoxClick]);
 
+  // Poll calls to the /translate endpoint, logging them here (only while the TextView is active though).
+  useEffect(() => {
+    const cleanup = pollGenericTranslateStatus(doneTranslatingOne);
+
+    return () => {
+      cleanup();
+    };
+  }, [doneTranslatingOne]);
+
+  useEffect(() => {
+    const cb = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowingControls((s) => !s);
+        pushAlert("Toggled controls visibility.");
+      }
+    };
+
+    document.addEventListener("keydown", cb);
+
+    return () => {
+      document.removeEventListener("keydown", cb);
+    };
+  }, [pushAlert]);
+
   // Subcomponents
   const controlsPane = (
     <Stack direction="row" spacing={1}>
@@ -464,7 +492,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   // debugListeners();
 
   // Main render process
-  if (isSideView) {
+  if (showingControls && isSideView) {
     return (
       <BaseView>
         <Grid container rowSpacing={0} columnSpacing={2}>
@@ -523,37 +551,39 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
             onSelectItem={addContext}
             isBrief={briefHistory}
           />
-          <Stack spacing={1}>
-            {controlsPane}
-            <Paper className="fullWidth" elevation={2}>
-              <TextField
-                label="Input"
-                size="small"
-                placeholder="Type text here... Using Textractor instead? Click the purple button above!"
-                value={inputText}
-                multiline
-                maxRows={3}
-                onChange={handleInputChange}
-                onKeyDown={handleProcessTextEnter}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => {
-                          handleProcessTextClick();
-                        }}
-                        disabled={loading}
-                        color="primary"
-                        edge="end"
-                      >
-                        <ArrowCircleRightIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Paper>
-          </Stack>
+          {showingControls && (
+            <Stack spacing={1}>
+              {controlsPane}
+              <Paper className="fullWidth" elevation={2}>
+                <TextField
+                  label="Input"
+                  size="small"
+                  placeholder="Type text here... Using Textractor instead? Click the purple button above!"
+                  value={inputText}
+                  multiline
+                  maxRows={3}
+                  onChange={handleInputChange}
+                  onKeyDown={handleProcessTextEnter}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => {
+                            handleProcessTextClick();
+                          }}
+                          disabled={loading}
+                          color="primary"
+                          edge="end"
+                        >
+                          <ArrowCircleRightIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Paper>
+            </Stack>
+          )}
         </Stack>
       </BaseView>
     );

@@ -81,3 +81,25 @@ export const pollTranslateTextStatus = (
       socket.disconnect();
     });
   });
+
+export const pollGenericTranslateStatus = (
+  itemCb: (sourceText: string, targetText: string) => void
+) => {
+  const socket = makeSocket();
+
+  const cleanupFn = () => {
+    try {
+      socket.disconnect();
+    } catch {
+      console.log("Failed to disconnect generic translate socket.");
+    }
+  };
+
+  socket.on("done_translating_generic", (data) => {
+    if (data && data.text && data.sourceText) {
+      itemCb(data.sourceText, data.text);
+    }
+  });
+
+  return cleanupFn;
+};

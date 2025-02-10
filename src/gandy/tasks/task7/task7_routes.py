@@ -1,5 +1,5 @@
 from flask import request
-from gandy.app import app, translate_pipeline
+from gandy.app import app, translate_pipeline, socketio
 from gandy.utils.fancy_logger import logger
 
 # Task7 - translate text into text (from a query parameter. Context must be provided by user).
@@ -22,6 +22,12 @@ def process_task7_route():
                 use_stream=None,
                 return_source_text=True,
             )
+
+            output = {
+                "text": new_text,
+                "sourceText": text,
+            }
+            socketio.patched_emit("done_translating_generic", output)
 
             return new_text[0], 200
         except Exception:
