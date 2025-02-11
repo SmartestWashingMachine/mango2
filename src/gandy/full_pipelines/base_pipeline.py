@@ -290,7 +290,7 @@ class BasePipeline:
                     n_after=len(speech_bboxes),
                 )
 
-            source_texts = pack_context(source_texts, config_state.n_context, ignore_single_words_in_context=True)
+            source_texts = pack_context(source_texts, config_state.n_context, ignore_single_words_in_context=False)
 
             target_texts = self.get_target_texts_from_str(
                 source_texts=source_texts, use_stream=None, progress_cb=progress_cb,
@@ -410,7 +410,8 @@ class BasePipeline:
             # How do we handle this? Simple! After text recognition, combine all of the recognized text into one unit and translate it all together.
             source_texts = merge_texts(source_texts, context_input)
 
-            source_texts = replace_terms_source_side(source_texts, config_state.source_terms)
+            source_texts = replace_terms_source_side([source_texts], config_state.source_terms)
+            source_texts = source_texts[0]
 
             target_texts = self.get_target_texts_from_str(
                 [source_texts], use_stream=use_stream
