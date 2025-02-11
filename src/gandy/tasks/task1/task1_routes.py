@@ -187,7 +187,8 @@ def translate_task1_background_job(
                     )
                     socketio.sleep()
                 else:
-                    on_image_done(new_image['image'], img_idx, img_name_no_ext)
+                    if not is_amg: # AMG not supported for on_image_done.
+                        on_image_done(new_image, img_idx, img_name_no_ext)
 
             socketio.patched_emit("done_translating_task1", { "taskId": task_id, })
             socketio.sleep()

@@ -68,6 +68,8 @@ if ENABLE_WEB_UI:
             abort(404)
 
         img = Image.open(file_path)
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
 
         buffer = BytesIO()
         img.save(buffer, format="JPEG")
