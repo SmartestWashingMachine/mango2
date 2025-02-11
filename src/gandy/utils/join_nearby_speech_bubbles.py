@@ -38,7 +38,6 @@ def _box_b_is_left_or_right(box_a, box_b):
     """
     Returns "left" if box_b is to the left of box_a. Returns "right" if box_b is to the right of box_a. Returns "none" otherwise.
     """
-    # img_width, img_height = img.width, img.height
 
     x_center_a = _midp(box_a)
     x_center_b = _midp(box_b)
@@ -90,6 +89,13 @@ def _merge_lines(tl_1: Candidate, tl_2: Candidate):
 def _probably_merge_lines(
     tl_1: Candidate, tl_2: Candidate, img: Image, force_merge=False
 ):
+    """
+    Merges two text lines if conditions are met. Returns a list of one text line if the merge is successful, otherwise returns a list of two text lines.
+
+    Conditions:
+    1. Both text lines are vertical or horizontal lines (similar aspect ratios).
+    2. Both text lines are nearby in the X axis if vertical, or Y axis if horizontal.
+    """
     failure_state = [tl_1, tl_2]
 
     if force_merge:

@@ -66,17 +66,19 @@ def text_overflows(cand1: TextBox, img: Image, direction = "lrud", with_margin =
 
     return False
 
+def _midp_x(b):
+    return b.x1 + ((b.x2 - b.x1) / 2)
+
+def _midp_y(b):
+    return b.y1 + ((b.y2 - b.y1) / 2)
+
 def _box_b_is_left_or_right(box_a: TextBox, box_b: TextBox):
     """
     Returns "left" if box_b is to the left of box_a. Returns "right" if box_b is to the right of box_a. Returns "none" otherwise.
     """
-    # img_width, img_height = img.width, img.height
 
-    def _midp(b):
-        return b.x1 + ((b.x2 - b.x1) / 2)
-
-    x_center_a = _midp(box_a)
-    x_center_b = _midp(box_b)
+    x_center_a = _midp_x(box_a)
+    x_center_b = _midp_x(box_b)
 
     if x_center_b < x_center_a:
         return "left"
@@ -86,11 +88,8 @@ def _box_b_is_left_or_right(box_a: TextBox, box_b: TextBox):
         return "none"
     
 def _box_b_is_up_or_down(box_a: TextBox, box_b: TextBox):
-    def _midp(b):
-        return b.y1 + ((b.y2 - b.y1) / 2)
-
-    y_center_a = _midp(box_a)
-    y_center_b = _midp(box_b)
+    y_center_a = _midp_y(box_a)
+    y_center_b = _midp_y(box_b)
 
     if y_center_b < y_center_a:
         return "up"
@@ -126,7 +125,6 @@ def text_intersects_on_direction(cand1: TextBox, others: List[TextBox], image: I
         
         other_is_to_the = _box_b_is_up_or_down(box_a=cand1, box_b=other)
         if other_is_to_the == "down" and "u" in direction_to_check:
-
             if only_check:
                 checks += "d"
             else:

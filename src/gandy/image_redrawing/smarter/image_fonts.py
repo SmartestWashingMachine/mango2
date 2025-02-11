@@ -60,5 +60,5 @@ def get_vertical_spacing(font_size: int):
     return 3 - compute_stroke_size(font_size)
 
 def print_spam(s: str):
-    print(s)
+    # print(s)
     pass
