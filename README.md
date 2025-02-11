@@ -98,7 +98,7 @@ While Mango 2 is open, you can also translate strings by making a `GET` call to 
 
 For example:
 
-`localhost:5000/translate?text=こんにちは` would translate `こんにちは`, returning a string (body) with response code `200`.
+`http://localhost:5000/translate?text=こんにちは` would translate `こんにちは`, returning a string (body) with response code `200`.
 
 Errors return the string `ERROR (search logs for "Task7 Error")` with response code `201`.
 
