@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, screen } from "electron";
 import path from "path";
 import { ElectronState } from "./types/ElectronState";
 import { initializeModelNames } from "./flaskcomms/setFlaskSettings";
@@ -36,12 +36,33 @@ const electronState: ElectronState = {
   texts: [],
 };
 
-const lockTop = app.commandLine.hasSwitch("locktop"); // For dev usage.
+const lockTop = true || app.commandLine.hasSwitch("locktop"); // For dev usage.
+
+// Code not mine. From: https://github.com/electron/electron/issues/526
+const restoreWindowBounds = (win: BrowserWindow) => {
+  const savedBounds = store.get("mainBounds") as any;
+
+  if (savedBounds !== undefined && savedBounds !== null) {
+    const screenArea = screen.getDisplayMatching(savedBounds).workArea;
+    if (
+      savedBounds.x > screenArea.x + screenArea.width ||
+      savedBounds.x < screenArea.x ||
+      savedBounds.y < screenArea.y ||
+      savedBounds.y > screenArea.y + screenArea.height
+    ) {
+      win.setBounds({ x: 0, y: 0, width: 800, height: 680 });
+    } else {
+      win.setBounds(store.get("mainBounds"));
+    }
+  }
+
+  win.on("close", () => {
+    store.set("mainBounds", win.getBounds());
+  });
+};
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 800,
-    height: 680,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"), // Preload.js must have an absolute path.
       devTools: isDev,
@@ -54,6 +75,8 @@ const createWindow = () => {
     backgroundColor: "#FFF",
     alwaysOnTop: lockTop || undefined,
   });
+
+  restoreWindowBounds(win);
 
   console.log("Window created.");
 
