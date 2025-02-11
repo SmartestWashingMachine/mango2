@@ -36,7 +36,7 @@ const electronState: ElectronState = {
   texts: [],
 };
 
-const lockTop = true || app.commandLine.hasSwitch("locktop"); // For dev usage.
+const lockTop = app.commandLine.hasSwitch("locktop"); // For dev usage.
 
 // Code not mine. From: https://github.com/electron/electron/issues/526
 const restoreWindowBounds = (win: BrowserWindow) => {
