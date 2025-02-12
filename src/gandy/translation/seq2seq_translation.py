@@ -68,8 +68,10 @@ class Seq2SeqTranslationApp(BaseTranslation):
             )
         else:
             session_options = SessionOptions()
+
+            # PARALLEL gives slightly (~10%) better performance than SEQUENTIAL. Tested on the JA Madness model.
             session_options.intra_op_num_threads = torch.get_num_threads()
-            session_options.execution_mode = ExecutionMode.ORT_SEQUENTIAL
+            session_options.execution_mode = ExecutionMode.ORT_PARALLEL
             session_options.graph_optimization_level = (
                 GraphOptimizationLevel.ORT_ENABLE_ALL
             )
