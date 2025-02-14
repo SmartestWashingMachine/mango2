@@ -196,6 +196,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Bionic Reading"
             />
           ),
+          "Mini Backlog": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.append}
+              keyName="append"
+              helperText="Some of the past texts in the box will be displayed within it."
+              label="Mini Backlog"
+            />
+          ),
         },
         "Box Appearance": {
           "Background Color": (

@@ -18,9 +18,33 @@ export type BoxAppProps = {
   boxId: string;
 };
 
+const sliceArrIgnorePlaceHolders = (
+  arr: string[],
+  start: number,
+  end?: number
+) => {
+  return arr
+    .slice(start, end)
+    .filter(
+      (x) =>
+        x !== MISC_DEFAULT_TEXT &&
+        !x.startsWith("I will automatically translate")
+    );
+};
+
+const getLastAndOthersInArr = (arr: string[]) => {
+  if (arr.length === 0) return ["", []] as [string, string[]];
+  if (arr.length === 1) return [arr[0], []] as [string, string[]];
+
+  return [arr[arr.length - 1], arr.slice(0, arr.length - 1)] as [
+    string,
+    string[]
+  ];
+};
+
 const BoxApp = ({ boxId }: BoxAppProps) => {
   // Output target text.
-  const [text, setText] = useState("");
+  const [text, setText] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [options, setOptions] = useState<BoxOptionsFrontend | null>(null);
@@ -35,6 +59,8 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
     useState<NodeJS.Timeout | null>();
   const [autoEnterTime, setAutoEnterTime] = useState<number | null>(null);
 
+  const [append, setAppend] = useState(false);
+
   useEffect(() => {
     document.body.style.backgroundColor = "rgba(255, 255, 255, 0.0)"; // for fade-in. this gives a transparent window.
   }, []);
@@ -42,6 +68,15 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
   useEffect(() => {
     const beginCb = () => {
       setLoading(true);
+
+      if (append) {
+        const maxQueue = 3;
+        setText((t) =>
+          t.length > maxQueue
+            ? [...sliceArrIgnorePlaceHolders(t, 1), ""]
+            : [...t, ""]
+        );
+      }
     };
 
     const doneCb = (values: string[], sourceValues: string[]) => {
@@ -52,7 +87,11 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
       }
 
       if (newText && newText.length > 0) {
-        setText(newText);
+        if (append) {
+          setText((t) => [...sliceArrIgnorePlaceHolders(t, 0, -1), newText]);
+        } else {
+          setText([newText]);
+        }
       }
       setLoading(false);
     };
@@ -61,7 +100,11 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
       // May act weird with removeSpeaker / task3...
       if (!values || values.length === 0) return;
 
-      setText(values);
+      if (append) {
+        setText((t) => [...sliceArrIgnorePlaceHolders(t, 0, -1), values]);
+      } else {
+        setText([values]);
+      }
     };
 
     const connectCb = async () => {
@@ -135,13 +178,14 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
         setRemoveSpeaker(boxOptions?.removeSpeaker);
         setUseStream(boxOptions?.useStream);
         setAutoEnterTime(boxOptions?.autoEnterTime);
+        setAppend(boxOptions?.append);
 
         if (boxOptions.listenClipboard) {
-          setText(CLIPBOARD_COPY_DEFAULT_TEXT);
+          setText([CLIPBOARD_COPY_DEFAULT_TEXT]);
         } else if (boxOptions.activationKey !== "Escape") {
-          setText(ACTIVATE_DEFAULT_TEXT(boxOptions.activationKey));
+          setText([ACTIVATE_DEFAULT_TEXT(boxOptions.activationKey)]);
         } else {
-          setText(MISC_DEFAULT_TEXT);
+          setText([MISC_DEFAULT_TEXT]);
         }
       }
     };
@@ -224,11 +268,14 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
 
   if (!options) return <div></div>;
 
+  const [curText, prevTexts] = getLastAndOthersInArr(text);
+
   return (
     <CssBaseline>
       <OcrBoxPane
         loading={loading}
-        text={text}
+        text={curText}
+        prevTexts={prevTexts}
         {...options}
         loadingOpacity={useStream ? 0.75 : 0.25}
         pause={pause}

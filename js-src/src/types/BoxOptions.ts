@@ -13,6 +13,7 @@ export type BoxOptionsFrontend = {
   hideKey: string;
   enabled: boolean;
   autoEnterTime: number;
+  append: boolean;
 };
 
 export type BoxOptionsBackend = {

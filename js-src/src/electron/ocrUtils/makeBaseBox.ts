@@ -27,6 +27,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   spellingCorrectionKey: "Escape",
   enabled: true,
   autoEnterTime: 0,
+  append: false,
 };
 
 export const makeBaseBox = (boxId: string) => {

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Fade, SxProps, Typography } from "@mui/material";
+import { Box, Fade, Stack, SxProps, Typography } from "@mui/material";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
 import { BoxOptionsFrontend } from "../../../types/BoxOptions";
 
@@ -9,22 +9,20 @@ type OcrBoxPaneProps = BoxOptionsFrontend & {
   loadingOpacity: number;
   hide: boolean;
   pause: boolean;
+  prevTexts: string[];
 };
 
 const msToSecs = (ms: number) => (ms ? ms * 1000 : 300);
 
 // Also from: https://stackoverflow.com/questions/1855884/determine-font-color-based-on-background-color
 const hexToLuma = (color: string) => {
-  const hex = color.replace(/#/, '');
+  const hex = color.replace(/#/, "");
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4), 16);
 
-  const a = 1.0 - [
-    0.299 * r,
-    0.587 * g,
-    0.114 * b
-  ].reduce((a, b) => a + b) / 255;
+  const a =
+    1.0 - [0.299 * r, 0.587 * g, 0.114 * b].reduce((a, b) => a + b) / 255;
 
   return a;
 };
@@ -52,11 +50,14 @@ const OcrBoxPane = ({
   loadingOpacity,
   hide,
   pause,
+  prevTexts,
 }: OcrBoxPaneProps) => {
   const [visible, setVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
 
-  const [background, setBackground] = useState(hexWithAlpha(backgroundColor, backgroundOpacity));
+  const [background, setBackground] = useState(
+    hexWithAlpha(backgroundColor, backgroundOpacity)
+  );
 
   const timer = useRef<any>(null);
 
@@ -126,6 +127,16 @@ const OcrBoxPane = ({
     fontFamily: '"ocrbox.otf", "ocrbox.ttf", Roboto, "Roboto", Arial',
   };
 
+  const extraPrevTextStyles: SxProps = {
+    opacity: textOpacity - 0.25,
+    textAlign,
+    color: `${fontColor} !important`,
+    fontSize: Math.floor(parseInt(fontSize as string) * 0.75),
+    WebkitTextStrokeWidth: `${strokeSize}px`,
+    WebkitTextStrokeColor: strokeColor,
+    fontFamily: '"ocrbox.otf", "ocrbox.ttf", Roboto, "Roboto", Arial',
+  };
+
   const extraBoxStyles: SxProps = {
     background,
   };
@@ -148,18 +159,35 @@ const OcrBoxPane = ({
       >
         <Box className="boxApp" sx={extraBoxStyles}>
           <div className="boxAppHandleTopLeft" />
-          <Typography
-            variant="body1"
-            className="boxText"
-            sx={extraTextStyles}
-            align={textAlign as any}
-          >
-            {renderText()}
-          </Typography>
+          <Stack spacing={1} className="boxText">
+            {prevTexts.map((x, ind) => (
+              <Typography
+                variant="body2"
+                sx={extraPrevTextStyles}
+                align={textAlign as any}
+                key={ind.toString() + x}
+              >
+                {x}
+              </Typography>
+            ))}
+            <Typography
+              variant="body1"
+              sx={extraTextStyles}
+              align={textAlign as any}
+            >
+              {renderText()}
+            </Typography>
+          </Stack>
           <div className="boxAppHandleTopRight" />
           <div className="boxAppHandleBottomLeft" />
           <div className="boxAppHandleBottomRight">
-            <DragHandleIcon className={hexToLuma(backgroundColor) > 0.5 ? "boxAppHandleIcon" : "boxAppHandleIconDark"} />
+            <DragHandleIcon
+              className={
+                hexToLuma(backgroundColor) > 0.5
+                  ? "boxAppHandleIcon"
+                  : "boxAppHandleIconDark"
+              }
+            />
           </div>
         </Box>
       </Fade>
