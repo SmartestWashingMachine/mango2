@@ -44,17 +44,10 @@ const changeSearchParams = (selFolder: string | null, curIdx: number = 0) => {
 
 const API_URL = "";
 
-// Yes it's not very secure, you can just see it in the source code.. But if you can see this comment then you're probably not him...
-const PASS_CODE = "not4u";
-
 const HomePage = () => {
   const pushAlert = useAlerts();
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const [currentView, setCurrentView] = useState<"loading" | "list" | "page">(
-    "loading"
-  );
 
   const [search, setSearch] = useState("");
 
