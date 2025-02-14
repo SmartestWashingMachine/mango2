@@ -23,9 +23,13 @@ def prepend_qual(s: str):
 def prepend_qual_mad(s: str):
     return f"<Q9>{clean_text_vq(s)}"
 
+honorifics = { '君', 'はん', '様', 'さま', 'さん', 'ちゃん', 'たん', 'くん', '先生', 'せんせい', '先輩', 'せんぱい', }
 def prepend_mad_qual_ja(s: str):
-    # <AH> is only used for J-Mad. It encourages the model to use more "anime" honorifics.
-    return f"<2en> <AH>{prepend_qual_mad(s)}"
+    if any(h in s for h in honorifics):
+        # <AH> is only used for J-Mad. It encourages the model to use more "anime" honorifics.
+        return f"<2en> <AH>{prepend_qual_mad(s)}"
+
+    return f"<2en> {prepend_qual_mad(s)}"
 
 def prepend_mad_qual_generic(s: str):
     return f"<2en> {prepend_qual_mad(s)}"

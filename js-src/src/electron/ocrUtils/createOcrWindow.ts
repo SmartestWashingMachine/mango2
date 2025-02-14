@@ -33,8 +33,13 @@ export const createOcrWindow = (opts: CreateOcrWindowOpts) => {
   ocrWindow.setFullScreenable(false);
 
   // Prevent electron-builder from rechanging title to "Mango"
-  ocrWindow.on('page-title-updated', (e) => {
+  ocrWindow.on("page-title-updated", (e) => {
     e.preventDefault();
+  });
+
+  ocrWindow.on("blur", () => {
+    ocrWindow.setAlwaysOnTop(true, "screen-saver", 1);
+    ocrWindow.show(); // ?
   });
 
   const htmlPath = isDev ? "index.html" : path.join(__dirname, "./index.html");
