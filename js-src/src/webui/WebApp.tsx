@@ -4,6 +4,7 @@ import React from "react";
 import HomePage from "./HomePage";
 import HomeVideoPage from "./HomeVideoPage";
 import { indigo } from "@mui/material/colors";
+import AlertProvider from "../components/AlertProvider";
 
 const theme = createTheme({
   palette: {
@@ -41,10 +42,12 @@ const WebApp = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline>
-        <Box sx={{ display: "flex", flexDirection: "column" }}>
-          {mediaParam === "video" && <HomeVideoPage />}
-          {mediaParam !== "video" && <HomePage />}
-        </Box>
+        <AlertProvider>
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
+            {mediaParam === "video" && <HomeVideoPage />}
+            {mediaParam !== "video" && <HomePage />}
+          </Box>
+        </AlertProvider>
       </CssBaseline>
     </ThemeProvider>
   );

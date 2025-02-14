@@ -82,7 +82,7 @@ body,
   grid-template-rows: auto auto auto;
   row-gap: 12px;
   justify-content: center;
-  display: flex;
+  display: grid;
   flex-direction: column;
   padding: 64px 128px;
 }

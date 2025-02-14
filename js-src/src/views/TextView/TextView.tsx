@@ -8,6 +8,8 @@ import {
   Paper,
   Stack,
   Tooltip,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import ArrowCircleRightIcon from "@mui/icons-material/ArrowRight";
 import HistoryPane from "./components/HistoryPane";
@@ -43,6 +45,9 @@ type TextViewProps = {
 };
 
 const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
+  const theme = useTheme();
+  const matchDownMd = useMediaQuery(theme.breakpoints.down("sm"));
+
   const pushAlert = useAlerts();
 
   // Retrieved from store. Used when pushing context automatically or from text splitting.
@@ -579,7 +584,11 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
                 <TextField
                   label="Input"
                   size="small"
-                  placeholder="Type text here... Using Textractor instead? Click the purple button above!"
+                  placeholder={
+                    matchDownMd
+                      ? "Type text here or click the purple button above!"
+                      : "Type text here... Using Textractor instead? Click the purple button above!"
+                  }
                   value={inputText}
                   multiline
                   maxRows={3}
