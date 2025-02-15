@@ -34,6 +34,7 @@ enum ElectronCommands {
   RESET_SETTINGS = "reset-settings",
   CONNECTED_OCR_BOX = "connected-ocr-box",
   READ_CLIPBOARD = "read-clipboard",
+  REGENERATE_BOX_MANAGERS = "regenerate-box-managers",
 }
 
 export default ElectronCommands;

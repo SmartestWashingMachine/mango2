@@ -49,7 +49,11 @@ const OptionsView = (props: OptionsViewProps) => {
   const setStoreValue = async (boxId: string, key: string, value: any) => {
     await MainGateway.setBoxValue(boxId, key, value);
 
-    setBoxesOptions((d: any) => d.map((dBox: any) => boxId === dBox.boxId ? ({ ...dBox, [key]: value, }) : ({ ...dBox, })));
+    setBoxesOptions((d: any) =>
+      d.map((dBox: any) =>
+        boxId === dBox.boxId ? { ...dBox, [key]: value } : { ...dBox }
+      )
+    );
   };
 
   const removeBox = () => {
@@ -78,12 +82,15 @@ const OptionsView = (props: OptionsViewProps) => {
     setBoxesOptions(data.boxes);
   };
 
-  const selBoxOptions = (boxesOptions || []).find((x: any) => x.boxId === selId);
+  const selBoxOptions = (boxesOptions || []).find(
+    (x: any) => x.boxId === selId
+  );
 
   return (
     <BaseView>
       <OcrOptionsPane
         {...selBoxOptions}
+        allBoxIds={(boxesOptions || []).map((x: any) => x.boxId)}
         setStoreValue={setStoreValue}
         goTextTab={props.goTextTab}
         createBox={

@@ -40,15 +40,33 @@ const resetSettings: GatewayAction = {
     const boxes = store.get("boxes") as any[];
 
     if (boxes.length === 0) {
-      const boxes = [{ ...OPTIONS_PRESETS[0].options, boxId: 'firstbox' }];
+      const boxes = [{ ...OPTIONS_PRESETS[0].options, boxId: "firstbox" }];
       store.set("boxes", boxes);
 
       state.managers = boxes.map(
-        (b) => new OcrBoxManager(b.boxId, store, state.texts),
+        (b) => new OcrBoxManager(b.boxId, store, state.texts)
       );
     }
   },
-}
+};
+
+const regenerateBoxManagers: GatewayAction = {
+  command: ElectronCommands.REGENERATE_BOX_MANAGERS,
+  commandType: "handle",
+  fn: (e, w, state, store, key, value) => {
+    console.log("regen");
+    let boxes = store.get("boxes") as any[];
+
+    if (boxes.length === 0) {
+      boxes = [{ ...OPTIONS_PRESETS[0].options, boxId: "firstbox" }];
+      store.set("boxes", boxes);
+    }
+
+    state.managers = boxes.map(
+      (b) => new OcrBoxManager(b.boxId, store, state.texts)
+    );
+  },
+};
 
 // Events for the term array.
 
@@ -128,6 +146,7 @@ export default [
   getStoreData,
   setStoreValue,
   resendDataChange,
+  regenerateBoxManagers,
   createTerm,
   deleteTerm,
   updateTerm,

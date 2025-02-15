@@ -16,7 +16,7 @@ import { takeImageBehindBox } from "./takeImageBehindBox";
 import { clipboardCb, getTextFromClipboard } from "./clipboardCb";
 import { autoScanCb } from "./autoScanCb";
 import ElectronChannels from "../../types/ElectronChannels";
-import SharedGlobalShortcuts from './sharedGlobalShortcuts';
+import SharedGlobalShortcuts from "./sharedGlobalShortcuts";
 
 export class OcrBoxManager implements BoxOptionsBackend {
   ocrWindow: BrowserWindow | null;
@@ -38,6 +38,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   hideKey: string;
   spellingCorrectionKey: string;
   enabled: boolean;
+  pipeOutput: string;
 
   _timerAutoScan?: any;
   _timerClipboard?: any;
@@ -82,6 +83,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.prevImage = null; // For autoScan.
     this.prevText = null; // For listenClipboard.
 
+    this.pipeOutput = "Self";
+
     this._timerAutoScan = null;
     this._timerClipboard = null;
     this._paused = false;
@@ -99,13 +102,22 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this._spellingCorrectionKeyCallback = "";
   }
 
+  getOutputBoxId() {
+    // Get the box ID that all updates from the Flask backend should be piped/displayed to.
+    if (this.pipeOutput === "Self") return this.boxId;
+
+    return this.pipeOutput;
+  }
+
   // This FN must be called before calling createBoxWindow.
   initializeValues() {
     // Find values for the current box from the store.
     if (!this.store) throw Error("Store must be provided.");
 
     const boxes = this.store.get("boxes") as any[];
+
     const boxSettings = boxes.find((b) => b.boxId === this.boxId); // Hooray for in-place updates!
+
     if (!boxSettings) throw Error("No box found");
 
     // These settings *should* always be provided... but just in case of shenanigans, there are default values.
@@ -126,11 +138,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.spellingCorrectionKey =
       boxSettings.spellingCorrectionKey ||
       DEFAULT_BOX_OPTIONS.spellingCorrectionKey;
+    this.pipeOutput = boxSettings.pipeOutput || DEFAULT_BOX_OPTIONS.pipeOutput;
 
     if (!boxSettings) {
       this.enabled = true;
-    }
-    else this.enabled = boxSettings.enabled;
+    } else this.enabled = boxSettings.enabled;
   }
 
   createBoxWindow() {
@@ -198,7 +210,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     if (finalImgBuffer && this._websocketLoaded) {
       await translateImageGiveText(
         [finalImgBuffer],
-        this.boxId,
+        this.getOutputBoxId(),
         this.textDetect,
         null,
         this.useStream
@@ -217,7 +229,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     // This is done wihtout websockets.
     const text: string = await scanImageGiveText(
       [finalImgBuffer],
-      this.boxId,
+      this.getOutputBoxId(),
       this.textDetect,
       null
     );
@@ -241,60 +253,72 @@ export class OcrBoxManager implements BoxOptionsBackend {
     // Create a listener to detect the required key to scan the box area, and retrieve the result.
     // TODO: No speaker support yet.
     if (this.activationKey !== DISABLED_KEY_VALUE) {
-      this._activationKeyCallback = SharedGlobalShortcuts.register(this.activationKey, async () => {
-        await this.scanAndTranslateBoxContents();
-      });
+      this._activationKeyCallback = SharedGlobalShortcuts.register(
+        this.activationKey,
+        async () => {
+          await this.scanAndTranslateBoxContents();
+        }
+      );
     }
 
     // Toggle pause mode.
     if (this.pauseKey !== DISABLED_KEY_VALUE) {
-      this._pauseKeyCallback = SharedGlobalShortcuts.register(this.pauseKey, async () => {
-        this._paused = !this._paused;
-        if (this.ocrWindow) {
-          this.ocrWindow.webContents.send(
-            ElectronChannels.OCR_PAUSED,
-            this.boxId,
-            this._paused
-          );
+      this._pauseKeyCallback = SharedGlobalShortcuts.register(
+        this.pauseKey,
+        async () => {
+          this._paused = !this._paused;
+          if (this.ocrWindow) {
+            this.ocrWindow.webContents.send(
+              ElectronChannels.OCR_PAUSED,
+              this.boxId,
+              this._paused
+            );
+          }
         }
-      });
+      );
     }
 
     // Toggle hide mode.
     if (this.hideKey !== DISABLED_KEY_VALUE) {
-      this._hideKeyCallback = SharedGlobalShortcuts.register(this.hideKey, async () => {
-        this._hide = !this._hide;
-        if (this.ocrWindow) {
-          this.ocrWindow.setIgnoreMouseEvents(this._hide);
+      this._hideKeyCallback = SharedGlobalShortcuts.register(
+        this.hideKey,
+        async () => {
+          this._hide = !this._hide;
+          if (this.ocrWindow) {
+            this.ocrWindow.setIgnoreMouseEvents(this._hide);
 
-          this.ocrWindow.webContents.send(
-            ElectronChannels.OCR_HIDDEN,
-            this.boxId,
-            this._hide
-          );
+            this.ocrWindow.webContents.send(
+              ElectronChannels.OCR_HIDDEN,
+              this.boxId,
+              this._hide
+            );
+          }
         }
-      });
+      );
     }
 
     // Trigger spelling correction refinement for a line of text.
     if (this.spellingCorrectionKey !== DISABLED_KEY_VALUE) {
-      this._spellingCorrectionKeyCallback = SharedGlobalShortcuts.register(this.spellingCorrectionKey, async () => {
-        // TODO: Make this work with the OCR mode - not just clipboard.
-        if (this.prevText && this._websocketLoaded) {
-          //await clipboardCb(this.prevText, opts);
+      this._spellingCorrectionKeyCallback = SharedGlobalShortcuts.register(
+        this.spellingCorrectionKey,
+        async () => {
+          // TODO: Make this work with the OCR mode - not just clipboard.
+          if (this.prevText && this._websocketLoaded) {
+            //await clipboardCb(this.prevText, opts);
 
-          const newTexts = this._stateTexts;
-          if (newTexts.length == 0 || this._paused) return;
+            const newTexts = this._stateTexts;
+            if (newTexts.length == 0 || this._paused) return;
 
-          const latest = newTexts[newTexts.length - 1];
-          await refineTranslation(
-            latest.sourceText,
-            latest.targetText,
-            this.boxId,
-            this.useStream
-          );
+            const latest = newTexts[newTexts.length - 1];
+            await refineTranslation(
+              latest.sourceText,
+              latest.targetText,
+              this.getOutputBoxId(),
+              this.useStream
+            );
+          }
         }
-      });
+      );
     }
 
     if (this.autoScan) {
@@ -310,7 +334,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
           revealBox: this.revealBox,
           takeImage: this.takeImage,
           prevImage: this.prevImage,
-          boxId: this.boxId,
+          boxId: this.getOutputBoxId(),
           useStream: this.useStream,
           textDetect: this.textDetect,
           paused: this._paused,
@@ -338,7 +362,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
           prevText: this.prevText,
           paused: this._paused,
           speakerCallback: this._speakerCallback,
-          boxId: this.boxId,
+          boxId: this.getOutputBoxId(),
           useStream: this.useStream,
         };
 
@@ -383,13 +407,19 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     this.ocrWindow = null;
     if (this.activationKey !== DISABLED_KEY_VALUE)
-      SharedGlobalShortcuts.unregister(this.activationKey, this._activationKeyCallback);
+      SharedGlobalShortcuts.unregister(
+        this.activationKey,
+        this._activationKeyCallback
+      );
     if (this.pauseKey !== DISABLED_KEY_VALUE)
       SharedGlobalShortcuts.unregister(this.pauseKey, this._pauseKeyCallback);
     if (this.hideKey !== DISABLED_KEY_VALUE)
       SharedGlobalShortcuts.unregister(this.hideKey, this._hideKeyCallback);
     if (this.spellingCorrectionKey !== DISABLED_KEY_VALUE)
-      SharedGlobalShortcuts.unregister(this.spellingCorrectionKey, this._spellingCorrectionKeyCallback);
+      SharedGlobalShortcuts.unregister(
+        this.spellingCorrectionKey,
+        this._spellingCorrectionKeyCallback
+      );
 
     if (this._timerAutoScan) clearInterval(this._timerAutoScan);
     if (this._timerClipboard) clearInterval(this._timerClipboard);

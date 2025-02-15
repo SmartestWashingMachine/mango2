@@ -37,10 +37,11 @@ export const createOcrWindow = (opts: CreateOcrWindowOpts) => {
     e.preventDefault();
   });
 
+  /*
   ocrWindow.on("blur", () => {
     ocrWindow.setAlwaysOnTop(true, "screen-saver", 1);
     ocrWindow.show(); // ?
-  });
+  });*/
 
   const htmlPath = isDev ? "index.html" : path.join(__dirname, "./index.html");
   console.log(`Loading OCR box HTML from path: ${htmlPath}`);

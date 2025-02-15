@@ -14,6 +14,7 @@ export type BoxOptionsFrontend = {
   enabled: boolean;
   autoEnterTime: number;
   append: boolean;
+  pipeOutput: string;
 };
 
 export type BoxOptionsBackend = {
@@ -29,6 +30,7 @@ export type BoxOptionsBackend = {
   speakerBox: boolean;
   useStream: boolean;
   spellingCorrectionKey: string;
+  boxId?: string;
 };
 
 export type BoxOptions = BoxOptionsFrontend & BoxOptionsBackend;

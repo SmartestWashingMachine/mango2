@@ -6,9 +6,11 @@ import { BoxOptions } from "../../../types/BoxOptions";
 import { OPTIONS_PRESETS } from "../../../utils/boxPresets";
 import UpdateCheckbox from "../../../components/UpdateCheckbox";
 import PaginatedTabs from "../../../components/PaginatedTabs";
+import { MainGateway } from "../../../utils/mainGateway";
 
 export type OcrOptionsPaneProps = BoxOptions & {
   boxId: string;
+  allBoxIds: string[];
   setStoreValue: (boxId: string, key: string, value: any) => void;
   goTextTab: () => void;
   boxButtons: any;
@@ -56,6 +58,9 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
     changeValue("autoEnterTime", parsed);
   };
 
+  const updatePipeOutput = (e: React.ChangeEvent<HTMLInputElement>) =>
+    changeValue("pipeOutput", e.target.value);
+
   const updateActivationKey = (key: string) =>
     changeValue("activationKey", key);
 
@@ -84,6 +89,10 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
       changeValue(key as any, value);
     }
 
+    console.log("regen part 1");
+    // Some presets modify the Box ID, making this util necessary.
+    MainGateway.regenerateBoxManagers();
+
     props.goTextTab();
   };
 
@@ -109,7 +118,11 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               select
             >
               {OPTIONS_PRESETS.map((b) => [
-                <MenuItem value={b.presetName} key={b.presetName}>
+                <MenuItem
+                  value={b.presetName}
+                  key={b.presetName}
+                  disabled={b.disabled(props.allBoxIds)}
+                >
                   {b.presetName}
                 </MenuItem>,
                 <MenuItem
@@ -311,6 +324,23 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
                 defaultValue={props.autoEnterTime}
               />
             </Tooltip>
+          ),
+          "Pipe Output": (
+            <TextField
+              onChange={updatePipeOutput}
+              defaultValue={props.pipeOutput}
+              variant="standard"
+              select
+              helperText="Pipe the output of this box to another box."
+              label="Pipe Output"
+            >
+              <MenuItem value="Self">Self</MenuItem>
+              {props.allBoxIds.map((b) => (
+                <MenuItem value={b} key={b}>
+                  {b}
+                </MenuItem>
+              ))}
+            </TextField>
           ),
         },
         Performance: {

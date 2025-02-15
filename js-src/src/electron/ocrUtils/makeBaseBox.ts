@@ -28,6 +28,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   enabled: true,
   autoEnterTime: 0,
   append: false,
+  pipeOutput: "Self",
 };
 
 export const makeBaseBox = (boxId: string) => {

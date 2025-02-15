@@ -4,6 +4,7 @@ type BoxPreset = {
   presetName: string;
   description: string;
   options: BoxOptions;
+  disabled: (allBoxIds: string[]) => boolean;
 };
 
 const genericOptions = {
@@ -22,7 +23,7 @@ const genericOptions = {
   height: 228,
   autoScan: false,
   listenClipboard: true,
-  backgroundOpacity: 1,
+  backgroundOpacity: 0.8,
   strokeSize: 0,
   strokeColor: "#FFFFFF",
   textDetect: false,
@@ -34,6 +35,7 @@ const genericOptions = {
   enabled: true,
   autoEnterTime: 0,
   append: false,
+  pipeOutput: "Self",
 };
 
 export const OPTIONS_PRESETS: BoxPreset[] = [
@@ -44,6 +46,7 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
     options: {
       ...genericOptions,
     },
+    disabled: () => false,
   },
   {
     presetName: "Ender",
@@ -53,20 +56,39 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
       ...genericOptions,
       useStream: false,
     },
+    disabled: () => false,
   },
   {
-    presetName: "Scanner",
+    presetName: "Scout Sender",
     description:
-      "Translates text in the located region whenever 'k' is pressed. Press 'q' to pause it.",
+      "Translates text in the region when 'a' is pressed. Press 'h' to hide it. Press 'k' to pause it. The text is sent to the 'Scout Receiver' box.",
     options: {
       ...genericOptions,
       fontColor: "#000000",
       backgroundColor: "#FFFFFF",
-      activationKey: "k",
-      pauseKey: "q",
+      activationKey: "a",
+      hideKey: "h",
+      pauseKey: "k",
       listenClipboard: false,
       backgroundOpacity: 0.75,
       useStream: false,
+      pipeOutput: "Receiver",
+      boxId: "Sender",
     },
+    disabled: (allBoxIds) => !allBoxIds.includes("Receiver"),
+  },
+  {
+    presetName: "Scout Receiver",
+    description:
+      "Receives output from the 'Scout Sender' box. Useful when you want to translate a region but display the output somewhere else.",
+    options: {
+      ...genericOptions,
+      listenClipboard: false,
+      useStream: true,
+      pipeOutput: "Self",
+      boxId: "Receiver",
+      append: true,
+    },
+    disabled: () => false,
   },
 ];
