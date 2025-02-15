@@ -280,6 +280,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
         loadingOpacity={useStream ? 0.75 : 0.25}
         pause={pause}
         hide={hide}
+        boxId={boxId} // TODO: Refactor MainGateway to only be called here, thus dispensing of boxId in OcrBoxPane.
       />
     </CssBaseline>
   );

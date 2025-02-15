@@ -37,6 +37,7 @@ const genericOptions = {
   append: false,
   pipeOutput: "Self",
   fasterScan: false,
+  scanAfterClick: 0,
 };
 
 export const OPTIONS_PRESETS: BoxPreset[] = [

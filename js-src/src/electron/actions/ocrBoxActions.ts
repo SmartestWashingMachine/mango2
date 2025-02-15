@@ -95,4 +95,25 @@ const connectedOcrBox: GatewayAction = {
   },
 };
 
-export default [createOcrBox, setBoxValue, newOcrBox, deleteOcrBox, connectedOcrBox];
+const scanOcrBox: GatewayAction = {
+  command: ElectronCommands.SCAN_OCR_BOX,
+  commandType: "handle",
+  fn: (e, w, state, store, boxId: string) => {
+    const foundBox = state.managers.find(
+      (x: OcrBoxManager) => x.boxId === boxId && x.enabled
+    ) as OcrBoxManager; // Only finds first speaker box, if any exists.
+
+    if (!foundBox) return;
+
+    foundBox.scanAndTranslateBox();
+  },
+};
+
+export default [
+  createOcrBox,
+  setBoxValue,
+  newOcrBox,
+  deleteOcrBox,
+  connectedOcrBox,
+  scanOcrBox,
+];

@@ -30,6 +30,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   append: false,
   pipeOutput: "Self",
   fasterScan: false,
+  scanAfterClick: 0,
 };
 
 export const makeBaseBox = (boxId: string) => {

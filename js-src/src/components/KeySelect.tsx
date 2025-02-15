@@ -1,14 +1,19 @@
 import React, { useState } from "react";
-import { TextField, Tooltip } from "@mui/material";
+import { TextField } from "@mui/material";
 
 type KeySelectProps = {
   onKeyChange: (key: string) => void;
   value: string;
   label: string;
-  tooltip: string;
+  helperText: string;
 };
 
-const KeySelect = ({ onKeyChange, value, label, tooltip }: KeySelectProps) => {
+const KeySelect = ({
+  onKeyChange,
+  value,
+  label,
+  helperText,
+}: KeySelectProps) => {
   const [keyValue, setKeyValue] = useState(value);
 
   const displayKey = (key: string) => {
@@ -32,14 +37,13 @@ const KeySelect = ({ onKeyChange, value, label, tooltip }: KeySelectProps) => {
   }
 
   return (
-    <Tooltip title={tooltip} placement="top-start">
-      <TextField
-        label={label}
-        variant="standard"
-        onKeyDown={handleKeyDown}
-        value={keyValue === "Escape" ? "DISABLED" : keyValue}
-      />
-    </Tooltip>
+    <TextField
+      label={label}
+      variant="standard"
+      onKeyDown={handleKeyDown}
+      value={keyValue === "Escape" ? "DISABLED" : keyValue}
+      helperText={helperText}
+    />
   );
 };
 

@@ -66,5 +66,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   resetSettings: () => ipcRenderer.invoke('reset-settings'),
   openLogsFolder: () => ipcRenderer.invoke('open-logs-folder'),
   regenerateBoxManagers: () => ipcRenderer.invoke('regenerate-box-managers'),
+  scanOcrBox: (boxId) => ipcRenderer.invoke('scan-ocr-box', boxId),
   bridgeOn: (evName, cb) => initializeListener(`bridge_${evName}`, cb),
 });

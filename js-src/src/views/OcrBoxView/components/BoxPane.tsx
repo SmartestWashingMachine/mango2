@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Fade, Stack, SxProps, Typography } from "@mui/material";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
 import { BoxOptionsFrontend } from "../../../types/BoxOptions";
+import { MainGateway } from "../../../utils/mainGateway";
 
 type OcrBoxPaneProps = BoxOptionsFrontend & {
   loading: boolean;
@@ -10,6 +11,7 @@ type OcrBoxPaneProps = BoxOptionsFrontend & {
   hide: boolean;
   pause: boolean;
   prevTexts: string[];
+  boxId: string;
 };
 
 const msToSecs = (ms: number) => (ms ? ms * 1000 : 300);
@@ -51,6 +53,8 @@ const OcrBoxPane = ({
   hide,
   pause,
   prevTexts,
+  scanAfterClick,
+  boxId,
 }: OcrBoxPaneProps) => {
   const [visible, setVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
@@ -60,6 +64,8 @@ const OcrBoxPane = ({
   );
 
   const timer = useRef<any>(null);
+
+  const scanAfterClickTimer = useRef<any>(null);
 
   const onHoverEnter = useCallback(() => {
     setIsHovering(true);
@@ -114,6 +120,25 @@ const OcrBoxPane = ({
     );
   }, [text, pause]);
 
+  const beginDelayedScan = () => {
+    if (scanAfterClick > 0) {
+      if (scanAfterClickTimer.current)
+        clearTimeout(scanAfterClickTimer.current);
+
+      scanAfterClickTimer.current = setTimeout(
+        () => MainGateway.scanOcrBox(boxId),
+        msToSecs(scanAfterClick)
+      );
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (scanAfterClickTimer.current)
+        clearTimeout(scanAfterClickTimer.current);
+    };
+  }, []);
+
   let textOpacity = pause ? 0.6 : 1;
   if (loading) textOpacity = loadingOpacity;
 
@@ -144,7 +169,7 @@ const OcrBoxPane = ({
   const timeoutMs = msToSecs(fadeAwayTime);
 
   // If options wasn't given, render null.
-  if (!fontSize || hide) {
+  if (!fontSize || (hide && scanAfterClick === 0)) {
     return null;
   }
   return (
@@ -152,6 +177,8 @@ const OcrBoxPane = ({
       className="fullBoxApp"
       onMouseOver={onHoverEnter}
       onMouseOut={onHoverLeave}
+      onClick={scanAfterClick > 0 ? beginDelayedScan : undefined}
+      style={{ opacity: scanAfterClick > 0 && hide ? 0 : 1 }}
     >
       <Fade
         in={visible || isHovering}

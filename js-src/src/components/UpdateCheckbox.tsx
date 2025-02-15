@@ -3,7 +3,6 @@ import {
   FormControlLabel,
   FormGroup,
   FormHelperText,
-  Tooltip,
 } from "@mui/material";
 import React from "react";
 
@@ -11,7 +10,6 @@ export type UpdateCheckboxProps = {
   changeValue: (key: string, value: boolean) => void;
   keyName: string;
   defaultValue: boolean;
-  tooltip?: string;
   helperText?: string;
   label: string;
 };
@@ -31,19 +29,11 @@ const UpdateCheckbox = (props: UpdateCheckboxProps) => {
         }
         label={props.label}
       />
-      {props.helperText && (
-        <FormHelperText>{props.helperText}</FormHelperText>
-      )}
+      {props.helperText && <FormHelperText>{props.helperText}</FormHelperText>}
     </FormGroup>
   );
 
-  if (props.tooltip) {
-    return (
-      <Tooltip title={props.tooltip} placement="top-start" enterDelay={1000}>
-        {contr}
-      </Tooltip>
-    );
-  } else return contr;
+  return contr;
 };
 
 export default UpdateCheckbox;

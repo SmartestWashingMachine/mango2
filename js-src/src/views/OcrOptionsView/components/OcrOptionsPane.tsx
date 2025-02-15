@@ -51,11 +51,20 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
 
   const updateAutoEnterTime = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.currentTarget;
-    const parsed = parseInt(value, 10);
+    const parsed = parseFloat(value);
 
-    if (!Number.isSafeInteger(parsed) || parsed < 0) return;
+    if (isNaN(parsed) || parsed < 0) return;
 
     changeValue("autoEnterTime", parsed);
+  };
+
+  const updateScanAfterClick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.currentTarget;
+    const parsed = parseFloat(value);
+
+    if (isNaN(parsed) || parsed < 0) return;
+
+    changeValue("scanAfterClick", parsed);
   };
 
   const updatePipeOutput = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -141,8 +150,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.enabled}
               keyName="enabled"
-              tooltip="Disabled boxes will not show on the screen or do anything."
-              helperText="The box can be enabled or disabled for the time being if unchecked."
+              helperText="Disabled boxes will not show on the screen or do anything."
               label="Enabled"
             />
           ),
@@ -203,8 +211,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.bionicReading}
               keyName="bionicReading"
-              tooltip="Boldens some of the text. Supposedly helps readability."
-              helperText="Text will always be aligned to left if enabled."
+              helperText="Boldens some of the text. Supposedly helps readability. Text will always be aligned to left if enabled."
               label="Bionic Reading"
             />
           ),
@@ -239,17 +246,13 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
             />
           ),
           "Fade Away Time": (
-            <Tooltip
-              title="If greater than 0, then after being translated, the box will fade out in that many seconds. Hovering the mouse over the box shows it again."
-              placement="top-start"
-            >
-              <TextField
-                label="Fade Away Time"
-                variant="standard"
-                onChange={updateFadeAwayTime}
-                defaultValue={props.fadeAwayTime}
-              />
-            </Tooltip>
+            <TextField
+              label="Fade Away Time"
+              variant="standard"
+              onChange={updateFadeAwayTime}
+              defaultValue={props.fadeAwayTime}
+              helperText="If greater than 0, then after being translated, the box will fade out in that many seconds. Hovering the mouse over the box shows it again."
+            />
           ),
         },
         Actions: {
@@ -258,7 +261,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Activation Key"
               onKeyChange={updateActivationKey}
               value={props.activationKey}
-              tooltip="Which key to press to translate the box contents. Press ESCAPE to disable."
+              helperText="Which key to press to translate the box contents. Press ESCAPE to disable."
             />
           ) : (
             <div></div>
@@ -268,7 +271,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Pause Key"
               onKeyChange={updatePauseKey}
               value={props.pauseKey}
-              tooltip="While paused, neither auto scan nor clipboard copying will be auto translated. Only the activation key will work. Press ESCAPE to disable."
+              helperText="While paused, neither auto scan nor clipboard copying will be auto translated. Only the activation key will work. Press ESCAPE to disable."
             />
           ) : (
             <div></div>
@@ -278,7 +281,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Hide Key"
               onKeyChange={updateHideKey}
               value={props.hideKey}
-              tooltip="While hidden, the box will not show on the screen. Press ESCAPE to disable."
+              helperText="While hidden, the box will not show on the screen. Press ESCAPE to disable."
             />
           ) : (
             <div></div>
@@ -288,7 +291,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Spelling Correction Key"
               onKeyChange={updateSpellingCorrectionKey}
               value={props.spellingCorrectionKey}
-              tooltip="Refines the translation with the spelling correction model. Must listen to clipboard. Press ESCAPE to disable."
+              helperText="Refines the translation with the spelling correction model. Must listen to clipboard. Press ESCAPE to disable."
             />
           ) : (
             <div></div>
@@ -298,7 +301,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.autoScan}
               keyName="autoScan"
-              tooltip="Every few seconds, automatically translate the box contents if the contents have changed significantly."
+              helperText="Every few seconds, automatically translate the box contents if the contents have changed significantly."
               label="Auto Scan Background"
             />
           ),
@@ -307,22 +310,27 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.listenClipboard}
               keyName="listenClipboard"
-              tooltip="Automatically translate the box contents whenever the clipboard has changed, using the clipboard as the contents."
               label="Listen to Clipboard"
+              helperText="Automatically translate the box contents whenever the clipboard has changed, using the clipboard as the contents."
             />
           ),
           "Auto Enter": (
-            <Tooltip
-              title="If greater than 0, then after being translated, the ENTER key will be automatically pressed after that many seconds."
-              placement="top-start"
-            >
-              <TextField
-                label="Auto Enter"
-                variant="standard"
-                onChange={updateAutoEnterTime}
-                defaultValue={props.autoEnterTime}
-              />
-            </Tooltip>
+            <TextField
+              label="Auto Enter"
+              variant="standard"
+              onChange={updateAutoEnterTime}
+              defaultValue={props.autoEnterTime}
+              helperText="If greater than 0, then after being translated, the ENTER key will be automatically pressed after that many seconds."
+            />
+          ),
+          "Scan N Seconds After Left Click": (
+            <TextField
+              label="Scan N Seconds After Left Click"
+              variant="standard"
+              onChange={updateScanAfterClick}
+              defaultValue={props.scanAfterClick}
+              helperText="If greater than 0, then the background will be OCR'd after that many seconds whenever this region is clicked (works while invisible / hidden)."
+            />
           ),
           "Pipe Output": (
             <TextField
@@ -348,7 +356,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.useStream}
               keyName="useStream"
-              tooltip="The box will show each token as it's being generated from the model."
+              helperText="The box will show each token as it's being generated from the model."
               label="Stream Output"
             />
           ),
@@ -357,7 +365,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.textDetect}
               keyName="textDetect"
-              tooltip="Uses the text detection model before the text recognition model to enhance accuracy at the cost of speed. No effect on boxes that listen to the clipboard."
+              helperText="Uses the text detection model before the text recognition model to enhance accuracy at the cost of speed. No effect on boxes that listen to the clipboard."
               label="Enhance Text Recognition"
             />
           ),
@@ -366,7 +374,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.speakerBox}
               keyName="speakerBox"
-              tooltip="If enabled, may improve the translation output of the other boxes. Place this box over the area where the speaker is usually given."
+              helperText="If enabled, may improve the translation output of the other boxes. Place this box over the area where the speaker is usually given."
               label="Is Speaker Box"
             />
           ),
@@ -375,7 +383,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.removeSpeaker}
               keyName="removeSpeaker"
-              tooltip="Removes the speaker name from the translated text given by the speaker box."
+              helperText="Removes the speaker name from the translated text given by the speaker box."
               label="Remove Speaker"
             />
           ),
@@ -384,7 +392,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.fasterScan}
               keyName="fasterScan"
-              tooltip="Gives faster outputs using the Activation Key. Requires the box to be invisible."
+              helperText="Gives faster outputs using the Activation Key or 'Scan After Left Click' methods. Requires the box to be invisible."
               label="Faster Activation Key Scanning"
             />
           ),

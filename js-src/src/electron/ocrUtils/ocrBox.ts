@@ -18,6 +18,7 @@ import { clipboardCb, getTextFromClipboard } from "./clipboardCb";
 import { autoScanCb } from "./autoScanCb";
 import ElectronChannels from "../../types/ElectronChannels";
 import SharedGlobalShortcuts from "./sharedGlobalShortcuts";
+
 export class OcrBoxManager implements BoxOptionsBackend {
   ocrWindow: BrowserWindow | null;
   boxId: string;
@@ -40,6 +41,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   enabled: boolean;
   pipeOutput: string;
   fasterScan: boolean;
+  scanAfterClick: number;
 
   _timerAutoScan?: any;
   _timerClipboard?: any;
@@ -86,6 +88,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     this.pipeOutput = "Self";
     this.fasterScan = false;
+    this.scanAfterClick = 0;
 
     this._timerAutoScan = null;
     this._timerClipboard = null;
@@ -142,6 +145,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
       DEFAULT_BOX_OPTIONS.spellingCorrectionKey;
     this.pipeOutput = boxSettings.pipeOutput || DEFAULT_BOX_OPTIONS.pipeOutput;
     this.fasterScan = boxSettings.fasterScan || DEFAULT_BOX_OPTIONS.fasterScan;
+    this.scanAfterClick =
+      boxSettings.scanAfterClick || DEFAULT_BOX_OPTIONS.scanAfterClick;
 
     if (!boxSettings) {
       this.enabled = true;
@@ -241,6 +246,12 @@ export class OcrBoxManager implements BoxOptionsBackend {
     );
   }
 
+  async scanAndTranslateBox() {
+    return this.fasterScan
+      ? this.scanAndTranslateBoxContentsFaster()
+      : this.scanAndTranslateBoxContents();
+  }
+
   /* Get author/speaker name (untranslated). */
   async scanBoxContents() {
     const finalImgBuffer = await this.takeImageCheck();
@@ -278,11 +289,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     if (this.activationKey !== DISABLED_KEY_VALUE) {
       this._activationKeyCallback = SharedGlobalShortcuts.register(
         this.activationKey,
-        async () => {
-          this.fasterScan
-            ? await this.scanAndTranslateBoxContentsFaster()
-            : await this.scanAndTranslateBoxContents();
-        }
+        async () => this.scanAndTranslateBox()
       );
     }
 
@@ -310,7 +317,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
         async () => {
           this._hide = !this._hide;
           if (this.ocrWindow) {
-            this.ocrWindow.setIgnoreMouseEvents(this._hide);
+            // Can't afford to ignore mouse events if scan after click is on: We still want to listen to click events on invisible boxes in that case.
+            this.ocrWindow.setIgnoreMouseEvents(
+              this.scanAfterClick === 0 && this._hide
+            );
 
             this.ocrWindow.webContents.send(
               ElectronChannels.OCR_HIDDEN,

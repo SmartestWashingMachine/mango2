@@ -15,6 +15,7 @@ export type BoxOptionsFrontend = {
   autoEnterTime: number;
   append: boolean;
   pipeOutput: string;
+  scanAfterClick: number;
 };
 
 export type BoxOptionsBackend = {
