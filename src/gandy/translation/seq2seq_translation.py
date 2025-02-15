@@ -69,15 +69,20 @@ class Seq2SeqTranslationApp(BaseTranslation):
         else:
             session_options = SessionOptions()
 
-            # PARALLEL gives slightly (~10%) better performance than SEQUENTIAL. Tested on the JA Madness model.
-            session_options.intra_op_num_threads = torch.get_num_threads()
-            session_options.execution_mode = ExecutionMode.ORT_PARALLEL
+            # PARALLEL gives slightly (~10%) better performance than SEQUENTIAL. Tested on the JA Madness model. EDIT: Seems shaky.
+            # On the other hand, this SEQUENTIAL with half intra and half inter gave better performance on a 12-core machine.
+            session_options.intra_op_num_threads = (torch.get_num_threads() // 2)
+            session_options.execution_mode = ExecutionMode.ORT_SEQUENTIAL
             session_options.graph_optimization_level = (
                 GraphOptimizationLevel.ORT_ENABLE_ALL
             )
             session_options.add_session_config_entry(
                 "session.intra_op.allow_spinning", "1"
             )
+            session_options.add_session_config_entry(
+                "session.inter_op.allow_spinning", "1"
+            )
+            session_options.inter_op_num_threads = (torch.get_num_threads() // 2)
             session_options.enable_mem_pattern = False # This causes very strange issues. What the fudge ONNX?
             session_options.enable_cpu_mem_arena = True
             session_options.enable_mem_reuse = True
@@ -133,10 +138,11 @@ class Seq2SeqTranslationApp(BaseTranslation):
         return self.source_tokenizer(text, max_length=self.max_length, truncation=True, padding=False, return_tensors="pt")
 
     def target_decode(self, output):
-        if config_state.decoding_mode == "beam":
-            return [self.target_tokenizer.batch_decode(output)[0]]
+        with logger.begin_event("Target Decoding"):
+            if config_state.decoding_mode == "beam":
+                return [self.target_tokenizer.batch_decode(output)[0]]
 
-        return self.target_tokenizer.batch_decode(output)
+            return self.target_tokenizer.batch_decode(output)
 
     def strip_padding(self, prediction):
         if config_state.decoding_mode == "beam":
@@ -228,21 +234,26 @@ class Seq2SeqTranslationApp(BaseTranslation):
 
     def translate_string(self, inp: str, use_stream=None):
         if self.extra_preprocess is not None:
-            inp = self.extra_preprocess(inp)
+            with logger.begin_event("Extra Preprocessing"):
+                inp = self.extra_preprocess(inp)
 
         extra_kwargs = {}
         if use_stream is not None:
             use_stream.tokenizer = self.target_tokenizer
             extra_kwargs["streamer"] = use_stream
 
-        x_dict = self.source_encode(inp)
+        with logger.begin_event("Encode Source"):
+            x_dict = self.source_encode(inp)
 
-        predictions = self.do_generate(x_dict, extra_kwargs)
+        with logger.begin_event("Generate"):
+            predictions = self.do_generate(x_dict, extra_kwargs)
 
-        predictions = [self.strip_padding(p) for p in predictions]
+        with logger.begin_event("Strip Padding"):
+            predictions = [self.strip_padding(p) for p in predictions]
 
         if self.extra_postprocess is not None:
-            predictions = [self.extra_postprocess(p).strip() for p in predictions]
+            with logger.begin_event("Extra Postprocessing"):
+                predictions = [self.extra_postprocess(p).strip() for p in predictions]
 
         return predictions, inp
 
