@@ -29,6 +29,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   autoEnterTime: 0,
   append: false,
   pipeOutput: "Self",
+  fasterScan: false,
 };
 
 export const makeBaseBox = (boxId: string) => {

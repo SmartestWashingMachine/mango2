@@ -89,7 +89,6 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
       changeValue(key as any, value);
     }
 
-    console.log("regen part 1");
     // Some presets modify the Box ID, making this util necessary.
     MainGateway.regenerateBoxManagers();
 
@@ -378,6 +377,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               keyName="removeSpeaker"
               tooltip="Removes the speaker name from the translated text given by the speaker box."
               label="Remove Speaker"
+            />
+          ),
+          "Faster Activation Key Scanning": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.fasterScan}
+              keyName="fasterScan"
+              tooltip="Gives faster outputs using the Activation Key. Requires the box to be invisible."
+              label="Faster Activation Key Scanning"
             />
           ),
         },

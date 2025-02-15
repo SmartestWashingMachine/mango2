@@ -31,6 +31,7 @@ export type BoxOptionsBackend = {
   useStream: boolean;
   spellingCorrectionKey: string;
   boxId?: string;
+  fasterScan: boolean;
 };
 
 export type BoxOptions = BoxOptionsFrontend & BoxOptionsBackend;

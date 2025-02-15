@@ -5,6 +5,7 @@ from gandy.app import app, translate_pipeline, socketio
 from gandy.utils.get_sep_regex import get_last_sentence
 from gandy.utils.socket_stream import SocketStreamer
 from gandy.tasks.task3.task3_box_context_state_utils import push_to_state, get_context
+from mss import mss
 
 # Task3 - translate images into text (from the OCR box).
 # Context here is stored on the SERVER rather than the client.
@@ -38,10 +39,14 @@ def translate_task3_background_job(
     box_id=None,
     with_text_detect=True,
     use_stream=None,
+    already_loaded=False
 ):
     with logger.begin_event("Task3") as ctx:
         try:
-            opened_images = load_images(images)
+            if already_loaded:
+                opened_images = images
+            else:
+                opened_images = load_images(images)
 
             emit_begin(box_id)  # Images must be loaded BEFORE emitting progress.
 
@@ -109,6 +114,48 @@ def process_task3_route():
         box_id,
         with_text_detect,
         use_stream,
+        False,
+    )
+
+    return {"processing": True}, 202
+
+@app.route("/processtask3new", methods=["POST"])
+def process_task3new_route():
+    data = request.form.to_dict(flat=False)
+    box_id = data["boxId"] if "boxId" in data else None
+    text_detect = data["textDetect"] if "textDetect" in data else "off"
+
+    use_stream = data["useStream"] if "useStream" in data else "off"
+
+    use_stream = True if use_stream[0] == "on" else None
+
+    if use_stream:
+        use_stream = SocketStreamer(box_id=box_id)
+
+    # It's an array? Huh? TODO
+    with_text_detect = text_detect[0] == "on"
+    if box_id is not None and len(box_id) > 0:
+        box_id = box_id[0]
+
+    images = request.files.getlist("file")
+
+    coords = [int(x[0]) for x in [data['x1'], data['y1'], data['width'], data['height']]]
+
+    # From: https://python-mss.readthedocs.io/examples.html#pil
+    with mss() as sct:
+        monitor = {"top": coords[1], "left": coords[0], "width": coords[2], "height": coords[3]}
+        sct_img = sct.grab(monitor)
+
+        img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+        images = [img]
+
+    socketio.start_background_task(
+        translate_task3_background_job,
+        images,
+        box_id,
+        with_text_detect,
+        use_stream,
+        True,
     )
 
     return {"processing": True}, 202

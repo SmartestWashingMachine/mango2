@@ -23,8 +23,47 @@ export const translateImageGiveText = async (
     formData.append("tgt_context_memory", tgtContextMemory);
   }
 
-  if (streamOutput)
-    formData.append("useStream", streamOutput ? "on" : "off");
+  if (streamOutput) formData.append("useStream", streamOutput ? "on" : "off");
+
+  formData.append("boxId", boxId);
+  formData.append("textDetect", textDetect ? "on" : "off");
+
+  const output = await nodeFetch(apiUrl, {
+    method: "POST",
+    body: formData,
+    headers: {
+      Accept: "application/json",
+    },
+  });
+  if (output.status !== 202) throw Error("Invalid status code.");
+};
+
+/**
+ * This function is called when translating by simply pressing the scanning key with the "Faster Capture" option enabled. CALLED FROM ELECTRON CURRENTLY.
+ */
+export const translateImageGiveTextFaster = async (
+  coords: number[],
+  boxId: string,
+  textDetect: boolean,
+  tgtContextMemory: string | null,
+  streamOutput: boolean | null
+) => {
+  const apiUrl = "http://localhost:5000/processtask3new";
+
+  const formData = new FormData();
+  for (const f of coords) {
+    formData.append("coords", f.toString());
+  }
+  formData.append("x1", coords[0].toString());
+  formData.append("y1", coords[1].toString());
+  formData.append("width", coords[2].toString());
+  formData.append("height", coords[3].toString());
+
+  if (tgtContextMemory !== null) {
+    formData.append("tgt_context_memory", tgtContextMemory);
+  }
+
+  if (streamOutput) formData.append("useStream", streamOutput ? "on" : "off");
 
   formData.append("boxId", boxId);
   formData.append("textDetect", textDetect ? "on" : "off");

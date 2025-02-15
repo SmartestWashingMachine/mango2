@@ -36,6 +36,7 @@ const genericOptions = {
   autoEnterTime: 0,
   append: false,
   pipeOutput: "Self",
+  fasterScan: false,
 };
 
 export const OPTIONS_PRESETS: BoxPreset[] = [
@@ -71,9 +72,10 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
       pauseKey: "k",
       listenClipboard: false,
       backgroundOpacity: 0.75,
-      useStream: false,
+      useStream: true,
       pipeOutput: "Receiver",
       boxId: "Sender",
+      fasterScan: true,
     },
     disabled: (allBoxIds) => !allBoxIds.includes("Receiver"),
   },
@@ -88,6 +90,7 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
       pipeOutput: "Self",
       boxId: "Receiver",
       append: true,
+      fasterScan: true,
     },
     disabled: () => false,
   },

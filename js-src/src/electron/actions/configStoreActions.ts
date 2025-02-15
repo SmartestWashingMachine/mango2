@@ -54,7 +54,6 @@ const regenerateBoxManagers: GatewayAction = {
   command: ElectronCommands.REGENERATE_BOX_MANAGERS,
   commandType: "handle",
   fn: (e, w, state, store, key, value) => {
-    console.log("regen");
     let boxes = store.get("boxes") as any[];
 
     if (boxes.length === 0) {

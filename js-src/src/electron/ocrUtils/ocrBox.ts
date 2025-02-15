@@ -1,9 +1,10 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, screen } from "electron";
 import { ElectronState } from "../../types/ElectronState";
 import {
   refineTranslation,
   scanImageGiveText,
   translateImageGiveText,
+  translateImageGiveTextFaster,
 } from "../../flaskcomms/ocrBoxBackendComms";
 import { imagesDifferent } from "./imagesDifferent";
 import { BoxOptionsBackend } from "../../types/BoxOptions";
@@ -17,7 +18,6 @@ import { clipboardCb, getTextFromClipboard } from "./clipboardCb";
 import { autoScanCb } from "./autoScanCb";
 import ElectronChannels from "../../types/ElectronChannels";
 import SharedGlobalShortcuts from "./sharedGlobalShortcuts";
-
 export class OcrBoxManager implements BoxOptionsBackend {
   ocrWindow: BrowserWindow | null;
   boxId: string;
@@ -39,6 +39,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   spellingCorrectionKey: string;
   enabled: boolean;
   pipeOutput: string;
+  fasterScan: boolean;
 
   _timerAutoScan?: any;
   _timerClipboard?: any;
@@ -84,6 +85,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.prevText = null; // For listenClipboard.
 
     this.pipeOutput = "Self";
+    this.fasterScan = false;
 
     this._timerAutoScan = null;
     this._timerClipboard = null;
@@ -139,6 +141,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
       boxSettings.spellingCorrectionKey ||
       DEFAULT_BOX_OPTIONS.spellingCorrectionKey;
     this.pipeOutput = boxSettings.pipeOutput || DEFAULT_BOX_OPTIONS.pipeOutput;
+    this.fasterScan = boxSettings.fasterScan || DEFAULT_BOX_OPTIONS.fasterScan;
 
     if (!boxSettings) {
       this.enabled = true;
@@ -218,6 +221,26 @@ export class OcrBoxManager implements BoxOptionsBackend {
     }
   }
 
+  async scanAndTranslateBoxContentsFaster() {
+    if (!this.ocrWindow) return;
+
+    let { width, height, x, y } = this.ocrWindow.getContentBounds();
+    const factor = screen.getPrimaryDisplay().scaleFactor;
+
+    width = Math.floor(width * factor);
+    height = Math.floor(height * factor);
+    x = Math.floor(x * factor);
+    y = Math.floor(y * factor);
+
+    await translateImageGiveTextFaster(
+      [x, y, width, height],
+      this.getOutputBoxId(),
+      this.textDetect,
+      null,
+      this.useStream
+    );
+  }
+
   /* Get author/speaker name (untranslated). */
   async scanBoxContents() {
     const finalImgBuffer = await this.takeImageCheck();
@@ -256,7 +279,9 @@ export class OcrBoxManager implements BoxOptionsBackend {
       this._activationKeyCallback = SharedGlobalShortcuts.register(
         this.activationKey,
         async () => {
-          await this.scanAndTranslateBoxContents();
+          this.fasterScan
+            ? await this.scanAndTranslateBoxContentsFaster()
+            : await this.scanAndTranslateBoxContents();
         }
       );
     }
@@ -328,6 +353,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
       */
       const SCAN_MS = 3000;
 
+      // Can't do the faster scan here: the image similarity check is on the JS side, whereas the faster scan only creates the image on the Python side.
       const cb = async () => {
         const prevImage = await autoScanCb({
           cloakBox: this.cloakBox,
