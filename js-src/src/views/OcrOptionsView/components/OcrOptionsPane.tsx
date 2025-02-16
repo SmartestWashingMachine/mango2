@@ -58,13 +58,13 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
     changeValue("autoEnterTime", parsed);
   };
 
-  const updateScanAfterClick = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const updatescanAfterEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.currentTarget;
     const parsed = parseFloat(value);
 
     if (isNaN(parsed) || parsed < 0) return;
 
-    changeValue("scanAfterClick", parsed);
+    changeValue("scanAfterEnter", parsed);
   };
 
   const updatePipeOutput = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -323,13 +323,13 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               helperText="If greater than 0, then after being translated, the ENTER key will be automatically pressed after that many seconds."
             />
           ),
-          "Scan N Seconds After Left Click": (
+          "Scan N Seconds After Enter": (
             <TextField
-              label="Scan N Seconds After Left Click"
+              label="Scan N Seconds After Enter"
               variant="standard"
-              onChange={updateScanAfterClick}
-              defaultValue={props.scanAfterClick}
-              helperText="If greater than 0, then the background will be OCR'd after that many seconds whenever this region is clicked (works while invisible / hidden)."
+              onChange={updatescanAfterEnter}
+              defaultValue={props.scanAfterEnter}
+              helperText="If greater than 0, then the background will be OCR'd after that many seconds whenever the ENTER key is pressed manually."
             />
           ),
           "Pipe Output": (

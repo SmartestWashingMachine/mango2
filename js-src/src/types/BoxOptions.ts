@@ -15,7 +15,6 @@ export type BoxOptionsFrontend = {
   autoEnterTime: number;
   append: boolean;
   pipeOutput: string;
-  scanAfterClick: number;
 };
 
 export type BoxOptionsBackend = {
@@ -33,6 +32,7 @@ export type BoxOptionsBackend = {
   spellingCorrectionKey: string;
   boxId?: string;
   fasterScan: boolean;
+  scanAfterEnter: number;
 };
 
 export type BoxOptions = BoxOptionsFrontend & BoxOptionsBackend;

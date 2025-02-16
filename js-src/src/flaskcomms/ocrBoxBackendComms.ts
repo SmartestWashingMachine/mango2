@@ -168,3 +168,15 @@ export const scanImageGiveText = async (
   const data: any = await output.json();
   return data?.text;
 };
+
+export const triggerEnterNodeFetch = async () => {
+  const apiUrl = "http://localhost:5000/triggerenter";
+
+  await nodeFetch(apiUrl, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+};

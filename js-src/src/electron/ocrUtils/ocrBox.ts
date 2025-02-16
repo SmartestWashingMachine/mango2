@@ -18,6 +18,7 @@ import { clipboardCb, getTextFromClipboard } from "./clipboardCb";
 import { autoScanCb } from "./autoScanCb";
 import ElectronChannels from "../../types/ElectronChannels";
 import SharedGlobalShortcuts from "./sharedGlobalShortcuts";
+import { triggerEnterNodeFetch } from "../../flaskcomms/ocrBoxBackendComms";
 
 export class OcrBoxManager implements BoxOptionsBackend {
   ocrWindow: BrowserWindow | null;
@@ -41,10 +42,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
   enabled: boolean;
   pipeOutput: string;
   fasterScan: boolean;
-  scanAfterClick: number;
+  scanAfterEnter: number;
 
   _timerAutoScan?: any;
   _timerClipboard?: any;
+  _timerScanAfterEnter?: any;
   _paused?: boolean;
   _hide?: boolean;
   _stateTexts: any[];
@@ -88,10 +90,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     this.pipeOutput = "Self";
     this.fasterScan = false;
-    this.scanAfterClick = 0;
+    this.scanAfterEnter = 0;
 
     this._timerAutoScan = null;
     this._timerClipboard = null;
+    this._timerScanAfterEnter = null;
     this._paused = false;
     this._hide = false;
     this._speakerCallback = async () => new Promise(() => "");
@@ -145,8 +148,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
       DEFAULT_BOX_OPTIONS.spellingCorrectionKey;
     this.pipeOutput = boxSettings.pipeOutput || DEFAULT_BOX_OPTIONS.pipeOutput;
     this.fasterScan = boxSettings.fasterScan || DEFAULT_BOX_OPTIONS.fasterScan;
-    this.scanAfterClick =
-      boxSettings.scanAfterClick || DEFAULT_BOX_OPTIONS.scanAfterClick;
+    this.scanAfterEnter =
+      boxSettings.scanAfterEnter || DEFAULT_BOX_OPTIONS.scanAfterEnter;
 
     if (!boxSettings) {
       this.enabled = true;
@@ -317,10 +320,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
         async () => {
           this._hide = !this._hide;
           if (this.ocrWindow) {
-            // Can't afford to ignore mouse events if scan after click is on: We still want to listen to click events on invisible boxes in that case.
-            this.ocrWindow.setIgnoreMouseEvents(
-              this.scanAfterClick === 0 && this._hide
-            );
+            this.ocrWindow.setIgnoreMouseEvents(this._hide);
 
             this.ocrWindow.webContents.send(
               ElectronChannels.OCR_HIDDEN,
@@ -354,6 +354,26 @@ export class OcrBoxManager implements BoxOptionsBackend {
           }
         }
       );
+    }
+
+    // Listen to ENTER keys, remove the ENTER key blocker on the globalShortcuts, then re-add it afterwards, if scanAfterEnter is enabled.
+    if (this.scanAfterEnter > 0) {
+      SharedGlobalShortcuts.registerOnce(
+        "ENTER",
+        async () => {
+          // registerOnce unregisters the ENTER key before this callback is activated, allowing us to re-trigger the ENTER key via the Python backend.
+          // "Why not re-trigger the ENTER key in ElectronJS???" - We can't. Need to use external libraries like IOHook, which don't work anymore.
+          await triggerEnterNodeFetch();
+
+          if (this._timerScanAfterEnter)
+            clearTimeout(this._timerScanAfterEnter);
+
+          this._timerScanAfterEnter = setTimeout(async () => {
+            await this.scanAndTranslateBoxContents();
+          }, this.scanAfterEnter * 1000);
+        },
+        true
+      ); // Set doReRegister to 'true' here, to re-register this exact callback after being triggered.
     }
 
     if (this.autoScan) {
@@ -456,9 +476,19 @@ export class OcrBoxManager implements BoxOptionsBackend {
         this.spellingCorrectionKey,
         this._spellingCorrectionKeyCallback
       );
+    if (this.scanAfterEnter > 0) {
+      // BUG: Will bug out if there are multiple boxes with scanAfterEnter (should never happen though?)
+      // 'null' here means we unregister ALL enter callbacks.
+      SharedGlobalShortcuts.unregister("ENTER", null);
+    }
 
     if (this._timerAutoScan) clearInterval(this._timerAutoScan);
     if (this._timerClipboard) clearInterval(this._timerClipboard);
+    if (this._timerScanAfterEnter) clearTimeout(this._timerScanAfterEnter);
+
+    this._timerAutoScan = null;
+    this._timerClipboard = null;
+    this._timerScanAfterEnter = null;
 
     this._paused = false;
     this._hide = false;
