@@ -61,6 +61,24 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
     disabled: () => false,
   },
   {
+    presetName: "Scanner",
+    description:
+      "Translates text in the region when 'k' is pressed. Press 'h' to hide and pause it.",
+    options: {
+      ...genericOptions,
+      fontColor: "#000000",
+      backgroundColor: "#FFFFFF",
+      activationKey: "k",
+      hideKey: "h",
+      pauseKey: "h",
+      listenClipboard: false,
+      backgroundOpacity: 0.75,
+      useStream: true,
+      pipeOutput: "Self",
+    },
+    disabled: () => false,
+  },
+  {
     presetName: "Scout Sender",
     description:
       "Translates text in the region when 'a' is pressed. Press 'h' to hide it. Press 'k' to pause it. The text is sent to the 'Scout Receiver' box.",
