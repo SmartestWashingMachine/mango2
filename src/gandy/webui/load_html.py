@@ -22,7 +22,7 @@ if ENABLE_WEB_UI:
 
         if file_extension == "mp4":
             videos_folder_path = os.path.expanduser(f"~/Documents/Mango/{folder_name}/")
-            videos_path = [f for f in glob(f"{videos_folder_path}*.mp4")]
+            videos_path = [f for f in glob(f"{videos_folder_path}*")]
 
             for vp in videos_path:
                 first_file_date = os.path.getmtime(vp)
@@ -54,7 +54,7 @@ if ENABLE_WEB_UI:
             "folderDates": folder_dates,
         }, 200
     
-    def get_file(folder_name, user_folder_name, file_name, mimetype):
+    def get_file(folder_name, user_folder_name, file_name, mimetype, load_image=False):
         images_folder_path = os.path.expanduser(f"~/Documents/Mango/{folder_name}/")
 
         if user_folder_name is not None:
@@ -67,15 +67,18 @@ if ENABLE_WEB_UI:
         if not os.path.exists(fol_path) or not os.path.exists(file_path):
             abort(404)
 
-        img = Image.open(file_path)
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
+        if load_image:
+            img = Image.open(file_path)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
 
-        buffer = BytesIO()
-        img.save(buffer, format="JPEG")
-        buffer.seek(0)
+            buffer = BytesIO()
+            img.save(buffer, format="JPEG")
+            buffer.seek(0)
 
-        return send_file(buffer, mimetype='image/jpeg')
+            return send_file(buffer, mimetype='image/jpeg')
+
+        return send_file(file_path, mimetype)
 
     @web_app.route("/webui", methods=["GET"])
     def webui_route():
@@ -92,7 +95,7 @@ if ENABLE_WEB_UI:
         if folder_name is None:
             raise RuntimeError('Bad folder name.')
 
-        return get_file("images", folder_name, file_name, mimetype="image/png")
+        return get_file("images", folder_name, file_name, mimetype="image/png", load_image=True)
     
     ### VIDEOS
 
