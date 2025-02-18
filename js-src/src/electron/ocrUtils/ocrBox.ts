@@ -240,6 +240,9 @@ export class OcrBoxManager implements BoxOptionsBackend {
     x = Math.floor(x * factor);
     y = Math.floor(y * factor);
 
+    const isHidden = this._hide;
+    if (!isHidden) this.cloakBox();
+
     await translateImageGiveTextFaster(
       [x, y, width, height],
       this.getOutputBoxId(),
@@ -247,6 +250,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
       null,
       this.useStream
     );
+
+    if (!isHidden) this.revealBox();
   }
 
   async scanAndTranslateBox() {

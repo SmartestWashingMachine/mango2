@@ -392,7 +392,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.fasterScan}
               keyName="fasterScan"
-              helperText="Gives faster outputs using the Activation Key or 'Scan After Left Click' methods. Requires the box to be invisible."
+              helperText="Gives faster outputs using the Activation Key or 'Scan After Left Click' methods."
               label="Faster Activation Key Scanning"
             />
           ),
