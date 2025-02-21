@@ -17,17 +17,19 @@ class SocketStreamer(TextStreamer):
 
     # This is a slightly more optimized put for our models.
     # Most code from TextStreamer.
-    def optimized_put(self, value):
+    def optimized_put(self, value, replace=False):
         """
         Receives tokens, decodes them, and prints them to stdout as soon as they form entire words.
         """
-        if len(value.shape) > 1 and value.shape[0] > 1:
-            raise ValueError("TextStreamer only supports batch size 1")
-        elif len(value.shape) > 1:
-            value = value[0]
-
         # Add the new token to the cache and decodes the entire thing.
-        self.token_cache.extend(value.tolist())
+        if replace:
+            self.token_cache = value
+        else:
+            if len(value.shape) > 1 and value.shape[0] > 1:
+                raise ValueError("TextStreamer only supports batch size 1")
+            elif len(value.shape) > 1:
+                value = value[0]
+            self.token_cache.extend(value.tolist())
         text = self.tokenizer.decode(self.token_cache, **self.decode_kwargs)
 
         # Prints until the last space char (simple heuristic to avoid printing incomplete words,
@@ -36,10 +38,10 @@ class SocketStreamer(TextStreamer):
 
         self.on_finalized_text(printable_text)
 
-    def put(self, value):
+    def put(self, value, replace=False):
         # We send all tokens at every put() since websockets are unreliable - packets can be dropped (yes, even on localhost).
         self.print_len = 0  # Comment this line if we only want to emit the next token.
-        return self.optimized_put(value)
+        return self.optimized_put(value, replace=replace)
 
     def on_finalized_text(self, text: str, stream_end: bool = False):
         if stream_end:

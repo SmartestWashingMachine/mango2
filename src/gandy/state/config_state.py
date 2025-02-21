@@ -9,13 +9,17 @@ class ConfigState:
         self.epsilon_cutoff = 0.0
         self.num_beams = 5
         self.force_translation_cpu = False
+        self.force_ocr_cpu = False
         self.force_td_cpu = False
+        self.force_tl_cpu = False
         self.max_length_a = 0
         self.no_repeat_ngram_size = 5
 
         self.n_context = 1
 
         self.use_cuda = False
+
+        self.use_translation_server = False
 
         # self.terms = []
         self.source_terms = []

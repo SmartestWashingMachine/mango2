@@ -4,6 +4,7 @@ from optimum.onnxruntime import ORTModelForSeq2SeqLM
 from gandy.state.config_state import config_state
 from onnxruntime import SessionOptions, ExecutionMode, GraphOptimizationLevel
 import torch
+import ctranslate2
 
 class BreakableORTModelForSeq2SeqLM(ORTModelForSeq2SeqLM):
     def forward(self, *args, **kwargs):
@@ -58,50 +59,54 @@ class Seq2SeqTranslationApp(BaseTranslation):
 
         can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
 
-        if can_cuda:
-            # model_path = f"models/{s}/model_gpu"
-            model_path = f"models/{s}/model_cpu"  # Seems acceptable for now.
-
-            provider = "CUDAExecutionProvider"
-            self.translation_model = BreakableORTModelForSeq2SeqLM.from_pretrained(
-                model_path, provider=provider, use_io_binding=can_cuda
-            )
+        if config_state.use_translation_server:
+            device = "cuda"
+            self.translator = ctranslate2.Translator("models/jamad-qint8-bfloat16", device=device)
         else:
-            session_options = SessionOptions()
+            if can_cuda:
+                # model_path = f"models/{s}/model_gpu"
+                model_path = f"models/{s}/model_cpu"  # Seems acceptable for now.
 
-            # PARALLEL gives slightly (~10%) better performance than SEQUENTIAL. Tested on the JA Madness model. EDIT: Seems shaky.
-            # On the other hand, this SEQUENTIAL with half intra and half inter gave better performance on a 12-core machine.
-            session_options.intra_op_num_threads = (torch.get_num_threads() // 2)
-            session_options.execution_mode = ExecutionMode.ORT_SEQUENTIAL
-            session_options.graph_optimization_level = (
-                GraphOptimizationLevel.ORT_ENABLE_ALL
-            )
-            session_options.add_session_config_entry(
-                "session.intra_op.allow_spinning", "1"
-            )
-            session_options.add_session_config_entry(
-                "session.inter_op.allow_spinning", "1"
-            )
-            session_options.inter_op_num_threads = (torch.get_num_threads() // 2)
-            session_options.enable_mem_pattern = False # This causes very strange issues. What the fudge ONNX?
-            session_options.enable_cpu_mem_arena = True
-            session_options.enable_mem_reuse = True
+                provider = "CUDAExecutionProvider"
+                self.translation_model = BreakableORTModelForSeq2SeqLM.from_pretrained(
+                    model_path, provider=provider, use_io_binding=can_cuda
+                )
+            else:
+                session_options = SessionOptions()
 
-            logger.log(
-                f"Loading MT model with threads N={session_options.intra_op_num_threads}"
-            )
+                # PARALLEL gives slightly (~10%) better performance than SEQUENTIAL. Tested on the JA Madness model. EDIT: Seems shaky.
+                # On the other hand, this SEQUENTIAL with half intra and half inter gave better performance on a 12-core machine.
+                session_options.intra_op_num_threads = (torch.get_num_threads() // 2)
+                session_options.execution_mode = ExecutionMode.ORT_SEQUENTIAL
+                session_options.graph_optimization_level = (
+                    GraphOptimizationLevel.ORT_ENABLE_ALL
+                )
+                session_options.add_session_config_entry(
+                    "session.intra_op.allow_spinning", "1"
+                )
+                session_options.add_session_config_entry(
+                    "session.inter_op.allow_spinning", "1"
+                )
+                session_options.inter_op_num_threads = (torch.get_num_threads() // 2)
+                session_options.enable_mem_pattern = False # This causes very strange issues. What the fudge ONNX?
+                session_options.enable_cpu_mem_arena = True
+                session_options.enable_mem_reuse = True
 
-            model_path = f"models/{s}/model_cpu"
-            provider = "CPUExecutionProvider"
-            # load_in_8bit needed even? I thought not but it makes a difference in tests according to one end user (not me)...
+                logger.log(
+                    f"Loading MT model with threads N={session_options.intra_op_num_threads}"
+                )
 
-            self.translation_model = BreakableORTModelForSeq2SeqLM.from_pretrained(
-                model_path,
-                provider=provider,
-                use_io_binding=False,
-                load_in_8bit=True,
-                session_options=session_options,
-            )
+                model_path = f"models/{s}/model_cpu"
+                provider = "CPUExecutionProvider"
+                # load_in_8bit needed even? I thought not but it makes a difference in tests according to one end user (not me)...
+
+                self.translation_model = BreakableORTModelForSeq2SeqLM.from_pretrained(
+                    model_path,
+                    provider=provider,
+                    use_io_binding=False,
+                    load_in_8bit=True,
+                    session_options=session_options,
+                )
 
         self.source_tokenizer = self.encoder_tokenizer_cls.from_pretrained(
             f"models/{s}tokenizer_src",
@@ -242,11 +247,40 @@ class Seq2SeqTranslationApp(BaseTranslation):
             use_stream.tokenizer = self.target_tokenizer
             extra_kwargs["streamer"] = use_stream
 
-        with logger.begin_event("Encode Source"):
-            x_dict = self.source_encode(inp)
+        if config_state.use_translation_server:
+            source = self.source_tokenizer.convert_ids_to_tokens(self.source_tokenizer.encode(inp))
 
-        with logger.begin_event("Generate"):
-            predictions = self.do_generate(x_dict, extra_kwargs)
+            if use_stream is not None:
+                # Streaming word-by-word.
+
+                output_ids = []
+                step_results = self.translator.generate_tokens(source)
+
+                for step_result in step_results:
+                    is_new_word = step_result.token.startswith("▁")
+                    if is_new_word and output_ids:
+                        use_stream.put(output_ids, replace=True)
+
+                    output_ids.append(step_result.token_id)
+
+                if output_ids:
+                    word = self.target_tokenizer.decode(output_ids, skip_special_tokens=False)
+                    predictions = [word]
+                else:
+                    predictions = [""]
+            else:
+                # Normal inference.
+                num_beams_to_use = config_state.num_beams
+
+                results = self.translator.translate_batch([source], beam_size=num_beams_to_use, return_scores=num_beams_to_use > 1)
+                target = results[0].hypotheses[0]
+                predictions = [self.target_tokenizer.decode(self.target_tokenizer.convert_tokens_to_ids(target), skip_special_tokens=False)]
+        else:
+            with logger.begin_event("Encode Source"):
+                x_dict = self.source_encode(inp)
+
+            with logger.begin_event("Generate"):
+                predictions = self.do_generate(x_dict, extra_kwargs)
 
         with logger.begin_event("Strip Padding"):
             predictions = [self.strip_padding(p) for p in predictions]
