@@ -202,6 +202,8 @@ const GlobalOptionsView = () => {
     enableCuda,
     forceTranslationCPU,
     forceTdCpu,
+    forceTlCpu,
+    forceOcrCpu,
     contextAmount,
     strokeSize,
     autoOpenOcrWindow,
@@ -336,14 +338,34 @@ const GlobalOptionsView = () => {
                 helperText="May improve speed IF using a good GPU that supports CUDA."
               />
             ),
-            "Force TDs on CPU": (
+            "Force Text Box on CPU": (
               <UpdateCheckbox
                 changeValue={setStoreValue}
                 keyName="forceTdCpu"
                 defaultValue={forceTdCpu}
                 tooltip="Has no effect if CUDA is disabled."
-                label="Force TDs on CPU"
-                helperText="The text box and text line detection models will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
+                label="Force Text Box on CPU"
+                helperText="The text box detection model will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
+              />
+            ),
+            "Force Text Line on CPU": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="forceTlCpu"
+                defaultValue={forceTlCpu}
+                tooltip="Has no effect if CUDA is disabled."
+                label="Force Text Line on CPU"
+                helperText="The text line detection model will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
+              />
+            ),
+            "Force OCR on CPU": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="forceOcrCpu"
+                defaultValue={forceOcrCpu}
+                tooltip="Has no effect if CUDA is disabled."
+                label="Force OCR on CPU"
+                helperText="The OCR model will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
               />
             ),
             "Force MT on CPU": (

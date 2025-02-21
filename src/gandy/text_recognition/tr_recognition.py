@@ -88,7 +88,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
 
         logger.info("Loading object recognition model...")
 
-        can_cuda = config_state.use_cuda
+        can_cuda = config_state.use_cuda and not config_state.force_ocr_cpu
         provider = "CUDAExecutionProvider" if can_cuda else "CPUExecutionProvider"
         self.model = ORTModelForVision2Seq.from_pretrained(
             f"models/minocr{s}/model", provider=provider, use_io_binding=can_cuda
@@ -121,7 +121,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
             # bchw
             logger.log_message(f'Using variable TrOCR variant', h=pixel_values.shape[2], w=pixel_values.shape[3])
 
-        if config_state.use_cuda:
+        if config_state.use_cuda and not config_state.force_ocr_cpu:
             pixel_values = pixel_values.to("cuda:0")
 
         return pixel_values

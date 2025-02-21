@@ -386,7 +386,7 @@ class YOLOLineImageDetectionBase(YOLOImageDetectionApp):
         return super().can_load(f"models/yolo/{self.model_name}.onnx")
     
     def check_cuda(self):
-        can_cuda = config_state.use_cuda
+        can_cuda = config_state.use_cuda and not config_state.force_tl_cpu
         return can_cuda
     
 class YOLOLineImageDetectionApp(YOLOLineImageDetectionBase, LineMixin):

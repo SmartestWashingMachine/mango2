@@ -75,7 +75,7 @@ class DFineLineImageDetectionApp(DFineImageDetectionApp, ExpandedLineMixin):
         return A.Compose(transforms)
 
     def check_cuda(self):
-        can_cuda = config_state.use_cuda
+        can_cuda = config_state.use_cuda and not config_state.force_tl_cpu
         return can_cuda
     
     def detect_bboxes(self, image):

@@ -121,6 +121,8 @@ def change_multiple_models_route():
             max_length_a=max_length_a if max_length_a > 0 else 0,
             force_translation_cpu=data["forceTranslationCPU"],
             force_td_cpu=data["forceTdCpu"],
+            force_tl_cpu=data["forceTlCpu"],
+            force_ocr_cpu=data["forceOcrCpu"],
             use_cuda=data["enableCuda"],
             n_context=c_amount,
             no_repeat_ngram_size=int(data["noRepeatNgramSize"]),

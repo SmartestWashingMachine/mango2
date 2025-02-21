@@ -51,10 +51,10 @@ class RTDetrImageDetectionApp(YOLOTDImageDetectionApp):
 
 class RTDetrLineImageDetectionApp(RTDetrImageDetectionApp, LineMixin):
     def check_cuda(self):
-        can_cuda = config_state.use_cuda
+        can_cuda = config_state.use_cuda and not config_state.force_tl_cpu
         return can_cuda
 
 class RTDetrExpandedLineImageDetectionApp(RTDetrImageDetectionApp, ExpandedLineMixin):
     def check_cuda(self):
-        can_cuda = config_state.use_cuda
+        can_cuda = config_state.use_cuda and not config_state.force_tl_cpu
         return can_cuda

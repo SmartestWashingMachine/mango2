@@ -34,6 +34,8 @@ export type IStoreClientToServer = {
   translationThreads: number;
   forceTranslationCPU: boolean;
   forceTdCpu: boolean;
+  forceTlCpu: boolean;
+  forceOcrCpu: boolean;
   spellCorrectionSeparate: boolean;
   strokeSize: number;
   bottomTextOnly: boolean;

@@ -27,6 +27,8 @@ const storeDefaults: IStore = {
   translationThreads: 2, // TODO: remove
   forceTranslationCPU: true,
   forceTdCpu: false,
+  forceTlCpu: false,
+  forceOcrCpu: false,
   cleaningMode: "blur",
   redrawingMode: "smart",
   currentView: "Image",
