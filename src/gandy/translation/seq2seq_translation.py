@@ -129,10 +129,12 @@ class Seq2SeqTranslationApp(BaseTranslation):
     def unload_model(self):
         try:
             del self.translation_model
+            del self.translator
             logger.info("Unloading translation model...")
         except:
             pass
         self.translation_model = None
+        self.translator = None
 
         return super().unload_model()
 
