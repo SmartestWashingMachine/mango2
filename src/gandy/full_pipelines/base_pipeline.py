@@ -237,6 +237,64 @@ class BasePipeline:
                 speech_bboxes = self._detect_in_chunk(rgb_image)
 
         return speech_bboxes
+    
+    def _translate_image_to_image_from_data(self, source_texts, rgb_image, speech_bboxes, progress_cb=None, return_debug_data=False):
+        target_texts = self.get_target_texts_from_str(
+            source_texts=source_texts, use_stream=None, progress_cb=progress_cb,
+        )
+        if progress_cb is not None:
+            progress_cb(80)
+
+        # Since most fonts don't work well with weird characters.
+        target_texts = [t.replace("―", "-").encode("ascii", "ignore").decode("utf-8") for t in target_texts]
+
+        if config_state.ignore_detect_single_words:
+            targets_and_bboxes = zip(target_texts, speech_bboxes)
+            puncts = ['.', '!', '?', '-', ')', '"']
+            targets_and_bboxes = [t for t in targets_and_bboxes if len(t[0].split(' ')) > 1 or (any(t[0].endswith(pu) for pu in puncts) and len(t[0]) > 1)]
+
+            old_len = len(target_texts)
+            target_texts = []
+            speech_bboxes = []
+            for t, b in targets_and_bboxes:
+                target_texts.append(t)
+                speech_bboxes.append(b)
+
+            logger.log_message('Ignoring single words', n_before=old_len, n_after=len(target_texts))
+
+        with logger.begin_event("Image cleaning"):
+            cleaning_output = self.image_cleaning_app.begin_process(
+                rgb_image, speech_bboxes
+            )
+        if isinstance(
+            cleaning_output, tuple
+        ):  # Quick fix for adaptive_image_clean.
+            rgb_image = cleaning_output[0]
+            text_colors = cleaning_output[1]
+        else:
+            rgb_image = cleaning_output
+            text_colors = None
+
+        if progress_cb is not None:
+            progress_cb(progress=90)
+
+        with logger.begin_event("Redrawing"):
+            rgb_image = self.image_redrawing_app.begin_process(
+                rgb_image, speech_bboxes, target_texts, text_colors
+            )
+
+        is_amg = isinstance(
+            rgb_image, dict
+        )  # AMG convert app returns a dict rather than an image directly.
+
+        if return_debug_data:
+            debug_data = {
+                "speech_bboxes": speech_bboxes,
+                "target_texts": target_texts,
+                "source_texts": source_texts,
+            }
+            return rgb_image, is_amg, debug_data
+        return rgb_image, is_amg
 
     def image_to_image(
         self,
@@ -244,6 +302,7 @@ class BasePipeline:
         clear_spelling_correction_context=True,
         progress_cb=None,
         return_debug_data=False,
+        return_metadata_to_translate_later=False,
     ):
         with logger.begin_event("Image to image") as ctx:
             # Spelling correction apps may have their own internal context cache, which is only cleared on task1 start.
@@ -292,62 +351,20 @@ class BasePipeline:
 
             source_texts = pack_context(source_texts, config_state.n_context, ignore_single_words_in_context=False)
 
-            target_texts = self.get_target_texts_from_str(
-                source_texts=source_texts, use_stream=None, progress_cb=progress_cb,
-            )
-            if progress_cb is not None:
-                progress_cb(80)
-
-            # Since most fonts don't work well with weird characters.
-            target_texts = [t.replace("―", "-").encode("ascii", "ignore").decode("utf-8") for t in target_texts]
-
-            if config_state.ignore_detect_single_words:
-                targets_and_bboxes = zip(target_texts, speech_bboxes)
-                puncts = ['.', '!', '?', '-', ')', '"']
-                targets_and_bboxes = [t for t in targets_and_bboxes if len(t[0].split(' ')) > 1 or (any(t[0].endswith(pu) for pu in puncts) and len(t[0]) > 1)]
-
-                old_len = len(target_texts)
-                target_texts = []
-                speech_bboxes = []
-                for t, b in targets_and_bboxes:
-                    target_texts.append(t)
-                    speech_bboxes.append(b)
-
-                logger.log_message('Ignoring single words', n_before=old_len, n_after=len(target_texts))
-
-            with logger.begin_event("Image cleaning"):
-                cleaning_output = self.image_cleaning_app.begin_process(
-                    rgb_image, speech_bboxes
-                )
-            if isinstance(
-                cleaning_output, tuple
-            ):  # Quick fix for adaptive_image_clean.
-                rgb_image = cleaning_output[0]
-                text_colors = cleaning_output[1]
-            else:
-                rgb_image = cleaning_output
-                text_colors = None
-
-            if progress_cb is not None:
-                progress_cb(progress=90)
-
-            with logger.begin_event("Redrawing"):
-                rgb_image = self.image_redrawing_app.begin_process(
-                    rgb_image, speech_bboxes, target_texts, text_colors
-                )
-
-            is_amg = isinstance(
-                rgb_image, dict
-            )  # AMG convert app returns a dict rather than an image directly.
-
-            if return_debug_data:
-                debug_data = {
-                    "speech_bboxes": speech_bboxes,
-                    "target_texts": target_texts,
-                    "source_texts": source_texts,
+            if return_metadata_to_translate_later:
+                return {
+                    'source_texts': source_texts,
+                    'rgb_image': rgb_image,
+                    'speech_bboxes': speech_bboxes,
                 }
-                return rgb_image, is_amg, debug_data
-            return rgb_image, is_amg
+            else:
+                return self._translate_image_to_image_from_data(
+                    source_texts=source_texts,
+                    progress_cb=progress_cb,
+                    rgb_image=rgb_image,
+                    speech_bboxes=speech_bboxes,
+                    return_debug_data=return_debug_data
+                )
 
     def text_to_text(
         self,

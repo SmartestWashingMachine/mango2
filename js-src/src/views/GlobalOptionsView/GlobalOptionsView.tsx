@@ -222,6 +222,8 @@ const GlobalOptionsView = () => {
     cutOcrPunct,
     ignoreDetectSingleWords,
     sortTextFromTopLeft,
+    useTranslationServer,
+    memoryEfficientTasks,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
@@ -336,6 +338,24 @@ const GlobalOptionsView = () => {
                 tooltip="4 GB VRAM can work if MT model is forced onto the CPU."
                 label="Enable CUDA"
                 helperText="May improve speed IF using a good GPU that supports CUDA."
+              />
+            ),
+            "Use Efficient Translator": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="useTranslationServer"
+                defaultValue={useTranslationServer}
+                label="Use Efficient Translator"
+                helperText="Certain translation models will run faster. Requires efficient translation models to be installed."
+              />
+            ),
+            "Memory Efficient Tasks": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="memoryEfficientTasks"
+                defaultValue={memoryEfficientTasks}
+                label="Memory Efficient Tasks"
+                helperText="Translating images or videos will require much less memory, but the models have to be loaded at the start of every task. This allows you to run a full translation pipeline on a GPU with 4 GB VRAM if 'Use Efficient Translator' is enabled."
               />
             ),
             "Force Text Box on CPU": (

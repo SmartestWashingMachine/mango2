@@ -47,6 +47,15 @@ class SwitchApp:
                 f"No app with name {app_name} found. Ignoring the call to select new app."
             )
 
+    def unload_all(self):
+        # Unload all the other models to free up memory.
+        for other_idx in range(len(self.apps)):
+            try:
+                self.apps[other_idx].unload_model()
+            except:
+                pass
+        collect()
+
     def process(self, *args, **kwargs):
         return self.apps[self.sel_idx].begin_process(*args, **kwargs)
 

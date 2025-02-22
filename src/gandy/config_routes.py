@@ -122,6 +122,8 @@ def change_multiple_models_route():
             force_translation_cpu=data["forceTranslationCPU"],
             force_td_cpu=data["forceTdCpu"],
             force_tl_cpu=data["forceTlCpu"],
+            memory_efficient_tasks=data["memoryEfficientTasks"],
+            use_translation_server=data["useTranslationServer"],
             force_ocr_cpu=data["forceOcrCpu"],
             use_cuda=data["enableCuda"],
             n_context=c_amount,

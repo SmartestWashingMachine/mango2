@@ -38,12 +38,43 @@ def on_progress(progress: int, socketio):
     socketio.patched_emit(f"progress_task1", progress)
     socketio.sleep()
 
+def _send_image(new_image, img_name: str, is_amg, images_data, task_id, img_idx, on_image_done):
+    img_name_no_ext = os.path.splitext(img_name)[0]
+
+    if on_image_done is None:
+        with logger.begin_event('Base64 encode image'):
+            if is_amg:
+                new_image_base64 = encode_image(new_image["image"])
+                annotations = new_image["annotations"]
+
+                new_img_name = f"{img_name_no_ext}.amg"
+            else:
+                new_image_base64 = encode_image(new_image)
+                annotations = []
+
+                new_img_name = f"{img_name_no_ext}.png"
+
+        socketio.patched_emit(
+            "item_task1",
+            {
+                "image": new_image_base64,
+                "imageName": new_img_name,
+                "annotations": annotations,
+                "taskId": task_id,
+                "remainingImages": len(images_data) - (1 + img_idx)
+            },
+        )
+        socketio.sleep()
+    else:
+        if not is_amg: # AMG not supported for on_image_done.
+            on_image_done(new_image, img_idx, img_name_no_ext)
 
 def translate_task1_background_job(
     images,
     task_id: str,
     on_image_done = None,
 ):
+
     with logger.begin_event("Task1") as ctx:
         try:
             image_streams = []
@@ -144,51 +175,83 @@ def translate_task1_background_job(
                     # images_data[idx][0] = new_images[idx]
                     images_data[idx] = [new_images[idx], images_data[idx][1]]
 
+            progress_cb = lambda progress: on_progress(progress, socketio)
+
+            memory_efficient_data_to_translate_later = []
+
             for img_idx, (img, img_name) in enumerate(images_data):
                 if debug_state.debug or debug_state.debug_redraw:
                     debug_state.metadata['cur_img_name'] = img_name
 
-                # The client really only uses progress for task1 anyways. The other progress_tasks aren't used... yet.
-                socketio.patched_emit("progress_task1", 5)
-                socketio.sleep()
+                if not config_state.memory_efficient_tasks or img_idx == 0:
+                    # The client really only uses progress for task1 anyways. The other progress_tasks aren't used... yet.
+                    socketio.patched_emit("progress_task1", 5)
+                    socketio.sleep()
 
                 ctx.log(f"Task1 processing image", img_name=img_name)
-                progress_cb = lambda progress: on_progress(progress, socketio)
 
-                with logger.begin_event('Process image'):
-                    new_image, is_amg = translate_pipeline.image_to_image(
-                        img, progress_cb=progress_cb
-                    )
+                if config_state.memory_efficient_tasks:
+                    with logger.begin_event('Process image'):
+                        data_to_translate = translate_pipeline.image_to_image(
+                            img, progress_cb=None, return_metadata_to_translate_later=True
+                        )
 
-                img_name_no_ext = os.path.splitext(img_name)[0]
+                        memory_efficient_data_to_translate_later.append(data_to_translate)
 
-                if on_image_done is None:
-                    with logger.begin_event('Base64 encode image'):
-                        if is_amg:
-                            new_image_base64 = encode_image(new_image["image"])
-                            annotations = new_image["annotations"]
-
-                            new_img_name = f"{img_name_no_ext}.amg"
-                        else:
-                            new_image_base64 = encode_image(new_image)
-                            annotations = []
-
-                            new_img_name = f"{img_name_no_ext}.png"
-
-                    socketio.patched_emit(
-                        "item_task1",
-                        {
-                            "image": new_image_base64,
-                            "imageName": new_img_name,
-                            "annotations": annotations,
-                            "taskId": task_id,
-                            "remainingImages": len(images_data) - (1 + img_idx)
-                        },
-                    )
-                    socketio.sleep()
+                    progress_cb(((((1 + img_idx) / len(images_data)) * 100) // 2) + 5)
                 else:
-                    if not is_amg: # AMG not supported for on_image_done.
-                        on_image_done(new_image, img_idx, img_name_no_ext)
+                    with logger.begin_event('Process image'):
+                        new_image, is_amg = translate_pipeline.image_to_image(
+                            img, progress_cb=progress_cb
+                        )
+
+                    # Send img (b64) to client.
+                    _send_image(
+                        new_image=new_image,
+                        img_name=img_name,
+                        is_amg=is_amg,
+                        images_data=images_data,
+                        task_id=task_id,
+                        img_idx=img_idx,
+                        on_image_done=on_image_done,
+                    )
+
+            if len(memory_efficient_data_to_translate_later) > 0:
+                # This means config_state.memory_efficient_tasks is ON.
+                # In this mode, all images are scanned and OCR'D, then those models are unloaded, the MT model is loaded, and all the images are translated.
+                # Finally, the MT model is unloaded afterwards.
+                # This allows us to get a full GPU pipeline going with <= 4 GB VRAM.
+
+                # Unload unnecessary models.
+                translate_pipeline.text_detection_app.unload_all()
+                translate_pipeline.text_recognition_app.unload_all()
+                translate_pipeline.text_line_app.unload_all()
+
+                for img_idx, (images_data_inner, mem_eff_data) in enumerate(zip(images_data, memory_efficient_data_to_translate_later)):
+                    img_name = images_data_inner[1]
+ 
+                    if debug_state.debug or debug_state.debug_redraw:
+                        debug_state.metadata['cur_img_name'] = img_name
+
+                    # The MT model is implicitly loaded as we ask the pipeline to translate each image.
+                    new_image, is_amg = translate_pipeline._translate_image_to_image_from_data(
+                        progress_cb=progress_cb,
+                        **mem_eff_data,
+                    )
+
+                    # Send img (b64) to client.
+                    _send_image(
+                        new_image=new_image,
+                        img_name=img_name,
+                        is_amg=is_amg,
+                        images_data=images_data,
+                        task_id=task_id,
+                        img_idx=img_idx,
+                        on_image_done=on_image_done,
+                    )
+
+                # Then we unload the MT model.
+                translate_pipeline.translation_app.unload_all()
 
             socketio.patched_emit("done_translating_task1", { "taskId": task_id, })
             socketio.sleep()

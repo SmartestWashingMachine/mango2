@@ -20,6 +20,7 @@ class ConfigState:
         self.use_cuda = False
 
         self.use_translation_server = False
+        self.memory_efficient_tasks = False
 
         # self.terms = []
         self.source_terms = []

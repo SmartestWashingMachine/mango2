@@ -42,6 +42,8 @@ const storeDefaults: IStore = {
   cutOcrPunct: false,
   ignoreDetectSingleWords: false,
   sortTextFromTopLeft: false,
+  useTranslationServer: false,
+  memoryEfficientTasks: false,
 };
 
 export const initializeStore = () => {

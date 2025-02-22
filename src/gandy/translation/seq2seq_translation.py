@@ -60,8 +60,8 @@ class Seq2SeqTranslationApp(BaseTranslation):
         can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
 
         if config_state.use_translation_server:
-            device = "cuda"
-            self.translator = ctranslate2.Translator("models/jamad-qint8-bfloat16", device=device)
+            device = "cuda" if can_cuda else "cpu"
+            self.translator = ctranslate2.Translator(f"models/{s}/model_ctr", device=device)
         else:
             if can_cuda:
                 # model_path = f"models/{s}/model_gpu"

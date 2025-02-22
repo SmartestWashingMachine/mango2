@@ -45,6 +45,8 @@ export type IStoreClientToServer = {
   cutOcrPunct: boolean;
   ignoreDetectSingleWords: boolean;
   sortTextFromTopLeft: boolean;
+  useTranslationServer: boolean;
+  memoryEfficientTasks: boolean;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;
