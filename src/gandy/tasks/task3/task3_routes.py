@@ -2,10 +2,13 @@ from flask import request
 from PIL import Image
 from gandy.utils.fancy_logger import logger
 from gandy.app import app, translate_pipeline, socketio
+from gandy.state.debug_state import debug_state
 from gandy.utils.get_sep_regex import get_last_sentence
 from gandy.utils.socket_stream import SocketStreamer
 from gandy.tasks.task3.task3_box_context_state_utils import push_to_state, get_context
 from mss import mss
+from uuid import uuid4
+import os
 
 # Task3 - translate images into text (from the OCR box).
 # Context here is stored on the SERVER rather than the client.
@@ -47,6 +50,13 @@ def translate_task3_background_job(
                 opened_images = images
             else:
                 opened_images = load_images(images)
+
+            if debug_state.debug or debug_state.debug_dump_task3_ocr:
+                for im in opened_images:
+                    debug_id = uuid4().hex
+                    bpp = os.path.expanduser("~/Documents/Mango/task3debug")
+                    os.makedirs(f'{bpp}/task3', exist_ok=True)
+                    im.save(f'{bpp}/task3/{debug_id}.png')
 
             emit_begin(box_id)  # Images must be loaded BEFORE emitting progress.
 
