@@ -4,6 +4,7 @@ from typing import List
 from gandy.tasks.task5.a_is_close_substring_of_b import a_is_close_substring_of_b
 from gandy.utils.cosine_sim import cos_sim
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
+from gandy.state.config_state import config_state
 import regex as re
 
 USE_HEURISTICS = True
@@ -75,7 +76,7 @@ def set_neighboring_similar_texts(app_container: AdvancedPipeline, frame_source_
 
         return prev_embs
 
-    if USE_MT_EMBEDDINGS:
+    if USE_MT_EMBEDDINGS and not config_state.use_translation_server:
         prog_marker = 0
 
         for i in reversed(range(len(frame_source_texts))):

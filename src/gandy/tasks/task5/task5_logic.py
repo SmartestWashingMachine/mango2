@@ -117,6 +117,10 @@ def process_task5(
 
     total_frames = fps * video_duration_seconds
 
+    if config_state.memory_efficient_tasks:
+        # Unload unnecessary models.
+        app_container.translation_app.unload_all()
+
     if frame_source_texts is None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             frame_image_paths = generate_images(
@@ -138,6 +142,12 @@ def process_task5(
 
     # Replace source-terms.
     frame_source_texts = replace_terms_source_side(frame_source_texts, config_state.source_terms)
+
+    if config_state.memory_efficient_tasks:
+        # Unload unnecessary models.
+        app_container.text_detection_app.unload_all()
+        app_container.text_recognition_app.unload_all()
+        app_container.text_line_app.unload_all()
 
     ## STAGE 3: Translate each frame.
     segments = translate_text_in_frames(
