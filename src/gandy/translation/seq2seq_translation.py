@@ -238,6 +238,39 @@ class Seq2SeqTranslationApp(BaseTranslation):
         )
 
         return self.target_decode(generated)
+    
+    def batch_translate_with_server(self, texts: str):
+        with logger.begin_event("Batch Translating with Server") as ctx:
+            if not self.loaded:
+                self.load_model()
+
+            if self.extra_preprocess is not None:
+                with logger.begin_event("Extra Preprocessing"):
+                    texts = [self.extra_preprocess(t) for t in texts]
+
+            # Normal inference.
+            num_beams_to_use = config_state.num_beams
+
+            sources = [self.source_tokenizer.convert_ids_to_tokens(self.source_tokenizer.encode(t)) for t in texts]
+            results = self.translator.translate_batch(sources, beam_size=num_beams_to_use, return_scores=num_beams_to_use > 1)
+            target = [r.hypotheses[0] for r in results]
+
+            predictions = [self.target_tokenizer.decode(self.target_tokenizer.convert_tokens_to_ids(tar), skip_special_tokens=False) for tar in target]
+
+            with logger.begin_event("Strip Padding"):
+                predictions = [self.strip_padding(p) for p in predictions]
+
+            if self.extra_postprocess is not None:
+                with logger.begin_event("Extra Postprocessing"):
+                    predictions = [self.extra_postprocess(p).strip() for p in predictions]
+
+            outputs = [[p] for p in predictions]
+            ctx.log(
+                f"Batch Translated",
+                normalized_inputs=texts,
+                normalized_outputs=[o[0] for o in outputs],
+            )
+            return outputs
 
     def translate_string(self, inp: str, use_stream=None):
         if self.extra_preprocess is not None:

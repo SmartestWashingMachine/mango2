@@ -161,19 +161,14 @@ class BasePipeline:
     ):
         target_texts: List[str] = []
 
-        for idx, text in enumerate(source_texts):
-            translation_candidates = self.translation_app.begin_process(
-                text=text,
-                use_stream=use_stream,
-            )  # string[]
-
+        def _spell_correct_and_post_edit_translation(source_text_to_use, translation_candidates_to_use, source_contexts_to_use, progress_idx):
             with logger.begin_event("Reranking"):
                 translation_output = self.reranking_app.begin_process(
-                    source_text=text, candidates=translation_candidates
+                    source_text=source_text_to_use, candidates=translation_candidates_to_use,
                 )  # string
 
             translation_output = self.correct_translation(
-                source_texts[: idx + 1], translation_output
+                source_contexts_to_use, translation_output
             )  # string
 
             target_texts.append(translation_output)
@@ -181,7 +176,42 @@ class BasePipeline:
             if progress_cb is not None:
                 # Max progress for this part is 80.
                 # Min is 50.
-                progress_cb(compute_progress(cur_step=(idx + 1), max_steps=len(source_texts), min_value=50, max_value=80))
+                progress_cb(compute_progress(cur_step=(progress_idx + 1), max_steps=len(source_texts), min_value=50, max_value=80))
+
+
+        # If using the enhanced MT model on the GPU to translate images (task1), batch texts together for faster processing.
+        if config_state.use_translation_server is not None and config_state.use_cuda and not config_state.force_td_cpu and (use_stream is None or use_stream is False):
+            batch_size = 16
+            source_texts_batched = [source_texts[i:i + batch_size] for i in range(0, len(source_texts), batch_size)]
+
+            idx = 0
+            for text in source_texts_batched:
+                translation_batched_results = self.translation_app.get_sel_app().batch_translate_with_server(
+                    texts=text,
+                )  # string[][]
+
+                for translation_candidates in translation_batched_results:
+                    _spell_correct_and_post_edit_translation(
+                        source_text_to_use=source_texts[idx], 
+                        translation_candidates_to_use=translation_candidates, # string[]
+                        source_contexts_to_use=source_texts[: idx + 1],
+                        progress_idx=idx,
+                    )
+
+                    idx += 1
+        else:
+            for idx, text in enumerate(source_texts):
+                translation_candidates = self.translation_app.begin_process(
+                    text=text,
+                    use_stream=use_stream,
+                )  # string[]
+
+                _spell_correct_and_post_edit_translation(
+                    source_text_to_use=text, 
+                    translation_candidates_to_use=translation_candidates,
+                    source_contexts_to_use=source_texts[: idx + 1],
+                    progress_idx=idx,
+                )
 
         return replace_terms_target_side(target_texts, config_state.target_terms)
 
