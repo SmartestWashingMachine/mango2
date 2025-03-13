@@ -12,6 +12,7 @@ export type UpdateCheckboxProps = {
   defaultValue: boolean;
   helperText?: string;
   label: string;
+  style?: any;
 };
 
 const UpdateCheckbox = (props: UpdateCheckboxProps) => {
@@ -19,7 +20,7 @@ const UpdateCheckbox = (props: UpdateCheckboxProps) => {
     props.changeValue(props.keyName, e.currentTarget.checked);
 
   const contr = (
-    <FormGroup>
+    <FormGroup style={props.style}>
       <FormControlLabel
         control={
           <Checkbox

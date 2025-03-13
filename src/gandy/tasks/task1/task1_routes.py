@@ -73,6 +73,7 @@ def translate_task1_background_job(
     images,
     task_id: str,
     on_image_done = None,
+    nat_sort = True,
 ):
 
     with logger.begin_event("Task1") as ctx:
@@ -114,7 +115,10 @@ def translate_task1_background_job(
                     image_names.append(f"{idx}")
 
             images_data = list(zip(image_streams, image_names))
-            images_data = sorted(images_data, key=lambda tup: natsort(tup[1]))
+
+            if nat_sort:
+                # In some cases, the client can choose to send images that are already sorted (via modified time).
+                images_data = sorted(images_data, key=lambda tup: natsort(tup[1]))
 
             if is_vert_splitting:
                 new_images_data = []
@@ -271,10 +275,14 @@ def process_task1_route():
     images = request.files.getlist("file")
     task_id = request.form.get('task_id', type=str)
 
+    nat_sort_disabled = request.form.get('nat_sort', type=str) == 'disabled'
+
     socketio.start_background_task(
         translate_task1_background_job,
         images,
         task_id,
+        None,
+        (not nat_sort_disabled),
     )
 
     return {"processing": True}, 202

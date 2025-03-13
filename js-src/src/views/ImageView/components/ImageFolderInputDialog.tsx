@@ -10,18 +10,26 @@ import {
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import isValidFilename from "valid-filename";
 import FileInfo from "../../../types/FileInfo";
+import UpdateCheckbox from "../../../components/UpdateCheckbox";
 
 type ImageFolderInputDialogProps = {
-  onDone: (folderName: string) => void;
+  onDone: (folderName: string, processFilesByModDate: boolean) => void;
   open: boolean;
   rootItem: FileInfo | null;
   onClose: () => void;
   folderName: string | null;
   setFolderName: (s: string) => void;
+  processFilesByModifiedDate: boolean;
+  setProcessFilesByModifiedDate: (b: boolean) => void;
 };
 
 const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
-  let { folderName, setFolderName } = props;
+  let {
+    folderName,
+    setFolderName,
+    processFilesByModifiedDate,
+    setProcessFilesByModifiedDate,
+  } = props;
   folderName = folderName || "";
 
   const ref = useRef<any>(null);
@@ -42,7 +50,7 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
     // Existing folders can still be used - it's just a warning.
     if (badFolderName || folderName.trim().length === 0) return;
 
-    props.onDone(folderName.trim());
+    props.onDone(folderName.trim(), processFilesByModifiedDate);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -70,7 +78,7 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
       </DialogContentText>
       <TextField
         autoFocus
-        style={{ padding: "0 24px", marginBottom: 12 }}
+        style={{ padding: "0 24px" }}
         placeholder="Folder"
         onChange={onChange}
         value={folderName}
@@ -81,6 +89,14 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
         helperText={errorMessage}
         onKeyDown={onKeyDown}
         color={folderExists ? "warning" : undefined}
+      />
+      <UpdateCheckbox
+        changeValue={(_, v) => setProcessFilesByModifiedDate(v)}
+        keyName="n/a"
+        defaultValue={processFilesByModifiedDate}
+        label="Process Files by Date"
+        // helperText="Disable this if you want to process files in the order of their names."
+        style={{ padding: "0 21px", marginBottom: 12 }}
       />
       <DialogActions>
         <Button onClick={handleDone} fullWidth disabled={badFolderName}>

@@ -3,7 +3,8 @@ import { makeSocket } from "./makeSocket";
 export const translateImages = async (
   files: any,
   tgtContextMemory: string | null,
-  taskId: string
+  taskId: string,
+  processFilesByModifiedDate: boolean
 ) => {
   const apiUrl = "http://localhost:5000/processtask1";
 
@@ -30,6 +31,11 @@ export const translateImages = async (
   if (tgtContextMemory !== null) {
     formData.append("tgt_context_memory", tgtContextMemory);
   }
+
+  formData.append(
+    "nat_sort",
+    processFilesByModifiedDate ? "disabled" : "enabled"
+  );
 
   formData.append("task_id", taskId);
 

@@ -186,6 +186,8 @@ const ImageView = () => {
   // Used when uploading images to be translated.
   const [files, setFiles] = useState<any>(null);
   const [createFolderName, setCreateFolderName] = useState<string | null>(null);
+  const [processFilesByModifiedDate, setProcessFilesByModifiedDate] =
+    useState(false);
 
   const [cleaningMode, setCleaningMode] = useState("simple");
   const [redrawingMode, setRedrawingMode] = useState("amg_convert");
@@ -198,7 +200,7 @@ const ImageView = () => {
   };
 
   const handleCreateFolderNameDone = useCallback(
-    async (folderName: string) => {
+    async (folderName: string, processFilesByModDate: boolean) => {
       const taskId = uuidv4();
 
       setCreateFolderName(null);
@@ -237,7 +239,12 @@ const ImageView = () => {
       ); // Create a websocket to listen to the server for progress and the end result.
 
       // Now we actually begin the translation job on the server.
-      let sortedFileNames = await translateImages(files, null, taskId);
+      let sortedFileNames = await translateImages(
+        files,
+        null,
+        taskId,
+        processFilesByModDate
+      );
       if (tileWidth === 0 && tileHeight === 0 && sortedFileNames?.length > 1) {
         // Auto tiling mode stacks all the images together into one.
         sortedFileNames = [sortedFileNames[0]];
@@ -257,8 +264,14 @@ const ImageView = () => {
     ]
   );
 
-  const handleSelectFiles = useCallback(async (newFiles: any) => {
+  const handleSelectFiles = useCallback(async (newFiles: any[]) => {
     if (newFiles.length === 0) return;
+
+    // See: https://stackoverflow.com/questions/7612894/how-to-get-the-modified-time-of-a-file-being-uploaded-in-javascript
+    // ... I really wish the File API was better documented.
+    // By the way, the 'path' field below isn't from the File API - ElectronJS auto-populates the File objects with that field. And probably others.
+    // Here we sort files such that the earliest files are processed first. If natural sort (done on the backend) is disabled, then this is the actual order the files are processed in.
+    newFiles = newFiles.toSorted((a, b) => a.lastModified - b.lastModified);
 
     setFiles(newFiles);
 
@@ -462,6 +475,8 @@ const ImageView = () => {
         rootItem={rootItem}
         folderName={createFolderName}
         setFolderName={setCreateFolderName}
+        processFilesByModifiedDate={processFilesByModifiedDate}
+        setProcessFilesByModifiedDate={setProcessFilesByModifiedDate}
       />
     </BaseView>
   );
