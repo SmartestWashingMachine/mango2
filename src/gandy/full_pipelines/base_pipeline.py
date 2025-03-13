@@ -180,8 +180,8 @@ class BasePipeline:
 
 
         # If using the enhanced MT model on the GPU to translate images (task1), batch texts together for faster processing.
-        if config_state.use_translation_server is not None and config_state.use_cuda and not config_state.force_td_cpu and (use_stream is None or use_stream is False):
-            batch_size = 16
+        if config_state.use_translation_server and config_state.use_cuda and not config_state.force_translation_cpu and (use_stream is None or use_stream is False):
+            batch_size = 6
             source_texts_batched = [source_texts[i:i + batch_size] for i in range(0, len(source_texts), batch_size)]
 
             idx = 0
