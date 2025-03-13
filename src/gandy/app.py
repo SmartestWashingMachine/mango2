@@ -87,6 +87,7 @@ import gandy.book_routes
 import gandy.tasks.task1.task1_routes
 import gandy.tasks.task2.task2_routes
 import gandy.tasks.task3.task3_routes
+import gandy.tasks.task3.server_side_box_key_capture
 import gandy.tasks.task4.task4_routes
 import gandy.tasks.task5.task5_routes
 import gandy.tasks.task6.task6_routes

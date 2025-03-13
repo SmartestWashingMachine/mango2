@@ -1,0 +1,38 @@
+# DID YOU KNOW ELECTRONJS'S GLOBAL SHORTCUTS DOESN'T ACTUALLY FUDGING WORK ON A LOT OF APPS?
+# GOOD JOB ELECTRON. GOOD JOB.
+# LIKE REALLY - I REGRET USING ELECTRONJS. ALMOST ALL OF THE FUNCTIONALITY I NEED IS INSTEAD DONE IN PYTHON.
+# So in this util we define a way to capture keybinds on the server, then call task3 directly.
+
+from flask import request
+from gandy.app import app
+from gandy.tasks.task3.task3_routes import process_task3_faster
+import keyboard
+
+box_states = {}
+
+@app.route("/task3rememberbox", methods=["POST"])
+def remember_box_route():
+    data = request.get_json()
+
+    # TODO: Use sender AND receiver boxId to store state.
+    hotkey = keyboard.add_hotkey(data["boxState"]["activation_key"], lambda: process_task3_faster(data["boxState"]))
+    box_states[data["boxState"]["box_id"]] = hotkey
+
+    return {"processing": True}, 202
+
+@app.route("/task3forgetbox", methods=["POST"])
+def forget_box_route():
+    data = request.get_json()
+
+    try:
+        hotkey = box_states[data["box_id"]]
+
+        if hotkey is not None:
+            keyboard.remove_hotkey(hotkey)
+
+        box_states[data["box_id"]] = None
+    except Exception as e:
+        print('ERROR FORGETTING BOX:')
+        print(e)
+
+    return {"processing": True}, 200

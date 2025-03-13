@@ -180,3 +180,38 @@ export const triggerEnterNodeFetch = async () => {
     },
   });
 };
+
+// All params here should be snake cased not camelCase.
+export const rememberBoxActivationData = async (boxData: any) => {
+  const apiUrl = "http://localhost:5000/task3rememberbox";
+
+  await nodeFetch(apiUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      boxState: {
+        ...boxData,
+        x1: [boxData.x1],
+        y1: [boxData.y1],
+        width: [boxData.width],
+        height: [boxData.height],
+      },
+    }),
+  });
+};
+
+export const forgetBoxActivationData = async (boxId: any) => {
+  const apiUrl = "http://localhost:5000/task3forgetbox";
+
+  await nodeFetch(apiUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ box_id: boxId }),
+  });
+};

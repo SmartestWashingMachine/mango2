@@ -18,7 +18,13 @@ import { clipboardCb, getTextFromClipboard } from "./clipboardCb";
 import { autoScanCb } from "./autoScanCb";
 import ElectronChannels from "../../types/ElectronChannels";
 import SharedGlobalShortcuts from "./sharedGlobalShortcuts";
-import { triggerEnterNodeFetch } from "../../flaskcomms/ocrBoxBackendComms";
+import {
+  triggerEnterNodeFetch,
+  rememberBoxActivationData,
+  forgetBoxActivationData,
+} from "../../flaskcomms/ocrBoxBackendComms";
+
+const serverSideActivationKey = true;
 
 export class OcrBoxManager implements BoxOptionsBackend {
   ocrWindow: BrowserWindow | null;
@@ -229,8 +235,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
     }
   }
 
-  async scanAndTranslateBoxContentsFaster() {
-    if (!this.ocrWindow) return;
+  getCoords = () => {
+    if (!this.ocrWindow) return [0, 0, 1, 1];
 
     let { width, height, x, y } = this.ocrWindow.getContentBounds();
     const factor = screen.getPrimaryDisplay().scaleFactor;
@@ -240,11 +246,19 @@ export class OcrBoxManager implements BoxOptionsBackend {
     x = Math.floor(x * factor);
     y = Math.floor(y * factor);
 
+    return [x, y, width, height];
+  };
+
+  async scanAndTranslateBoxContentsFaster() {
+    if (!this.ocrWindow) return;
+
+    const coords = this.getCoords();
+
     const isHidden = this._hide;
     if (!isHidden) this.cloakBox();
 
     await translateImageGiveTextFaster(
-      [x, y, width, height],
+      coords,
       this.getOutputBoxId(),
       this.textDetect,
       null,
@@ -294,7 +308,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     // Create a listener to detect the required key to scan the box area, and retrieve the result.
     // TODO: No speaker support yet.
-    if (this.activationKey !== DISABLED_KEY_VALUE) {
+    if (this.activationKey !== DISABLED_KEY_VALUE && !serverSideActivationKey) {
       this._activationKeyCallback = SharedGlobalShortcuts.register(
         this.activationKey,
         async () => this.scanAndTranslateBox()
@@ -441,6 +455,20 @@ export class OcrBoxManager implements BoxOptionsBackend {
       }, CHECK_CLIPBOARD_MS);
     }
 
+    if (this.activationKey !== DISABLED_KEY_VALUE && serverSideActivationKey) {
+      const coords = this.getCoords();
+      rememberBoxActivationData({
+        x1: coords[0],
+        y1: coords[1],
+        width: coords[2],
+        height: coords[3],
+        box_id: this.getOutputBoxId(),
+        with_text_detect: this.textDetect,
+        use_stream: this.useStream,
+        activation_key: this.activationKey,
+      });
+    }
+
     console.log("Opening OCR BOX:");
     console.log(`X Offset: ${this.xOffset}`);
     console.log(`Y Offset: ${this.yOffset}`);
@@ -467,7 +495,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     }
 
     this.ocrWindow = null;
-    if (this.activationKey !== DISABLED_KEY_VALUE)
+    if (this.activationKey !== DISABLED_KEY_VALUE && !serverSideActivationKey)
       SharedGlobalShortcuts.unregister(
         this.activationKey,
         this._activationKeyCallback
@@ -485,6 +513,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
       // BUG: Will bug out if there are multiple boxes with scanAfterEnter (should never happen though?)
       // 'null' here means we unregister ALL enter callbacks.
       SharedGlobalShortcuts.unregister("ENTER", null);
+    }
+
+    if (this.activationKey !== DISABLED_KEY_VALUE && serverSideActivationKey) {
+      forgetBoxActivationData(this.getOutputBoxId());
     }
 
     if (this._timerAutoScan) clearInterval(this._timerAutoScan);

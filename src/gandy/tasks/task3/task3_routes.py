@@ -129,25 +129,9 @@ def process_task3_route():
 
     return {"processing": True}, 202
 
-@app.route("/processtask3new", methods=["POST"])
-def process_task3new_route():
-    data = request.form.to_dict(flat=False)
-    box_id = data["boxId"] if "boxId" in data else None
-    text_detect = data["textDetect"] if "textDetect" in data else "off"
-
-    use_stream = data["useStream"] if "useStream" in data else "off"
-
-    use_stream = True if use_stream[0] == "on" else None
-
-    if use_stream:
-        use_stream = SocketStreamer(box_id=box_id)
-
-    # It's an array? Huh? TODO
-    with_text_detect = text_detect[0] == "on"
-    if box_id is not None and len(box_id) > 0:
-        box_id = box_id[0]
-
-    images = request.files.getlist("file")
+def process_task3_faster(data):
+    if data['use_stream']:
+        use_stream = SocketStreamer(box_id=data['box_id'])
 
     coords = [int(x[0]) for x in [data['x1'], data['y1'], data['width'], data['height']]]
 
@@ -162,10 +146,35 @@ def process_task3new_route():
     socketio.start_background_task(
         translate_task3_background_job,
         images,
-        box_id,
-        with_text_detect,
+        data['box_id'],
+        data['with_text_detect'],
         use_stream,
         True,
     )
+
+@app.route("/processtask3new", methods=["POST"])
+def process_task3new_route():
+    data = request.form.to_dict(flat=False)
+    box_id = data["boxId"] if "boxId" in data else None
+    text_detect = data["textDetect"] if "textDetect" in data else "off"
+
+    use_stream = data["useStream"] if "useStream" in data else "off"
+
+    use_stream = True if use_stream[0] == "on" else None
+
+    # It's an array? Huh? TODO
+    with_text_detect = text_detect[0] == "on"
+    if box_id is not None and len(box_id) > 0:
+        box_id = box_id[0]
+
+    process_task3_faster({
+        'x1': data['x1'],
+        'y1': data['y1'],
+        'width': data['width'],
+        'height': data['height'],
+        'box_id': box_id,
+        'with_text_detect': with_text_detect,
+        'use_stream': use_stream
+    })
 
     return {"processing": True}, 202
