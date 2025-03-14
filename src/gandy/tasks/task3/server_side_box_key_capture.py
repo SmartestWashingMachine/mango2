@@ -15,8 +15,12 @@ def remember_box_route():
     data = request.get_json()
 
     # TODO: Use sender AND receiver boxId to store state.
+    box_id = data["boxState"]["box_id"]
+    if box_id in box_states and box_states[box_id] is not None:
+        keyboard.remove_hotkey(box_states[box_id])
+
     hotkey = keyboard.add_hotkey(data["boxState"]["activation_key"], lambda: process_task3_faster(data["boxState"]))
-    box_states[data["boxState"]["box_id"]] = hotkey
+    box_states[box_id] = hotkey
 
     return {"processing": True}, 202
 
@@ -25,12 +29,13 @@ def forget_box_route():
     data = request.get_json()
 
     try:
-        hotkey = box_states[data["box_id"]]
+        box_id = data["box_id"]
+        hotkey = box_states[box_id]
 
         if hotkey is not None:
             keyboard.remove_hotkey(hotkey)
 
-        box_states[data["box_id"]] = None
+        box_states[box_id] = None
     except Exception as e:
         print('ERROR FORGETTING BOX:')
         print(e)

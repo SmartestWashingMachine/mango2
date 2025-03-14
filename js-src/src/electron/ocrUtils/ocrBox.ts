@@ -163,7 +163,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   }
 
   createBoxWindow() {
-    this.ocrWindow = createOcrWindow({
+    return createOcrWindow({
       width: this.width,
       height: this.height,
       xOffset: this.xOffset,
@@ -294,6 +294,24 @@ export class OcrBoxManager implements BoxOptionsBackend {
     return text;
   }
 
+  rememberThisBox() {
+    const coords = this.getCoords();
+    rememberBoxActivationData({
+      x1: coords[0],
+      y1: coords[1],
+      width: coords[2],
+      height: coords[3],
+      box_id: this.getOutputBoxId(),
+      with_text_detect: this.textDetect,
+      use_stream: this.useStream,
+      activation_key: this.activationKey,
+    });
+  }
+
+  forgetThisBox() {
+    forgetBoxActivationData(this.getOutputBoxId());
+  }
+
   setUpBox(speakerCallback: () => Promise<string>) {
     if (this.ocrWindow !== null) return;
 
@@ -301,7 +319,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     if (!this.enabled) return;
 
-    this.createBoxWindow();
+    this.ocrWindow = this.createBoxWindow();
 
     // Prepend speaker info if there is a speaker box.
     this._speakerCallback = speakerCallback;
@@ -456,16 +474,18 @@ export class OcrBoxManager implements BoxOptionsBackend {
     }
 
     if (this.activationKey !== DISABLED_KEY_VALUE && serverSideActivationKey) {
-      const coords = this.getCoords();
-      rememberBoxActivationData({
-        x1: coords[0],
-        y1: coords[1],
-        width: coords[2],
-        height: coords[3],
-        box_id: this.getOutputBoxId(),
-        with_text_detect: this.textDetect,
-        use_stream: this.useStream,
-        activation_key: this.activationKey,
+      this.rememberThisBox();
+    }
+
+    if (this.ocrWindow !== null) {
+      this.ocrWindow.on("moved", () => {
+        // The API automatically overrides the box hotkey if the data is updated.
+        this.rememberThisBox();
+      });
+
+      this.ocrWindow.on("resized", () => {
+        // The API automatically overrides the box hotkey if the data is updated.
+        this.rememberThisBox();
       });
     }
 
@@ -516,7 +536,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     }
 
     if (this.activationKey !== DISABLED_KEY_VALUE && serverSideActivationKey) {
-      forgetBoxActivationData(this.getOutputBoxId());
+      this.forgetThisBox();
     }
 
     if (this._timerAutoScan) clearInterval(this._timerAutoScan);
