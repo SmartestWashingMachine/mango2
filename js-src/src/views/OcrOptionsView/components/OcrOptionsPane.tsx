@@ -1,6 +1,7 @@
 import React from "react";
-import { MenuItem, Stack, TextField, Tooltip, Typography } from "@mui/material";
+import { MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { HexColorPicker } from "react-colorful";
+import { v4 as uuidv4 } from "uuid";
 import KeySelect from "../../../components/KeySelect";
 import { BoxOptions } from "../../../types/BoxOptions";
 import { OPTIONS_PRESETS } from "../../../utils/boxPresets";
@@ -19,6 +20,8 @@ export type OcrOptionsPaneProps = BoxOptions & {
 };
 
 const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
+  const [renderKey, setRenderKey] = React.useState<string>(uuidv4());
+
   const changeValue = (key: string, value: any) => {
     props.setStoreValue(props.boxId, key, value);
   };
@@ -101,11 +104,14 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
     // Some presets modify the Box ID, making this util necessary.
     MainGateway.regenerateBoxManagers();
 
-    props.goTextTab();
+    // props.goTextTab();
+    // Reset the render key to force a re-render of the tabs (as we use defaultValue instead of value for the fields).
+    setRenderKey(uuidv4());
   };
 
   return (
     <PaginatedTabs
+      key={renderKey}
       headers={props.boxButtons}
       footers={
         <>
