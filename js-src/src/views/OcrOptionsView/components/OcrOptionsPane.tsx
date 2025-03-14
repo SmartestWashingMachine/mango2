@@ -396,6 +396,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Faster Activation Key Scanning"
             />
           ),
+          "Enable Activation Key on Stubborn Apps": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.serverSideActivationKey}
+              keyName="serverSideActivationKey"
+              helperText="Enable this AND 'Faster Activation Key Scanning' if an application is overriding the Activation Key or preventing it from working. But if this is enabled, the box MUST be manually hidden with the Hide Key before being activated."
+              label="Enable Activation Key on Stubborn Apps"
+            />
+          ),
         },
       }}
     />

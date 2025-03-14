@@ -12,6 +12,10 @@ const CLIPBOARD_COPY_DEFAULT_TEXT =
   `I will automatically translate text found in the clipboard. Use the bottom right handle to drag me around!`.trim();
 const ACTIVATE_DEFAULT_TEXT = (k: string) =>
   `I will automatically translate anything behind me when "${k}" is pressed. Use the bottom right handle to drag me around!`.trim();
+
+const ACTIVATE_ADVANCED_TEXT = (k: string, l: string) =>
+  `I will automatically translate anything behind me when "${k}" is pressed. Hide me with "${l}" before translating!`.trim();
+
 const MISC_DEFAULT_TEXT = "...";
 
 export type BoxAppProps = {
@@ -183,7 +187,14 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
         if (boxOptions.listenClipboard) {
           setText([CLIPBOARD_COPY_DEFAULT_TEXT]);
         } else if (boxOptions.activationKey !== "Escape") {
-          setText([ACTIVATE_DEFAULT_TEXT(boxOptions.activationKey)]);
+          if (boxOptions.serverSideActivationKey) {
+            setText([
+              ACTIVATE_ADVANCED_TEXT(
+                boxOptions.activationKey,
+                boxOptions.hideKey
+              ),
+            ]);
+          } else setText([ACTIVATE_DEFAULT_TEXT(boxOptions.activationKey)]);
         } else {
           setText([MISC_DEFAULT_TEXT]);
         }

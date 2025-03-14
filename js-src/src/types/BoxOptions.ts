@@ -33,6 +33,7 @@ export type BoxOptionsBackend = {
   boxId?: string;
   fasterScan: boolean;
   scanAfterEnter: number;
+  serverSideActivationKey: boolean;
 };
 
 export type BoxOptions = BoxOptionsFrontend & BoxOptionsBackend;

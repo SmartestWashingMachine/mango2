@@ -24,8 +24,6 @@ import {
   forgetBoxActivationData,
 } from "../../flaskcomms/ocrBoxBackendComms";
 
-const serverSideActivationKey = true;
-
 export class OcrBoxManager implements BoxOptionsBackend {
   ocrWindow: BrowserWindow | null;
   boxId: string;
@@ -49,6 +47,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   pipeOutput: string;
   fasterScan: boolean;
   scanAfterEnter: number;
+  serverSideActivationKey: boolean;
 
   _timerAutoScan?: any;
   _timerClipboard?: any;
@@ -97,6 +96,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.pipeOutput = "Self";
     this.fasterScan = false;
     this.scanAfterEnter = 0;
+    this.serverSideActivationKey = false;
 
     this._timerAutoScan = null;
     this._timerClipboard = null;
@@ -156,6 +156,9 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.fasterScan = boxSettings.fasterScan || DEFAULT_BOX_OPTIONS.fasterScan;
     this.scanAfterEnter =
       boxSettings.scanAfterEnter || DEFAULT_BOX_OPTIONS.scanAfterEnter;
+    this.serverSideActivationKey =
+      boxSettings.serverSideActivationKey ||
+      DEFAULT_BOX_OPTIONS.serverSideActivationKey;
 
     if (!boxSettings) {
       this.enabled = true;
@@ -326,7 +329,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     // Create a listener to detect the required key to scan the box area, and retrieve the result.
     // TODO: No speaker support yet.
-    if (this.activationKey !== DISABLED_KEY_VALUE && !serverSideActivationKey) {
+    if (
+      this.activationKey !== DISABLED_KEY_VALUE &&
+      !this.serverSideActivationKey
+    ) {
       this._activationKeyCallback = SharedGlobalShortcuts.register(
         this.activationKey,
         async () => this.scanAndTranslateBox()
@@ -473,7 +479,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
       }, CHECK_CLIPBOARD_MS);
     }
 
-    if (this.activationKey !== DISABLED_KEY_VALUE && serverSideActivationKey) {
+    if (
+      this.activationKey !== DISABLED_KEY_VALUE &&
+      this.serverSideActivationKey
+    ) {
       this.rememberThisBox();
     }
 
@@ -515,7 +524,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
     }
 
     this.ocrWindow = null;
-    if (this.activationKey !== DISABLED_KEY_VALUE && !serverSideActivationKey)
+    if (
+      this.activationKey !== DISABLED_KEY_VALUE &&
+      !this.serverSideActivationKey
+    )
       SharedGlobalShortcuts.unregister(
         this.activationKey,
         this._activationKeyCallback
@@ -535,7 +547,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
       SharedGlobalShortcuts.unregister("ENTER", null);
     }
 
-    if (this.activationKey !== DISABLED_KEY_VALUE && serverSideActivationKey) {
+    if (
+      this.activationKey !== DISABLED_KEY_VALUE &&
+      this.serverSideActivationKey
+    ) {
       this.forgetThisBox();
     }
 

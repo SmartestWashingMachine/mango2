@@ -38,6 +38,7 @@ const genericOptions = {
   pipeOutput: "Self",
   fasterScan: false,
   scanAfterEnter: 0,
+  serverSideActivationKey: false,
 };
 
 export const OPTIONS_PRESETS: BoxPreset[] = [

@@ -31,6 +31,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   pipeOutput: "Self",
   fasterScan: false,
   scanAfterEnter: 0,
+  serverSideActivationKey: false,
 };
 
 export const makeBaseBox = (boxId: string) => {
