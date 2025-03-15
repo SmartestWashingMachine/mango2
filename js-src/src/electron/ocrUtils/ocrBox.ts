@@ -305,6 +305,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
       width: coords[2],
       height: coords[3],
       box_id: this.getOutputBoxId(),
+      this_box_id: this.boxId,
       with_text_detect: this.textDetect,
       use_stream: this.useStream,
       activation_key: this.activationKey,
@@ -312,7 +313,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   }
 
   forgetThisBox() {
-    forgetBoxActivationData(this.getOutputBoxId());
+    forgetBoxActivationData(this.getOutputBoxId(), this.boxId);
   }
 
   setUpBox(speakerCallback: () => Promise<string>) {

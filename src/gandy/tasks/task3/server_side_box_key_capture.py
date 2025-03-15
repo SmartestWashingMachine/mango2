@@ -10,12 +10,14 @@ import keyboard
 
 box_states = {}
 
+def construct_box_id_key(output_box_id, sender_box_id):
+    return f'{output_box_id}_{sender_box_id}'
+
 @app.route("/task3rememberbox", methods=["POST"])
 def remember_box_route():
     data = request.get_json()
 
-    # TODO: Use sender AND receiver boxId to store state.
-    box_id = data["boxState"]["box_id"]
+    box_id = construct_box_id_key(data["boxState"]["box_id"], data["boxState"]["this_box_id"])
     if box_id in box_states and box_states[box_id] is not None:
         keyboard.remove_hotkey(box_states[box_id])
 
@@ -29,7 +31,7 @@ def forget_box_route():
     data = request.get_json()
 
     try:
-        box_id = data["box_id"]
+        box_id = construct_box_id_key(data["box_id"], data["this_box_id"])
         hotkey = box_states[box_id]
 
         if hotkey is not None:

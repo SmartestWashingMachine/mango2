@@ -203,7 +203,7 @@ export const rememberBoxActivationData = async (boxData: any) => {
   });
 };
 
-export const forgetBoxActivationData = async (boxId: any) => {
+export const forgetBoxActivationData = async (boxId: any, thisBoxId: any) => {
   const apiUrl = "http://localhost:5000/task3forgetbox";
 
   await nodeFetch(apiUrl, {
@@ -212,6 +212,6 @@ export const forgetBoxActivationData = async (boxId: any) => {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ box_id: boxId }),
+    body: JSON.stringify({ box_id: boxId, this_box_id: thisBoxId }),
   });
 };
