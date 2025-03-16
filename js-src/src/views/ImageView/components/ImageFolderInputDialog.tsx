@@ -4,13 +4,17 @@ import {
   DialogActions,
   DialogContentText,
   DialogTitle,
+  FormControlLabel,
+  FormGroup,
+  FormLabel,
+  Radio,
+  RadioGroup,
   TextField,
   Tooltip,
 } from "@mui/material";
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import isValidFilename from "valid-filename";
 import FileInfo from "../../../types/FileInfo";
-import UpdateCheckbox from "../../../components/UpdateCheckbox";
 
 type ImageFolderInputDialogProps = {
   onDone: (folderName: string, processFilesByModDate: boolean) => void;
@@ -90,14 +94,19 @@ const ImageFolderInputDialog = (props: ImageFolderInputDialogProps) => {
         onKeyDown={onKeyDown}
         color={folderExists ? "warning" : undefined}
       />
-      <UpdateCheckbox
-        changeValue={(_, v) => setProcessFilesByModifiedDate(v)}
-        keyName="n/a"
-        defaultValue={processFilesByModifiedDate}
-        label="Process Files by Date"
-        // helperText="Disable this if you want to process files in the order of their names."
-        style={{ padding: "0 21px", marginBottom: 12 }}
-      />
+      <FormGroup style={{ padding: "0 21px", marginBottom: 12 }}>
+        <FormLabel>Sort By</FormLabel>
+        <RadioGroup
+          row
+          onChange={(e: any) =>
+            setProcessFilesByModifiedDate(e.currentTarget.value === "date")
+          }
+          value={processFilesByModifiedDate ? "date" : "natsort"}
+        >
+          <FormControlLabel value="natsort" control={<Radio />} label="Name" />
+          <FormControlLabel value="date" control={<Radio />} label="Date" />
+        </RadioGroup>
+      </FormGroup>
       <DialogActions>
         <Button onClick={handleDone} fullWidth disabled={badFolderName}>
           Done
