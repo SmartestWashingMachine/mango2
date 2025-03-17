@@ -485,18 +485,18 @@ export class OcrBoxManager implements BoxOptionsBackend {
       this.serverSideActivationKey
     ) {
       this.rememberThisBox();
-    }
 
-    if (this.ocrWindow !== null) {
-      this.ocrWindow.on("moved", () => {
-        // The API automatically overrides the box hotkey if the data is updated.
-        this.rememberThisBox();
-      });
+      if (this.ocrWindow !== null) {
+        this.ocrWindow.on("moved", () => {
+          // The API automatically overrides the box hotkey if the data is updated.
+          this.rememberThisBox();
+        });
 
-      this.ocrWindow.on("resized", () => {
-        // The API automatically overrides the box hotkey if the data is updated.
-        this.rememberThisBox();
-      });
+        this.ocrWindow.on("resized", () => {
+          // The API automatically overrides the box hotkey if the data is updated.
+          this.rememberThisBox();
+        });
+      }
     }
 
     console.log("Opening OCR BOX:");
