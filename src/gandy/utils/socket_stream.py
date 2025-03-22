@@ -17,20 +17,26 @@ class SocketStreamer(TextStreamer):
 
     # This is a slightly more optimized put for our models.
     # Most code from TextStreamer.
-    def optimized_put(self, value, replace=False):
+    def optimized_put(self, value, replace=False, already_detokenized=False):
         """
         Receives tokens, decodes them, and prints them to stdout as soon as they form entire words.
         """
         # Add the new token to the cache and decodes the entire thing.
-        if replace:
-            self.token_cache = value
+        if already_detokenized:
+            # Used by the LLM translation app. It deals with text strings rather than tokens.
+            self.token_cache.append(value)
+
+            text = "".join(self.token_cache)
         else:
-            if len(value.shape) > 1 and value.shape[0] > 1:
-                raise ValueError("TextStreamer only supports batch size 1")
-            elif len(value.shape) > 1:
-                value = value[0]
-            self.token_cache.extend(value.tolist())
-        text = self.tokenizer.decode(self.token_cache, **self.decode_kwargs)
+            if replace:
+                self.token_cache = value
+            else:
+                if len(value.shape) > 1 and value.shape[0] > 1:
+                    raise ValueError("TextStreamer only supports batch size 1")
+                elif len(value.shape) > 1:
+                    value = value[0]
+                self.token_cache.extend(value.tolist())
+            text = self.tokenizer.decode(self.token_cache, **self.decode_kwargs)
 
         # Prints until the last space char (simple heuristic to avoid printing incomplete words,
         # which may change with the subsequent token -- there are probably smarter ways to do this!)
@@ -38,10 +44,10 @@ class SocketStreamer(TextStreamer):
 
         self.on_finalized_text(printable_text)
 
-    def put(self, value, replace=False):
+    def put(self, value, replace=False, already_detokenized=False):
         # We send all tokens at every put() since websockets are unreliable - packets can be dropped (yes, even on localhost).
         self.print_len = 0  # Comment this line if we only want to emit the next token.
-        return self.optimized_put(value, replace=replace)
+        return self.optimized_put(value, replace=replace, already_detokenized=already_detokenized)
 
     def on_finalized_text(self, text: str, stream_end: bool = False):
         if stream_end:

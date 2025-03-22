@@ -27,7 +27,15 @@ export const TRANSLATION_OPTIONS = [
     name: "Japanese-2-English Madness",
     value: "nllb_jmad",
     desc: `
-    The strongest. Incredibly slow.
+    The strongest(?) Incredibly slow.
+    `,
+  },
+  {
+    // LET'S GO GAMBLING!!! WOOO I LOVE GOD SEEDS!
+    name: "Japanese-2-English Gem",
+    value: "llm_jgem",
+    desc: `
+    Another interesting contender. Somewhat slow.
     `,
   },
   {

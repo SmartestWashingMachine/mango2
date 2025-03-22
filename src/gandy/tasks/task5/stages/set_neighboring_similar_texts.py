@@ -97,15 +97,19 @@ def set_neighboring_similar_texts(app_container: AdvancedPipeline, frame_source_
 
             prev_emb = _get_from_prev_embs(strip_punct(prev))
             cur_emb = _get_from_prev_embs(strip_punct(cur))
-            if prev_emb is None:
-                prev_emb = app_container.embed_text(prev)
-            if cur_emb is None:
-                cur_emb = app_container.embed_text(cur)
+            try:
+                if prev_emb is None:
+                    prev_emb = app_container.embed_text(prev)
+                if cur_emb is None:
+                    cur_emb = app_container.embed_text(cur)
 
-            prev_embs = _add_to_prev_embs(prev_embs, prev, prev_emb)
-            prev_embs = _add_to_prev_embs(prev_embs, cur, cur_emb)
+                prev_embs = _add_to_prev_embs(prev_embs, prev, prev_emb)
+                prev_embs = _add_to_prev_embs(prev_embs, cur, cur_emb)
 
-            cos_score = cos_sim(prev_emb, cur_emb).item()
+                cos_score = cos_sim(prev_emb, cur_emb).item()
+            except:
+                cos_score = 0.0
+
             is_close = cos_score >= EMB_THR
 
             with logger.begin_event(
