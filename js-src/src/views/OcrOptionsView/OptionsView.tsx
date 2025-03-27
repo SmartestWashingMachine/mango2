@@ -3,14 +3,24 @@ import React, { useState, useEffect } from "react";
 import OcrOptionsPane from "./components/OcrOptionsPane";
 import BaseView from "../BaseView";
 import { MainGateway } from "../../utils/mainGateway";
+import QuickSetup from "./components/QuickSetup";
 
 export type OptionsViewProps = {
   goTextTab: () => void;
 };
 
+type SubViews = "na" | "basic" | "advanced";
+
 const OptionsView = (props: OptionsViewProps) => {
   const [boxesOptions, setBoxesOptions] = useState<any>([]);
   const [selId, setSelId] = useState("");
+
+  const [curSubView, setCurSubView] = useState<SubViews>("na");
+
+  useEffect(() => {
+    if (curSubView !== "na")
+      MainGateway.setStoreValue("currentOcrSubView", curSubView);
+  }, [curSubView]);
 
   useEffect(() => {
     let didCancel = false;
@@ -24,6 +34,8 @@ const OptionsView = (props: OptionsViewProps) => {
         if (data.boxes.length > 0) {
           setSelId(data.boxes[0].boxId);
         }
+
+        setCurSubView(data.currentOcrSubView);
       }
     };
 
@@ -82,45 +94,83 @@ const OptionsView = (props: OptionsViewProps) => {
     setBoxesOptions(data.boxes);
   };
 
+  const selectUseCase = async (b: any[]) => {
+    await MainGateway.setStoreValue("boxes", b);
+    await MainGateway.regenerateBoxManagers();
+    props.goTextTab();
+  };
+
+  const goBasicSettings = () => {
+    setCurSubView("basic");
+  };
+
+  const goAdvancedSettings = () => {
+    setCurSubView("advanced");
+  };
+
   const selBoxOptions = (boxesOptions || []).find(
     (x: any) => x.boxId === selId
   );
 
   return (
     <BaseView>
-      <OcrOptionsPane
-        {...selBoxOptions}
-        allBoxIds={(boxesOptions || []).map((x: any) => x.boxId)}
-        setStoreValue={setStoreValue}
-        goTextTab={props.goTextTab}
-        createBox={
-          <Button variant="text" onClick={createBox} color="info">
-            New Box
-          </Button>
-        }
-        removeBox={
-          !!selId ? (
-            <Button variant="text" onClick={removeBox} color="info">
-              Delete Box ({selId.slice(0, 3)})
+      {curSubView !== "advanced" && (
+        <QuickSetup
+          goAdvancedSettings={goAdvancedSettings}
+          setBoxes={selectUseCase}
+        />
+      )}
+      {curSubView === "advanced" && (
+        <OcrOptionsPane
+          {...selBoxOptions}
+          allBoxIds={(boxesOptions || []).map((x: any) => x.boxId)}
+          setStoreValue={setStoreValue}
+          goTextTab={props.goTextTab}
+          createBox={
+            <Button variant="text" onClick={createBox} color="info">
+              New Box
             </Button>
-          ) : (
-            <div></div>
-          )
-        }
-        boxButtons={boxesOptions.map((x: any) => (
-          <Button
-            key={x.boxId}
-            variant="text"
-            onClick={() => handleTabChange(x.boxId)}
-            sx={(theme) => ({
-              fontWeight: x.boxId === selId ? "bold" : "normal",
-              color: x.boxId === selId ? "white" : "hsl(291, 3%, 74%)",
-            })}
-          >
-            {`Box (${x.boxId.slice(0, 3)})`}
-          </Button>
-        ))}
-      />
+          }
+          removeBox={
+            !!selId ? (
+              <Button variant="text" onClick={removeBox} color="info">
+                Delete Box ({selId.slice(0, 3)})
+              </Button>
+            ) : (
+              <div></div>
+            )
+          }
+          boxButtons={
+            <>
+              <Button
+                key="back"
+                variant="text"
+                onClick={goBasicSettings}
+                sx={() => ({
+                  fontWeight: "normal",
+                  color: "primary",
+                  marginBottom: 4,
+                })}
+              >
+                Go back
+              </Button>
+              {boxesOptions.map((x: any) => (
+                <Button
+                  key={x.boxId}
+                  variant="text"
+                  onClick={() => handleTabChange(x.boxId)}
+                  sx={(theme) => ({
+                    fontWeight: x.boxId === selId ? "bold" : "normal",
+                    color: x.boxId === selId ? "white" : "hsl(291, 3%, 74%)",
+                  })}
+                >
+                  {`Box (${x.boxId.slice(0, 3)})`}
+                </Button>
+              ))}
+            </>
+          }
+        />
+      )}
     </BaseView>
   );
 };

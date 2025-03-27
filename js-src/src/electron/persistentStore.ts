@@ -32,6 +32,7 @@ const storeDefaults: IStore = {
   cleaningMode: "blur",
   redrawingMode: "smart",
   currentView: "Image",
+  currentOcrSubView: "basic",
   autoOpenOcrWindow: false,
   spellCorrectionSeparate: false, // TODO: Unused. Probably don't need it either.
   strokeSize: 1.0,

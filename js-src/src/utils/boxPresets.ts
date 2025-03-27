@@ -82,14 +82,14 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
   {
     presetName: "Scout Sender",
     description:
-      "Translates text in the region when 'a' is pressed. Press 'h' to hide it. Press 'k' to pause it. The text is sent to the 'Scout Receiver' box.",
+      "Translates text in the region when 'a' is pressed. Press 'h' to hide and pause it. The text is sent to the 'Scout Receiver' box.",
     options: {
       ...genericOptions,
       fontColor: "#000000",
       backgroundColor: "#FFFFFF",
       activationKey: "a",
       hideKey: "h",
-      pauseKey: "k",
+      pauseKey: "h",
       listenClipboard: false,
       backgroundOpacity: 0.75,
       useStream: true,
@@ -102,7 +102,23 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
   {
     presetName: "Scout Receiver",
     description:
-      "Receives output from the 'Scout Sender' box. Useful when you want to translate a region but display the output somewhere else.",
+      "Receives output from the 'Scout Sender' box. Useful when you want to translate a region but display the output somewhere else. Hide by pressing \"q\".",
+    options: {
+      ...genericOptions,
+      listenClipboard: false,
+      useStream: true,
+      pipeOutput: "Self",
+      boxId: "Receiver",
+      hideKey: "q",
+      append: true,
+      fasterScan: true,
+    },
+    disabled: () => false,
+  },
+  {
+    presetName: "Scout Receiver Transparent",
+    description:
+      "Functions like the Scout Receiver box but has a transparent background and more visible text.",
     options: {
       ...genericOptions,
       listenClipboard: false,
@@ -111,6 +127,11 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
       boxId: "Receiver",
       append: true,
       fasterScan: true,
+      fontSize: 20,
+      strokeSize: 3,
+      backgroundOpacity: 0.0,
+      strokeColor: "#000000",
+      fontColor: "#FFFFFF",
     },
     disabled: () => false,
   },

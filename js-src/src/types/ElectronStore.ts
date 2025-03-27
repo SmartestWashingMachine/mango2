@@ -8,6 +8,7 @@ export type IStoreClientOnly = {
   cleaningMode: string;
   redrawingMode: string;
   currentView: string;
+  currentOcrSubView: string;
   autoOpenOcrWindow: boolean;
 };
 
