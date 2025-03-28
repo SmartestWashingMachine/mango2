@@ -99,9 +99,10 @@ const QuickSetup = (props: QuickSetupProps) => {
   return (
     <Stack spacing={4}>
       <Typography
-        variant="h5"
+        variant="h3"
         align="center"
-        sx={{ color: "hsl(291, 2%, 88%)" }}
+        sx={{ marginTop: 12 }}
+        color="primary.500"
       >
         What's your use case?
       </Typography>

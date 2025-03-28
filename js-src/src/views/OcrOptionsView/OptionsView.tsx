@@ -144,15 +144,16 @@ const OptionsView = (props: OptionsViewProps) => {
             <>
               <Button
                 key="back"
-                variant="text"
+                variant="contained"
                 onClick={goBasicSettings}
                 sx={() => ({
                   fontWeight: "normal",
-                  color: "primary",
+                  color: "white !important",
+                  backgroundColor: "primary.600",
                   marginBottom: 4,
                 })}
               >
-                Go back
+                Simple Setup
               </Button>
               {boxesOptions.map((x: any) => (
                 <Button

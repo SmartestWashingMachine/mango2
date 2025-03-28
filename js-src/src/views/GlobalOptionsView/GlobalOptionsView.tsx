@@ -26,7 +26,11 @@ import GLOBAL_OPTIONS_PARTIAL_PRESETS, {
   PresetItem,
 } from "./globalOptionsPartialPresets";
 
-const GlobalOptionsView = () => {
+export type GlobalOptionsViewProps = {
+  goOcrOptionsTab: () => void;
+};
+
+const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
   const pushAlert = useAlerts();
 
   const [terms, setTerms] = useState<IReplaceTerm[]>([]);
@@ -231,13 +235,30 @@ const GlobalOptionsView = () => {
   return (
     <BaseView>
       <PaginatedTabs
+        headers={
+          <>
+            <Button
+              variant="text"
+              onClick={goOcrOptionsTab}
+              color={"info"}
+              sx={() => ({
+                fontWeight: "normal",
+                color: "hsl(291, 3%, 74%)",
+                marginBottom: 2,
+              })}
+              size="small"
+            >
+              OCR Window Options
+            </Button>
+          </>
+        }
         items={{
           "Quick Presets": {
             "Quick Presets": (
               <TextField
                 onChange={selectQuickPreset}
                 defaultValue=""
-                helperText="You can select a preset here for a quick configuration. Advanced presets will require additional model packs to be installed."
+                helperText="You can select a preset here to quickly configure the models used behind the scenes. Some presets will require additional model packs to be installed."
                 variant="standard"
                 select
               >

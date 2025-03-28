@@ -191,6 +191,7 @@ const OcrBoxPane = ({
                   ? "boxAppHandleIcon"
                   : "boxAppHandleIconDark"
               }
+              sx={{ opacity: backgroundOpacity <= 0.05 ? 0.75 : 0.1 }}
             />
           </div>
         </Box>

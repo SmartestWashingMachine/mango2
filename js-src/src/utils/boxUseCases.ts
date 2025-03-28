@@ -20,8 +20,7 @@ const getOpts = (name: string) => {
 const BOX_USE_CASES: BoxUseCase[] = [
   {
     title: "1 box",
-    description:
-      '"I want a box that reads text on the screen when I press a button."',
+    description: '"I want a box that reads text from the clipboard."',
     options: [{ ...getOpts("Basic"), boxId: "Basic" }],
   },
   {
@@ -29,6 +28,15 @@ const BOX_USE_CASES: BoxUseCase[] = [
     description:
       '"I want a box that reads text on the screen when I press a button."',
     options: [{ ...getOpts("Scanner"), boxId: "Scanner" }],
+  },
+  {
+    title: "2 boxes",
+    description:
+      '"I want a box that reads text from the clipboard, and another box that reads text on the screen when I press a button."',
+    options: [
+      { ...getOpts("Basic"), boxId: "Basic" },
+      { ...getOpts("Scanner"), boxId: "Scanner" },
+    ],
   },
   {
     title: "2 boxes",

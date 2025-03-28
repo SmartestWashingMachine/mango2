@@ -121,7 +121,9 @@ const App = () => {
                       {curView === "Settings" && (
                         <OptionsView goTextTab={selTextTab} />
                       )}
-                      {curView === "GlobalSettings" && <GlobalOptionsView />}
+                      {curView === "GlobalSettings" && (
+                        <GlobalOptionsView goOcrOptionsTab={selSettingsTab} />
+                      )}
                       {curView === "Web" && <WebView />}
                       {curView === "Video" && <VideoView />}
                     </AlertProvider>
