@@ -128,6 +128,7 @@ const OcrBoxPane = ({
     WebkitTextStrokeWidth: `${strokeSize}px`,
     WebkitTextStrokeColor: strokeColor,
     fontFamily: '"ocrbox.otf", "ocrbox.ttf", Roboto, "Roboto", Arial',
+    paintOrder: "stroke fill", // Necessary for pretty strokes.
   };
 
   const extraPrevTextStyles: SxProps = {
@@ -138,6 +139,7 @@ const OcrBoxPane = ({
     WebkitTextStrokeWidth: `${strokeSize}px`,
     WebkitTextStrokeColor: strokeColor,
     fontFamily: '"ocrbox.otf", "ocrbox.ttf", Roboto, "Roboto", Arial',
+    paintOrder: "stroke fill", // Necessary for pretty strokes.
   };
 
   const extraBoxStyles: SxProps = {

@@ -24,6 +24,12 @@ const BOX_USE_CASES: BoxUseCase[] = [
     options: [{ ...getOpts("Basic"), boxId: "Basic" }],
   },
   {
+    title: "1 transparent box",
+    description:
+      '"I want a box with a transparent background that reads text from the clipboard."',
+    options: [{ ...getOpts("Basic Transparent"), boxId: "Basic" }],
+  },
+  {
     title: "1 box",
     description:
       '"I want a box that reads text on the screen when I press a button."',
@@ -58,7 +64,7 @@ const BOX_USE_CASES: BoxUseCase[] = [
     ],
   },
   {
-    title: "3 boxes, 1 transparent",
+    title: "3 boxes (1 transparent)",
     description:
       '"I want two boxes that each reads text on the screen with their own buttons, and sends the results to a third box (with a transparent background) wherever I place it."',
     options: [
@@ -84,7 +90,7 @@ const BOX_USE_CASES: BoxUseCase[] = [
     ],
   },
   {
-    title: "4 boxes, 1 transparent",
+    title: "4 boxes (1 transparent)",
     description:
       '"I want three boxes that each reads text on the screen with their own buttons, and sends the results to a fourth box (with a transparent background) wherever I place it."',
     options: [
@@ -95,7 +101,7 @@ const BOX_USE_CASES: BoxUseCase[] = [
         ...getOpts("Scanner"),
         boxId: "Scanner 2",
         pipeOutput: "Receiver",
-        activationKey: "o",
+        activationKey: "l",
       },
     ],
   },

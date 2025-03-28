@@ -52,6 +52,20 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
     disabled: () => false,
   },
   {
+    presetName: "Basic Transparent",
+    description:
+      "Translates all text copied in the clipboard at all times and displays the output one character at a time.",
+    options: {
+      ...genericOptions,
+      fontSize: 20,
+      strokeSize: 3,
+      backgroundOpacity: 0.0,
+      strokeColor: "#000000",
+      fontColor: "#FFFFFF",
+    },
+    disabled: () => false,
+  },
+  {
     presetName: "Ender",
     description:
       "Translates all text copied in the clipboard at all times and only displays the full output.",
