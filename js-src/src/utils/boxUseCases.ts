@@ -21,27 +21,27 @@ const BOX_USE_CASES: BoxUseCase[] = [
   {
     title: "1 box",
     description: '"I want a box that reads text from the clipboard."',
-    options: [{ ...getOpts("Basic"), boxId: "Basic" }],
+    options: [{ ...getOpts("Basic"), boxId: "CLIPBOARD" }],
   },
   {
     title: "1 transparent box",
     description:
       '"I want a box with a transparent background that reads text from the clipboard."',
-    options: [{ ...getOpts("Basic Transparent"), boxId: "Basic" }],
+    options: [{ ...getOpts("Basic Transparent"), boxId: "CLIPBOARD" }],
   },
   {
     title: "1 box",
     description:
       '"I want a box that reads text on the screen when I press a button."',
-    options: [{ ...getOpts("Scanner"), boxId: "Scanner" }],
+    options: [{ ...getOpts("Scanner"), boxId: "PRESS > K" }],
   },
   {
     title: "2 boxes",
     description:
       '"I want a box that reads text from the clipboard, and another box that reads text on the screen when I press a button."',
     options: [
-      { ...getOpts("Basic"), boxId: "Basic" },
-      { ...getOpts("Scanner"), boxId: "Scanner" },
+      { ...getOpts("Basic"), boxId: "CLIPBOARD" },
+      { ...getOpts("Scanner"), boxId: "PRESS > K" },
     ],
   },
   {
@@ -49,8 +49,8 @@ const BOX_USE_CASES: BoxUseCase[] = [
     description:
       '"I want a box that reads text on the screen when I press a button, and sends the result to another box wherever I place it."',
     options: [
-      { ...getOpts("Scout Sender"), boxId: "Sender" },
-      { ...getOpts("Scout Receiver"), boxId: "Receiver" },
+      { ...getOpts("Scout Receiver"), boxId: "READER" },
+      { ...getOpts("Scout Sender"), boxId: "PRESS > A", pipeOutput: "READER" },
     ],
   },
   {
@@ -58,9 +58,9 @@ const BOX_USE_CASES: BoxUseCase[] = [
     description:
       '"I want two boxes that each reads text on the screen with their own buttons, and sends the results to a third box wherever I place it."',
     options: [
-      { ...getOpts("Scout Receiver"), boxId: "Receiver" },
-      { ...getOpts("Scout Sender"), boxId: "Sender" },
-      { ...getOpts("Scanner"), boxId: "Scanner", pipeOutput: "Receiver" },
+      { ...getOpts("Scout Receiver"), boxId: "READER" },
+      { ...getOpts("Scout Sender"), boxId: "PRESS > A", pipeOutput: "READER" },
+      { ...getOpts("Scanner"), boxId: "PRESS > K", pipeOutput: "READER" },
     ],
   },
   {
@@ -68,9 +68,9 @@ const BOX_USE_CASES: BoxUseCase[] = [
     description:
       '"I want two boxes that each reads text on the screen with their own buttons, and sends the results to a third box (with a transparent background) wherever I place it."',
     options: [
-      { ...getOpts("Scout Receiver Transparent"), boxId: "Receiver" },
-      { ...getOpts("Scout Sender"), boxId: "Sender" },
-      { ...getOpts("Scanner"), boxId: "Scanner", pipeOutput: "Receiver" },
+      { ...getOpts("Scout Receiver Transparent"), boxId: "READER" },
+      { ...getOpts("Scout Sender"), boxId: "PRESS > A", pipeOutput: "READER" },
+      { ...getOpts("Scanner"), boxId: "PRESS > K", pipeOutput: "READER" },
     ],
   },
   {
@@ -78,14 +78,14 @@ const BOX_USE_CASES: BoxUseCase[] = [
     description:
       '"I want three boxes that each reads text on the screen with their own buttons, and sends the results to a fourth box wherever I place it."',
     options: [
-      { ...getOpts("Scout Receiver"), boxId: "Receiver" },
-      { ...getOpts("Scout Sender"), boxId: "Sender" },
-      { ...getOpts("Scanner"), boxId: "Scanner", pipeOutput: "Receiver" },
+      { ...getOpts("Scout Receiver"), boxId: "READER" },
+      { ...getOpts("Scout Sender"), boxId: "PRESS > A", pipeOutput: "READER" },
+      { ...getOpts("Scanner"), boxId: "PRESS > K", pipeOutput: "READER" },
       {
         ...getOpts("Scanner"),
-        boxId: "Scanner 2",
-        pipeOutput: "Receiver",
-        activationKey: "o",
+        boxId: "PRESS > L",
+        pipeOutput: "READER",
+        activationKey: "l",
       },
     ],
   },
@@ -94,13 +94,13 @@ const BOX_USE_CASES: BoxUseCase[] = [
     description:
       '"I want three boxes that each reads text on the screen with their own buttons, and sends the results to a fourth box (with a transparent background) wherever I place it."',
     options: [
-      { ...getOpts("Scout Receiver Transparent"), boxId: "Receiver" },
-      { ...getOpts("Scout Sender"), boxId: "Sender" },
-      { ...getOpts("Scanner"), boxId: "Scanner", pipeOutput: "Receiver" },
+      { ...getOpts("Scout Receiver Transparent"), boxId: "READER" },
+      { ...getOpts("Scout Sender"), boxId: "PRESS > A", pipeOutput: "READER" },
+      { ...getOpts("Scanner"), boxId: "PRESS > K", pipeOutput: "READER" },
       {
         ...getOpts("Scanner"),
-        boxId: "Scanner 2",
-        pipeOutput: "Receiver",
+        boxId: "PRESS > L",
+        pipeOutput: "READER",
         activationKey: "l",
       },
     ],

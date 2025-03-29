@@ -134,7 +134,7 @@ const OptionsView = (props: OptionsViewProps) => {
           removeBox={
             !!selId ? (
               <Button variant="text" onClick={removeBox} color="info">
-                Delete Box ({selId.slice(0, 3)})
+                Delete Box ({selId.slice(0, 9)})
               </Button>
             ) : (
               <div></div>
@@ -165,7 +165,7 @@ const OptionsView = (props: OptionsViewProps) => {
                     color: x.boxId === selId ? "white" : "hsl(291, 3%, 74%)",
                   })}
                 >
-                  {`Box (${x.boxId.slice(0, 3)})`}
+                  {`Box (${x.boxId.slice(0, 9)})`}
                 </Button>
               ))}
             </>
