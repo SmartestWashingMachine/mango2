@@ -46,7 +46,7 @@ const Header = ({
   goVideoTab,
   selectedView,
 }: HeaderProps) => {
-  const { loading } = useLoader();
+  const { loading, disabled } = useLoader();
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
 
@@ -90,7 +90,7 @@ const Header = ({
               color: selectedView == "Text" ? "white" : "hsl(291, 3%, 74%)",
             }}
             onClick={goTextTab}
-            disabled={loading}
+            disabled={loading || disabled}
             size={btnSize}
           >
             Text
@@ -100,7 +100,7 @@ const Header = ({
               color: selectedView == "Image" ? "white" : "hsl(291, 3%, 74%)",
             }}
             onClick={goImageTab}
-            disabled={loading}
+            disabled={loading || disabled}
             size={btnSize}
           >
             Images
@@ -110,7 +110,7 @@ const Header = ({
               color: selectedView == "Book" ? "white" : "hsl(291, 3%, 74%)",
             }}
             onClick={goBookTab}
-            disabled={loading}
+            disabled={loading || disabled}
             size={btnSize}
           >
             Book
@@ -123,7 +123,7 @@ const Header = ({
                   : "hsl(291, 3%, 74%)",
             }}
             onClick={goGlobalSettingsTab}
-            disabled={loading}
+            disabled={loading || disabled}
             size={btnSize}
           >
             Settings
@@ -133,7 +133,7 @@ const Header = ({
               color: selectedView == "Web" ? "white" : "hsl(291, 3%, 74%)",
             }}
             onClick={goWebTab}
-            disabled={loading}
+            disabled={loading || disabled}
             size={btnSize}
           >
             Web
@@ -143,7 +143,7 @@ const Header = ({
               color: selectedView == "Video" ? "white" : "hsl(291, 3%, 74%)",
             }}
             onClick={goVideoTab}
-            disabled={loading}
+            disabled={loading || disabled}
             size={btnSize}
           >
             Video
@@ -153,7 +153,7 @@ const Header = ({
               color: "hsl(291, 3%, 74%)",
             }}
             onClick={goHelpTab}
-            // disabled={loading}
+            // disabled={loading || disabled}
             size={btnSize}
           >
             Help
@@ -208,7 +208,7 @@ const Header = ({
               sx={{
                 color: selectedView == "Text" ? "white" : "hsl(291, 3%, 74%)",
               }}
-              disabled={loading}
+              disabled={loading || disabled}
             >
               <Typography textAlign="center">Text</Typography>
             </MenuItem>
@@ -220,7 +220,7 @@ const Header = ({
               sx={{
                 color: selectedView == "Image" ? "white" : "hsl(291, 3%, 74%)",
               }}
-              disabled={loading}
+              disabled={loading || disabled}
             >
               <Typography textAlign="center">Images</Typography>
             </MenuItem>
@@ -232,7 +232,7 @@ const Header = ({
               sx={{
                 color: selectedView == "Book" ? "white" : "hsl(291, 3%, 74%)",
               }}
-              disabled={loading}
+              disabled={loading || disabled}
             >
               <Typography textAlign="center">Book</Typography>
             </MenuItem>
@@ -244,7 +244,7 @@ const Header = ({
               sx={{
                 color: selectedView == "Web" ? "white" : "hsl(291, 3%, 74%)",
               }}
-              disabled={loading}
+              disabled={loading || disabled}
             >
               <Typography textAlign="center">Web</Typography>
             </MenuItem>
@@ -256,7 +256,7 @@ const Header = ({
               sx={{
                 color: selectedView == "Video" ? "white" : "hsl(291, 3%, 74%)",
               }}
-              disabled={loading}
+              disabled={loading || disabled}
             >
               <Typography textAlign="center">Video</Typography>
             </MenuItem>
@@ -272,7 +272,7 @@ const Header = ({
                     ? "white"
                     : "hsl(291, 3%, 74%)",
               }}
-              disabled={loading}
+              disabled={loading || disabled}
             >
               <Typography textAlign="center">Settings</Typography>
             </MenuItem>
@@ -284,7 +284,7 @@ const Header = ({
               sx={{
                 color: "hsl(291, 3%, 74%)",
               }}
-              disabled={loading}
+              disabled={loading || disabled}
             >
               <Typography textAlign="center">Help</Typography>
             </MenuItem>

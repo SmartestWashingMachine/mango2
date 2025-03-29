@@ -8,6 +8,7 @@ import {
   Paper,
   Stack,
   Tooltip,
+  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -58,7 +59,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
 
   const [texts, setTexts] = useState<IHistoryText[]>([]);
 
-  const { loading, setLoading } = useLoader();
+  const { loading, setLoading, disabled, setDisabled } = useLoader();
 
   // Users can input source language text to be processed in the backend into translated text.
   const [inputText, setInputText] = useState("");
@@ -102,6 +103,9 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
    */
   const handleOpenBoxClick = useCallback(() => {
     MainGateway.createOcrBox();
+
+    // Disable other actions (like navigating to other views) when the detached boxes are open.
+    setDisabled((d: boolean) => !d);
   }, []);
 
   /**
@@ -426,14 +430,27 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   // Subcomponents
   const controlsPane = (
     <Stack direction="row" spacing={1}>
-      <Tooltip title="Open Detached Box">
+      <Tooltip
+        placement="top-end"
+        title={
+          <>
+            <Typography color="inherit" sx={{ fontWeight: "bold" }}>
+              {disabled ? "Close" : "Open"} Detached Box
+            </Typography>
+            <Typography variant="caption" sx={{ color: "hsl(291, 1%, 93%)" }}>
+              Detached box(es) can scan the screen or system for text to
+              translate and display.
+            </Typography>
+          </>
+        }
+      >
         <Paper sx={{ backgroundColor: "primary.700" }}>
           <IconButton onClick={handleOpenBoxClick} sx={{ borderRadius: 0 }}>
             <MonitorIcon />
           </IconButton>
         </Paper>
       </Tooltip>
-      <Tooltip title="Detached Box Settings">
+      <Tooltip title="Detached Box Settings" placement="top-end">
         <Paper
           elevation={2}
           sx={{
@@ -441,7 +458,11 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
             backgroundColor: "secondary.700",
           }}
         >
-          <IconButton onClick={onOpenOcrSettings} sx={{ borderRadius: 0 }}>
+          <IconButton
+            onClick={onOpenOcrSettings}
+            sx={{ borderRadius: 0 }}
+            disabled={disabled}
+          >
             <SettingsIcon />
           </IconButton>
         </Paper>

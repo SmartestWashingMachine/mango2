@@ -27,6 +27,7 @@ const App = () => {
   const nodeRef = useRef<any | null>(null);
 
   const [loading, setLoading] = useState(false);
+  const [disabled, setDisabled] = useState(false);
 
   const selTextTab = () => {
     setCurView("Text");
@@ -84,7 +85,9 @@ const App = () => {
   }, []);
 
   return (
-    <LoaderContext.Provider value={{ loading, setLoading }}>
+    <LoaderContext.Provider
+      value={{ loading, setLoading, disabled, setDisabled }}
+    >
       <ThemeProvider theme={appTheme}>
         <CssBaseline>
           <Box sx={{ display: "flex", flexDirection: "column" }}>
