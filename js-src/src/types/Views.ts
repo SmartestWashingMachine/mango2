@@ -1,10 +1,10 @@
 type Views =
   | "Text"
   | "Image"
-  | "Settings"
+  | "Box Settings"
   | "Web"
   | "Book"
-  | "GlobalSettings"
+  | "Model Settings"
   | "Loading"
   | "Video";
 

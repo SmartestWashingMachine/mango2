@@ -248,7 +248,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
               })}
               size="small"
             >
-              OCR Window Options
+              Detached Box Options
             </Button>
           </>
         }
@@ -457,13 +457,13 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 maxValue={150}
               />
             ),
-            "Auto Open OCR Window": (
+            "Auto Open Detached Box": (
               <UpdateCheckbox
                 changeValue={setStoreValue}
                 keyName="autoOpenOcrWindow"
                 defaultValue={autoOpenOcrWindow}
-                helperText="Automatically open the OCR window when the Text tab is selected."
-                label="Auto Open OCR Window"
+                helperText="Automatically open the detached box(es) when the Text tab is selected."
+                label="Auto Open Detached Box"
               />
             ),
             "Bottom Text Only": (
@@ -659,9 +659,13 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
             "Open Models Folder": (
               <>
                 <Button
-                  sx={{ mt: 8 }}
+                  sx={{
+                    mt: 8,
+                    fontWeight: "normal",
+                    color: "white !important",
+                    backgroundColor: "primary.600",
+                  }}
                   variant="contained"
-                  color="primary"
                   fullWidth
                   onClick={handleOpenModelsFolder}
                 >

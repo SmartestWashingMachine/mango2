@@ -98,11 +98,12 @@ const questions = [
     ],
   },
   {
-    title: "How do I add new fonts or replace the font used in the OCR box?",
+    title:
+      "How do I add new fonts or replace the font used in the detached box?",
     steps: [
       "New font files can be added in the Mango application folder, under the resources/fonts folder.",
       "Simply drop OTF/TTF files here to add them as available fonts for use in image editing.",
-      'To replace the OCR box font, just name the desired font "ocrbox.ttf".',
+      'To replace the detached box font, just name the desired font "ocrbox.ttf".',
     ],
   },
   {

@@ -426,14 +426,14 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   // Subcomponents
   const controlsPane = (
     <Stack direction="row" spacing={1}>
-      <Tooltip title="Open OCR">
+      <Tooltip title="Open Detached Box">
         <Paper sx={{ backgroundColor: "primary.700" }}>
           <IconButton onClick={handleOpenBoxClick} sx={{ borderRadius: 0 }}>
             <MonitorIcon />
           </IconButton>
         </Paper>
       </Tooltip>
-      <Tooltip title="OCR Settings">
+      <Tooltip title="Detached Box Settings">
         <Paper
           elevation={2}
           sx={{

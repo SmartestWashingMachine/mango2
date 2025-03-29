@@ -45,11 +45,11 @@ const App = () => {
   };
 
   const selSettingsTab = () => {
-    setCurView("Settings");
+    setCurView("Box Settings");
   };
 
   const selGlobalSettingsTab = () => {
-    setCurView("GlobalSettings");
+    setCurView("Model Settings");
   };
 
   const selVideoTab = () => {
@@ -118,10 +118,10 @@ const App = () => {
                         </ImageViewModeProvider>
                       )}
                       {curView === "Book" && <BookView />}
-                      {curView === "Settings" && (
+                      {curView === "Box Settings" && (
                         <OptionsView goTextTab={selTextTab} />
                       )}
-                      {curView === "GlobalSettings" && (
+                      {curView === "Model Settings" && (
                         <GlobalOptionsView goOcrOptionsTab={selSettingsTab} />
                       )}
                       {curView === "Web" && <WebView />}

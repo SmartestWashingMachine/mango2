@@ -2,6 +2,7 @@ import {
   AppBar,
   Box,
   Button,
+  Divider,
   IconButton,
   Stack,
   Toolbar,
@@ -15,7 +16,7 @@ import Views from "../types/Views";
 import { useLoader } from "./LoaderContext";
 import path from "path";
 import { app } from "electron";
-import MenuIcon from "@mui/icons-material/Menu";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
@@ -117,7 +118,7 @@ const Header = ({
           <Button
             sx={{
               color:
-                selectedView == "GlobalSettings"
+                selectedView == "Model Settings"
                   ? "white"
                   : "hsl(291, 3%, 74%)",
             }}
@@ -172,9 +173,16 @@ const Header = ({
             mr: 2,
           }}
         >
-          <IconButton size="large" onClick={handleOpenNavMenu} color="inherit">
-            <MenuIcon />
-          </IconButton>
+          <Button
+            size="large"
+            onClick={handleOpenNavMenu}
+            color="inherit"
+            endIcon={
+              <KeyboardArrowDownIcon sx={{ color: "hsl(291, 3%, 74%)" }} />
+            }
+          >
+            {selectedView}
+          </Button>
           <Menu
             anchorEl={anchorElNav}
             anchorOrigin={{
@@ -231,21 +239,6 @@ const Header = ({
             <MenuItem
               onClick={() => {
                 handleCloseNavMenu();
-                goGlobalSettingsTab();
-              }}
-              sx={{
-                color:
-                  selectedView == "GlobalSettings"
-                    ? "white"
-                    : "hsl(291, 3%, 74%)",
-              }}
-              disabled={loading}
-            >
-              <Typography textAlign="center">Settings</Typography>
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleCloseNavMenu();
                 goWebTab();
               }}
               sx={{
@@ -266,6 +259,22 @@ const Header = ({
               disabled={loading}
             >
               <Typography textAlign="center">Video</Typography>
+            </MenuItem>
+            <Divider />
+            <MenuItem
+              onClick={() => {
+                handleCloseNavMenu();
+                goGlobalSettingsTab();
+              }}
+              sx={{
+                color:
+                  selectedView == "Model Settings"
+                    ? "white"
+                    : "hsl(291, 3%, 74%)",
+              }}
+              disabled={loading}
+            >
+              <Typography textAlign="center">Settings</Typography>
             </MenuItem>
             <MenuItem
               onClick={() => {
