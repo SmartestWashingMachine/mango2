@@ -21,16 +21,24 @@ def prepend_qual(s: str):
     return f"<Q9>{clean_text_vq(s)}"
 
 def prepend_qual_mad(s: str):
-    return f"<Q9>{clean_text_vq(s)}"
+    # MAD does not support context anymore, hence the TSOS split.
+    return f"<Q9>{clean_text_vq(s.split('<TSOS>')[-1].strip())}"
 
 honorifics = { '君', 'はん', '様', 'さま', 'さん', 'ちゃん', 'たん', 'くん', '先生', 'せんせい', '先輩', 'せんぱい', }
 def prepend_mad_qual_ja(s: str):
     s = str(s)
     if any(h in s for h in honorifics):
-        # <AH> is only used for J-Mad. It encourages the model to use more "anime" honorifics.
+        # <AH> is only used for J-Mad and other new variants. It encourages the model to use more "anime" honorifics.
         return f"<2en> <AH>{prepend_qual_mad(s)}"
 
     return f"<2en> {prepend_qual_mad(s)}"
+
+def prepend_gem_ja(s: str):
+    if any(h in s for h in honorifics):
+        s = f"<AH>{s}"
+
+    s = '<Q9>' + s
+    return s
 
 def prepend_mad_qual_generic(s: str):
     return f"<2en> {prepend_qual_mad(s)}"

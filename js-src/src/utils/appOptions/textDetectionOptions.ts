@@ -10,7 +10,7 @@ export const TEXT_DETECTION_OPTIONS = [
     name: "YOLO-XL",
     value: "yolo_xl",
     desc: `
-    Best performing variant. Slower than YOLO-TD. Recommended for general use.
+    Decent performing variant. Slower than YOLO-TD.
     `,
   },
   {

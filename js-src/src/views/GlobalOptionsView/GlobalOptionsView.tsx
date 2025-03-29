@@ -358,7 +358,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 defaultValue={enableCuda}
                 tooltip="4 GB VRAM can work if MT model is forced onto the CPU."
                 label="Enable CUDA"
-                helperText="May improve speed IF using a good GPU that supports CUDA."
+                helperText="Will improve speed IF using a good GPU that supports CUDA. 4 GB of VRAM is usually required to support the translation model ALONE, or the text detection + line + OCR models. 8 GB VRAM is required to run the full translation pipeline on a GPU. You can force parts of the pipeline to run on the CPU instead with the options below."
               />
             ),
             "Use Efficient Translator": (
@@ -752,8 +752,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                   Reset Settings
                 </Button>
                 <Typography variant="caption" color="info">
-                  Resets ALL settings - including those related to the OCR
-                  boxes. Double click to activate.
+                  Resets ALL settings - including those related to the detached
+                  text boxes. Double click to activate.
                 </Typography>
               </>
             ),
