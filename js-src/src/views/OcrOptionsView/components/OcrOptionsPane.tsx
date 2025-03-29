@@ -8,6 +8,7 @@ import { OPTIONS_PRESETS } from "../../../utils/boxPresets";
 import UpdateCheckbox from "../../../components/UpdateCheckbox";
 import PaginatedTabs from "../../../components/PaginatedTabs";
 import { MainGateway } from "../../../utils/mainGateway";
+import BoxPanePreview from "./BoxPanePreview";
 
 export type OcrOptionsPaneProps = BoxOptions & {
   boxId: string;
@@ -111,6 +112,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
 
   return (
     <PaginatedTabs
+      boldFirst
       key={renderKey}
       headers={props.boxButtons}
       footers={
@@ -122,6 +124,9 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
       showItems={!!props.boxId}
       itemsKey={props.boxId}
       items={{
+        Preview: {
+          Preview: <BoxPanePreview boxId={props.boxId} />,
+        },
         Preset: {
           Presets: (
             <TextField

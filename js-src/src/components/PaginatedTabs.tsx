@@ -18,6 +18,7 @@ export type PaginatedTabsProps = {
   footers?: any;
   showItems?: boolean;
   itemsKey?: string;
+  boldFirst?: boolean;
 };
 
 const PaginatedTabs = (props: PaginatedTabsProps) => {
@@ -119,17 +120,20 @@ const PaginatedTabs = (props: PaginatedTabsProps) => {
         <Grid item xs={3}>
           <Stack spacing={1} sx={{ padding: 2, height: "100%" }}>
             {createHeaders()}
-            {keys.map((k) => (
+            {keys.map((k, idx) => (
               <Button
                 variant="text"
                 key={k}
                 onClick={() => setCategory(k)}
                 color={"info"}
-                sx={(theme) => ({
-                  fontWeight: k === selCategory ? "bold" : "normal",
+                sx={() => ({
+                  fontWeight:
+                    (props.boldFirst && idx === 0) || k === selCategory
+                      ? "bold"
+                      : "normal",
                   color: k === selCategory ? "white" : "hsl(291, 3%, 74%)",
                 })}
-                size="small"
+                size={props.boldFirst && idx === 0 ? "medium" : "small"}
               >
                 {k}
               </Button>

@@ -464,3 +464,33 @@ body,
   display: flex;
   align-items: center;
 }
+
+.boxPanePreviewContainerLight {
+  background-color: rgb(200, 200, 200);
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+  width: 100%;
+  height: 300px;
+}
+
+.boxPanePreviewContainerDark {
+  background-color: rgb(50, 50, 50);
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+  width: 100%;
+  height: 300px;
+}
+
+.boxPanePreviewInner {
+  display: flex;
+  width: 80%;
+  height: 40%;
+  flex: 1;
+  justify-content: center;
+}
