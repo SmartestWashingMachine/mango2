@@ -248,7 +248,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
               })}
               size="small"
             >
-              Detached Box Options
+              Detached Box Settings
             </Button>
           </>
         }

@@ -124,7 +124,10 @@ const PaginatedTabs = (props: PaginatedTabsProps) => {
               <Button
                 variant="text"
                 key={k}
-                onClick={() => setCategory(k)}
+                onClick={() => {
+                  setSearch("");
+                  setCategory(k);
+                }}
                 color={"info"}
                 sx={() => ({
                   fontWeight:

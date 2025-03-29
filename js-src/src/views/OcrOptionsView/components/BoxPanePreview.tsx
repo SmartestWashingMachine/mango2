@@ -65,6 +65,7 @@ const BoxPanePreview = ({ boxId }: BoxPanePreviewProps) => {
             pause={false}
             hide={false}
             boxId={boxId}
+            hideHandle
           />
         </div>
       </div>

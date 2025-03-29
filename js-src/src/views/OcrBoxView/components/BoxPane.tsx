@@ -12,6 +12,7 @@ type OcrBoxPaneProps = BoxOptionsFrontend & {
   pause: boolean;
   prevTexts: string[];
   boxId: string;
+  hideHandle?: boolean;
 };
 
 const msToSecs = (ms: number) => (ms ? ms * 1000 : 300);
@@ -54,6 +55,7 @@ const OcrBoxPane = ({
   pause,
   prevTexts,
   boxId,
+  hideHandle,
 }: OcrBoxPaneProps) => {
   const [visible, setVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
@@ -186,16 +188,18 @@ const OcrBoxPane = ({
           </Stack>
           <div className="boxAppHandleTopRight" />
           <div className="boxAppHandleBottomLeft" />
-          <div className="boxAppHandleBottomRight">
-            <DragHandleIcon
-              className={
-                hexToLuma(backgroundColor) > 0.5
-                  ? "boxAppHandleIcon"
-                  : "boxAppHandleIconDark"
-              }
-              sx={{ opacity: backgroundOpacity <= 0.05 ? 0.75 : 0.1 }}
-            />
-          </div>
+          {!hideHandle && (
+            <div className="boxAppHandleBottomRight">
+              <DragHandleIcon
+                className={
+                  hexToLuma(backgroundColor) > 0.5
+                    ? "boxAppHandleIcon"
+                    : "boxAppHandleIconDark"
+                }
+                sx={{ opacity: backgroundOpacity <= 0.05 ? 0.75 : 0.1 }}
+              />
+            </div>
+          )}
         </Box>
       </Fade>
     </div>
