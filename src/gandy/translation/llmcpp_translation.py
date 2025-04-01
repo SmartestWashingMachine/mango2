@@ -1,20 +1,11 @@
 from gandy.translation.base_translation import BaseTranslation
 from gandy.utils.fancy_logger import logger
-from optimum.onnxruntime import ORTModelForSeq2SeqLM
+from gandy.utils.set_tokenizer_langs import prepend_gem_ja
 from gandy.state.config_state import config_state
-from llama_cpp import Llama
+from llama_cpp_cuda_tensorcores import Llama
 from typing import List
 
-class BreakableORTModelForSeq2SeqLM(ORTModelForSeq2SeqLM):
-    def forward(self, *args, **kwargs):
-        if config_state._temp_circuit_broken:
-            config_state._temp_circuit_broken = False
-            raise RuntimeError('Circuit breaker triggered by user!')
-
-        return super().forward(*args, **kwargs)
-
 # Some caveats:
-# Only works on CPU currently. Maybe add n_gpu_layers too? (high priority)
 # Does not support batch translations. Translations are always done sequentially. (moderate priority)
 # Does not support embed_text for video tasks. (very low priority)
 # Translation server is ignored (it's only CPU / GPU on the one lib). (no priority)
@@ -35,12 +26,14 @@ class LlmCppTranslationApp(BaseTranslation):
     def load_model(
         self,
     ):
-
-        logger.info(f"Loading translation model ({self.model_sub_path})...")
+        can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+        logger.info(f"Loading translation model ({self.model_sub_path})... CanCuda={can_cuda}")
 
         self.llm = Llama(
             model_path=f"models/{self.model_sub_path}" + ".gguf",
             n_ctx=512,
+            n_gpu_layers=30 if can_cuda else 0,
+            verbose=False,
         )
 
         logger.info("Done loading translation model!")
@@ -69,16 +62,16 @@ class LlmCppTranslationApp(BaseTranslation):
         
     def map_prompt(self, inp: str, contexts: List[str]):
         if len(contexts) == 0:
-            return f"Translate the Japanese text to English without any explanation.\nJapanese: {inp}"
-        
+            return prepend_gem_ja(f"Translate the Japanese text to English.\nJapanese: {inp}")
+
         base_prompt = f'Translate the Japanese text to English. Some previous texts are provided as context.\n'
 
-        for i in range(contexts):
+        for i in range(len(contexts)):
             base_prompt += f'Context {i+1}: {contexts[i]}\n'
 
         base_prompt += f'Japanese: {inp}'
 
-        return base_prompt 
+        return prepend_gem_ja(base_prompt) 
         
     def remap_input_with_contexts(self, inp: str):
         cur_text = inp.split('<TSOS>')
