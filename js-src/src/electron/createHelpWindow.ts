@@ -1,4 +1,4 @@
-import isDev from "electron-is-dev";
+import isDev from "../electronDevMode";
 import path from "path";
 import { BrowserWindow, screen } from "electron";
 

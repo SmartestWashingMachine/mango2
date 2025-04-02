@@ -1,4 +1,4 @@
-import isDev from "electron-is-dev";
+import isDev from "../../electronDevMode";
 import path from "path";
 import { BrowserWindow, globalShortcut, clipboard, screen } from "electron";
 
@@ -27,6 +27,8 @@ export const createOcrWindow = (opts: CreateOcrWindowOpts) => {
     icon: path.join(__dirname, "Icon.png"),
     title: "Text Window",
   });
+
+  ocrWindow.setSkipTaskbar(true);
 
   ocrWindow.setAlwaysOnTop(true, "screen-saver", 1);
   ocrWindow.setVisibleOnAllWorkspaces(true);

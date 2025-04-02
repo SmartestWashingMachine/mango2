@@ -3,7 +3,6 @@ import path from "path";
 import { ElectronState } from "./types/ElectronState";
 import { initializeModelNames } from "./flaskcomms/setFlaskSettings";
 import { closePython, loadPython } from "./electron/loadPython";
-import isDev from "electron-is-dev";
 import { initializeStore } from "./electron/persistentStore";
 import { makeLogs } from "./electron/electronLogging";
 import ElectronChannels from "./types/ElectronChannels";
@@ -19,6 +18,7 @@ import { OPTIONS_PRESETS } from "./utils/boxPresets";
 
 import http from "http";
 import { Server } from "socket.io";
+import isDev from "./electronDevMode";
 
 app.commandLine.appendSwitch("disable-renderer-backgrounding");
 app.commandLine.appendSwitch("disable-background-timer-throttling");
