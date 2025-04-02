@@ -105,6 +105,76 @@ const BOX_USE_CASES: BoxUseCase[] = [
       },
     ],
   },
+  {
+    title: "5 boxes (1 transparent)",
+    description:
+      '"I want four boxes that each reads text on the screen with their own buttons, and sends the results to a fifth box (with a transparent background) wherever I place it."',
+    options: [
+      { ...getOpts("Scout Receiver Transparent"), boxId: "READER" },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER",
+        activationKey: "1",
+        boxId: "PRESS > 1",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER",
+        activationKey: "2",
+        boxId: "PRESS > 2",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER",
+        activationKey: "3",
+        boxId: "PRESS > 3",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER",
+        activationKey: "4",
+        boxId: "PRESS > 4",
+      },
+    ],
+  },
+  {
+    title: "6 boxes (1 transparent)",
+    description:
+      '"I want five boxes that each reads text on the screen with their own buttons, and sends the results to a sixth box (with a transparent background) wherever I place it."',
+    options: [
+      { ...getOpts("Scout Receiver Transparent"), boxId: "READER" },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER",
+        activationKey: "1",
+        boxId: "PRESS > 1",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER",
+        activationKey: "2",
+        boxId: "PRESS > 2",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER",
+        activationKey: "3",
+        boxId: "PRESS > 3",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER",
+        activationKey: "4",
+        boxId: "PRESS > 4",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER",
+        activationKey: "5",
+        boxId: "PRESS > 5",
+      },
+    ],
+  },
 ];
 
 // Slightly offset every box so they don't overlap.
