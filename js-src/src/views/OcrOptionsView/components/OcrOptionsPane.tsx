@@ -204,7 +204,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               />
             </Stack>
           ),
-          "Text Position": (
+          "Text Align": (
             <TextField
               onChange={updateTextAlign}
               defaultValue={props.textAlign}
