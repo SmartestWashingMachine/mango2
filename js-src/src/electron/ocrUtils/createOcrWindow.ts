@@ -17,6 +17,9 @@ export const createOcrWindow = (opts: CreateOcrWindowOpts) => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"), // Preload.js must have an absolute path.
       devTools: isDev, // for debugging
+      // backgroundThrottling is critical: If True, then text boxes that are placed behind other text boxes will not be rerendered until the window is moved to the foreground.
+      // This is annoying, since it means that text boxes behind other text boxes will not be hidden automatically.
+      backgroundThrottling: false,
     },
     frame: false,
     resizable: true,
