@@ -60,11 +60,19 @@ const OcrBoxPane = ({
   const [visible, setVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
 
+  const [useLightHandle, setUseLightHandle] = useState(false);
+
   const [background, setBackground] = useState(
     hexWithAlpha(backgroundColor, backgroundOpacity)
   );
 
   const timer = useRef<any>(null);
+
+  useEffect(() => {
+    if (!backgroundColor) return;
+
+    setUseLightHandle(hexToLuma(backgroundColor) > 0.5);
+  }, [backgroundColor]);
 
   const onHoverEnter = useCallback(() => {
     setIsHovering(true);
@@ -154,12 +162,22 @@ const OcrBoxPane = ({
   if (!fontSize || hide) {
     return null;
   }
+
+  const backgroundHidden = backgroundOpacity <= 0.05;
+
+  const onDoubleClick = () => {
+    if (!backgroundHidden) return;
+
+    setUseLightHandle((prev) => !prev);
+  };
+
   return (
     <div
       className="fullBoxApp"
       onMouseOver={onHoverEnter}
       onMouseOut={onHoverLeave}
       style={{ opacity: hide ? 0 : 1 }}
+      onDoubleClick={onDoubleClick}
     >
       <Fade
         in={visible || isHovering}
@@ -192,11 +210,9 @@ const OcrBoxPane = ({
             <div className="boxAppHandleBottomRight">
               <DragHandleIcon
                 className={
-                  hexToLuma(backgroundColor) > 0.5
-                    ? "boxAppHandleIcon"
-                    : "boxAppHandleIconDark"
+                  useLightHandle ? "boxAppHandleIcon" : "boxAppHandleIconDark"
                 }
-                sx={{ opacity: backgroundOpacity <= 0.05 ? 0.75 : 0.1 }}
+                sx={{ opacity: backgroundHidden ? 0.75 : 0.1 }}
               />
             </div>
           )}

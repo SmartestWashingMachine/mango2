@@ -16,7 +16,7 @@ const ACTIVATE_DEFAULT_TEXT = (k: string) =>
 const ACTIVATE_ADVANCED_TEXT = (k: string, l: string) =>
   `I will automatically translate anything behind me when "${k}" is pressed. Hide me with "${l}" before translating!`.trim();
 
-const MISC_DEFAULT_TEXT = "...";
+const MISC_DEFAULT_TEXT = "Translated text will show here.";
 
 export type BoxAppProps = {
   boxId: string;
