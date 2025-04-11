@@ -23,7 +23,8 @@ const KeySelect = ({
   const handleKeyDown = (e: any) => {
     const { key } = e;
 
-    if (key !== "Escape" && (!key.match(/[a-z]/i) || key.length !== 1)) {
+    // if (key !== "Escape" && (!key.match(/[a-z0-9]/i) || key.length !== 1)) {
+    if (key !== "Escape" && key.length !== 1) {
       // This may not even be needed, but best to be safe for now...
       return; // Ensure it's a basic letter... for now.
     }
