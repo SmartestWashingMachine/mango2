@@ -1,6 +1,5 @@
 from gandy.translation.base_translation import BaseTranslation
 from gandy.utils.fancy_logger import logger
-from gandy.utils.set_tokenizer_langs import prepend_gem_ja
 from gandy.state.config_state import config_state
 from llama_cpp_cuda_tensorcores import Llama
 from typing import List
@@ -15,10 +14,14 @@ class LlmCppTranslationApp(BaseTranslation):
     def __init__(
         self,
         model_sub_path="",
+        prepend_fn=None,
+        lang="",
     ):
         super().__init__()
 
         self.model_sub_path = model_sub_path
+        self.prepend_fn = prepend_fn
+        self.lang = lang
 
     def can_load(self):
         return super().can_load(f"models/{self.model_sub_path}" + ".gguf")
@@ -33,7 +36,11 @@ class LlmCppTranslationApp(BaseTranslation):
             model_path=f"models/{self.model_sub_path}" + ".gguf",
             n_ctx=512,
             n_gpu_layers=30 if can_cuda else 0,
-            verbose=False,
+            flash_attn=can_cuda,
+            verbose=True,
+            #n_threads_batch=3,
+            use_mlock=True,
+            logits_all=False,
         )
 
         logger.info("Done loading translation model!")
@@ -62,16 +69,16 @@ class LlmCppTranslationApp(BaseTranslation):
         
     def map_prompt(self, inp: str, contexts: List[str]):
         if len(contexts) == 0:
-            return prepend_gem_ja(f"Translate the Japanese text to English.\nJapanese: {inp}")
+            return self.prepend_fn(f"Translate the {self.lang} text to English.\n{self.lang}: {inp}")
 
-        base_prompt = f'Translate the Japanese text to English. Some previous texts are provided as context.\n'
+        base_prompt = f'Translate the {self.lang} text to English. Some previous texts are provided as context.\n'
 
         for i in range(len(contexts)):
             base_prompt += f'Context {i+1}: {contexts[i]}\n'
 
-        base_prompt += f'Japanese: {inp}'
+        base_prompt += f'{self.lang}: {inp}'
 
-        return prepend_gem_ja(base_prompt) 
+        return self.prepend_fn(base_prompt) 
         
     def remap_input_with_contexts(self, inp: str):
         cur_text = inp.split('<TSOS>')
@@ -105,6 +112,9 @@ class LlmCppTranslationApp(BaseTranslation):
             model_output = self.llm.create_chat_completion(
                 messages=messages,
                 stream=use_stream is not None,
+                #temperature=1.0,
+                #top_p=0.95,
+                #top_k=64,
             )
 
             if use_stream is not None:

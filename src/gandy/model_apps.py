@@ -68,6 +68,7 @@ from gandy.utils.set_tokenizer_langs import (
     remove_unnecessary_eng_tokens_mad,
 )
 from gandy.translation.llmcpp_translation import LlmCppTranslationApp
+from gandy.utils.set_tokenizer_langs import prepend_gem_ja, prepend_gem_ko
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
 
 yolo_xl = YOLOTDImageDetectionApp(
@@ -326,6 +327,13 @@ TRANSLATION_APP = SwitchApp(
         ),
         LlmCppTranslationApp(
             model_sub_path="gem/gem",
+            prepend_fn=prepend_gem_ja,
+            lang="Japanese",
+        ),
+        LlmCppTranslationApp(
+            model_sub_path="gem/gem_ko",
+            prepend_fn=prepend_gem_ko,
+            lang="Korean",
         ),
     ],
     app_names=[
@@ -336,7 +344,8 @@ TRANSLATION_APP = SwitchApp(
         "nllb_jq300",
         "nllb_komad",
         "nllb_zhmad",
-        "llm_jgem"
+        "llm_jgem",
+        "llm_kgem",
     ],
 )
 
