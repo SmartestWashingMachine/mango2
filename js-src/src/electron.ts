@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from "electron";
+import { app, BrowserWindow, screen, Menu } from "electron";
 import path from "path";
 import { ElectronState } from "./types/ElectronState";
 import { initializeModelNames } from "./flaskcomms/setFlaskSettings";
@@ -19,6 +19,8 @@ import { OPTIONS_PRESETS } from "./utils/boxPresets";
 import http from "http";
 import { Server } from "socket.io";
 import isDev from "./electronDevMode";
+
+Menu.setApplicationMenu(null);
 
 app.commandLine.appendSwitch("disable-renderer-backgrounding");
 app.commandLine.appendSwitch("disable-background-timer-throttling");
