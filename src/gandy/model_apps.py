@@ -1,3 +1,20 @@
+from onnxruntime import RunOptions, InferenceSession
+
+def decorated_run(method):
+    def new_run(self, *args, **kwargs):
+        run_options = RunOptions()
+
+        if self.get_providers()[0] == "CUDAExecutionProvider":
+            run_options.add_run_config_entry("kOrtRunOptionsConfigEnableMemPattern", "gpu:0")
+            run_options.add_run_config_entry("kOrtRunOptionsConfigEnableMemoryArenaShrinkage", "gpu:0")
+            run_options.add_run_config_entry("kOrtSessionOptionsUseDeviceAllocatorForInitializers", "1")
+            run_options.add_run_config_entry("memory.enable_memory_arena_shrinkage", "gpu:0")
+        return method(self, *args, run_options=run_options, **kwargs)
+    
+    return new_run
+
+InferenceSession.run = decorated_run(InferenceSession.run)
+
 from gandy.full_pipelines.base_pipeline import (
     BasePipeline,
     DefaultSpellCorrectionApp,

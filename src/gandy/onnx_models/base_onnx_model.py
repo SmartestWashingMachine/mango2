@@ -26,14 +26,21 @@ class BaseONNXModel:
 
         options = SessionOptions()
         options.intra_op_num_threads = 1
-        options.graph_optimization_level = GraphOptimizationLevel.ORT_ENABLE_ALL
+        options.inter_op_num_threads = 1
+        # options.graph_optimization_level = GraphOptimizationLevel.ORT_ENABLE_ALL
+
+        options.enable_mem_pattern = False
+        options.enable_profiling = False
+        options.enable_cpu_mem_arena = False
+        options.enable_mem_reuse = False
+        cuda_provider_options = {"arena_extend_strategy": "kSameAsRequested", "do_copy_in_default_stream": False, "cudnn_conv_use_max_workspace": "0"}
 
         options.log_severity_level = 3
 
         # Note that CUDA errors are not properly logged right now :/
         if self.use_cuda:
             logger.info("CUDA enabled. Will try to use CUDA if allowed.")
-            provider = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+            provider = [("CUDAExecutionProvider", cuda_provider_options), "CPUExecutionProvider"]
         else:
             logger.info("CUDA disabled. Will only use CPU.")
             provider = ["CPUExecutionProvider"]
