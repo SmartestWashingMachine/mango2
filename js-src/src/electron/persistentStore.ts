@@ -24,6 +24,7 @@ const storeDefaults: IStore = {
   decodingMode: "beam",
   presets: [],
   numBeams: 3,
+  numGpuLayersMt: 22,
   translationThreads: 2, // TODO: remove
   forceTranslationCPU: true,
   forceTdCpu: false,

@@ -8,6 +8,7 @@ class ConfigState:
         self.temperature = 1.0
         self.epsilon_cutoff = 0.0
         self.num_beams = 5
+        self.num_gpu_layers_mt = 22
         self.force_translation_cpu = False
         self.force_ocr_cpu = False
         self.force_td_cpu = False

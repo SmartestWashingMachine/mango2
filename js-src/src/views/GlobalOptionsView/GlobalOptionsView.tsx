@@ -213,6 +213,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     autoOpenOcrWindow,
     decodingMode,
     numBeams,
+    numGpuLayersMt,
     topK,
     topP,
     epsilonCutoff,
@@ -358,10 +359,23 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 defaultValue={enableCuda}
                 tooltip="4 GB VRAM can work if MT model is forced onto the CPU."
                 label="Enable CUDA"
-                helperText="Will improve speed IF using a good GPU that supports CUDA. 4 GB of VRAM is usually required to support the translation model ALONE, or the text detection + line + OCR models. 8 GB VRAM is required to run the full translation pipeline on a GPU. You can force parts of the pipeline to run on the CPU instead with the options below."
+                helperText="Will improve speed IF using a good GPU that supports CUDA. 4 GB of VRAM is required to use a non-Gem translation model for text or clipboard translations alone, and 8 GB VRAM is usually required to OCR and translate images on a GPU. But the entire process can be run on 4 GB VRAM if a Gem translation model is used instead. You can also force parts of the process to run on the CPU instead with the options below."
               />
             ),
-            "Use Efficient Translator": (
+            "(Gem) Number of GPU Layers to Offload": (
+              <UpdateNumberField
+                label="(Gem) Number of GPU Layers to Offload"
+                changeValue={setStoreValue}
+                keyName="numGpuLayersMt"
+                defaultValue={numGpuLayersMt}
+                helperText="Only works on Gem translation models. The number of layers to offload to the GPU if CUDA is enabled. This is used to reduce the memory usage of the translation model. This can safely be set to 22 if you have 4 GB VRAM."
+                valueType="int"
+                safeValue={22}
+                minValue={-1}
+                maxValue={99}
+              />
+            ),
+            "(Non Gem) Use Efficient Translator": (
               <UpdateCheckbox
                 changeValue={setStoreValue}
                 keyName="useTranslationServer"
@@ -376,7 +390,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 keyName="memoryEfficientTasks"
                 defaultValue={memoryEfficientTasks}
                 label="Memory Efficient Tasks"
-                helperText="Translating images or videos will require much less memory, but the models have to be loaded at the start of every task. This allows you to run a full translation pipeline on a GPU with 4 GB VRAM if 'Use Efficient Translator' is enabled."
+                helperText="Translating images or videos will require much less memory, but the models have to be loaded at the start of every task. This allows you to run a full non-Gem OCR + translation process on a GPU with 4 GB VRAM if 'Use Efficient Translator' is enabled."
               />
             ),
             "Force Text Box on CPU": (
@@ -517,7 +531,10 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
               <Typography align="center" variant="body2">
                 Only change these settings if you know what you're doing. Most
                 settings only take effect with MBR Beam Sampling or MBR Greedy
-                Decoding.
+                Decoding.{" "}
+                <b>
+                  The settings here are ignored for the Gem translation models.
+                </b>
               </Typography>
             ),
             "Decoding Mode": (

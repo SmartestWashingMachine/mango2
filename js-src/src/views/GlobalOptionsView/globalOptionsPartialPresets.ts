@@ -21,7 +21,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["trocr_jmassive", "trocr_jbig"],
-      translationModelName: ["nllb_jq300", "nllb_jq"],
+      translationModelName: ["llm_jgem", "nllb_jmad", "nllb_jq300", "nllb_jq"],
       textLineModelName: ["none"],
       numBeams: 3,
       bottomTextOnly: false,
@@ -32,13 +32,13 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     },
   },
   {
-    name: "Manga Alternative",
+    name: "Manga / Games Alternative",
     description:
-      "This preset is also good for translating Japanese manga panels. It uses an additional text line detection model to improve the OCR quality.",
+      "This preset is also good for translating Japanese manga panels or games. It uses an additional text line detection model to improve the OCR quality.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["trocr_jmassive", "trocr_jbig"],
-      translationModelName: ["nllb_jq300", "nllb_jq"],
+      translationModelName: ["llm_jgem", "nllb_jmad", "nllb_jq300", "nllb_jq"],
       textLineModelName: ["dfine_line_emassive", "yolo_line_emassive"],
       numBeams: 3,
       bottomTextOnly: false,
@@ -55,7 +55,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     opts: {
       textDetectionModelName: ["none"],
       textRecognitionModelName: ["trocr_jmagnus"],
-      translationModelName: ["nllb_jq300", "nllb_jq"],
+      translationModelName: ["llm_jgem", "nllb_jmad", "nllb_jq300", "nllb_jq"],
       textLineModelName: ["dfine_line_emassive", "yolo_line_emassive"],
       numBeams: 3,
       bottomTextOnly: false,
@@ -71,7 +71,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["k_trocr_massive"],
-      translationModelName: ["nllb_ko"],
+      translationModelName: ["llm_kgem", "nllb_komad", "nllb_ko"],
       textLineModelName: ["none"],
       numBeams: 3,
       bottomTextOnly: false,

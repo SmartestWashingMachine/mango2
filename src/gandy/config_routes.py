@@ -117,6 +117,7 @@ def change_multiple_models_route():
             temperature=float(data["temperature"]),
             epsilon_cutoff=float(data["epsilonCutoff"]),
             num_beams=int(data["numBeams"]),
+            num_gpu_layers_mt=int(data["numGpuLayersMt"]),
             decoding_mode=data["decodingMode"],
             max_length_a=max_length_a if max_length_a > 0 else 0,
             force_translation_cpu=data["forceTranslationCPU"],

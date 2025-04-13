@@ -32,6 +32,7 @@ export type IStoreClientToServer = {
   epsilonCutoff: number;
   decodingMode: string;
   numBeams: number;
+  numGpuLayersMt: number;
   translationThreads: number;
   forceTranslationCPU: boolean;
   forceTdCpu: boolean;

@@ -1,8 +1,9 @@
 from gandy.translation.base_translation import BaseTranslation
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
-from llama_cpp_cuda_tensorcores import Llama
+#from llama_cpp_cuda_tensorcores import Llama
 from typing import List
+
 
 # Some caveats:
 # Does not support batch translations. Translations are always done sequentially. (moderate priority)
@@ -30,17 +31,28 @@ class LlmCppTranslationApp(BaseTranslation):
         self,
     ):
         can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
-        logger.info(f"Loading translation model ({self.model_sub_path})... CanCuda={can_cuda}")
+        logger.info(f"Loading translation model ({self.model_sub_path})... CanCuda={can_cuda} NGpuLayers={config_state.num_gpu_layers_mt}")
 
-        self.llm = Llama(
+        if can_cuda:
+            from llama_cpp_cuda import Llama as LlamaGpu
+
+            llm_to_use = LlamaGpu
+        else:
+            from llama_cpp import Llama as LlamaCpu
+
+            llm_to_use = LlamaCpu
+
+        self.llm = llm_to_use(
             model_path=f"models/{self.model_sub_path}" + ".gguf",
             n_ctx=512,
-            n_gpu_layers=30 if can_cuda else 0,
+            n_gpu_layers=config_state.num_gpu_layers_mt if can_cuda else 0,
             flash_attn=can_cuda,
-            verbose=True,
+            verbose=False,
+            #no_perf=True,
             #n_threads_batch=3,
             use_mlock=True,
             logits_all=False,
+            use_mmap=True,
         )
 
         logger.info("Done loading translation model!")
@@ -112,9 +124,9 @@ class LlmCppTranslationApp(BaseTranslation):
             model_output = self.llm.create_chat_completion(
                 messages=messages,
                 stream=use_stream is not None,
-                #temperature=1.0,
+                temperature=0.1,
                 #top_p=0.95,
-                #top_k=64,
+                top_k=10,
             )
 
             if use_stream is not None:
