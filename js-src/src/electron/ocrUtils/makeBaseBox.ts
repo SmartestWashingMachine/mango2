@@ -24,6 +24,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   removeSpeaker: false,
   useStream: false,
   hideKey: "Escape",
+  clickThroughKey: "Escape",
   spellingCorrectionKey: "Escape",
   enabled: true,
   autoEnterTime: 0,

@@ -79,6 +79,9 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
 
   const updateHideKey = (key: string) => changeValue("hideKey", key);
 
+  const updateClickThroughKey = (key: string) =>
+    changeValue("clickThroughKey", key);
+
   const updateSpellingCorrectionKey = (key: string) =>
     changeValue("spellingCorrectionKey", key);
 
@@ -297,7 +300,18 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
           ) : (
             <div></div>
           ),
-          "Editing Key": props.spellingCorrectionKey ? (
+          "Click Through Key":
+            true || props.clickThroughKey ? (
+              <KeySelect
+                label="Click Through Key"
+                onKeyChange={updateClickThroughKey}
+                value={props.clickThroughKey}
+                helperText="While enabled, you can click through the box. Helpful for Reader boxes."
+              />
+            ) : (
+              <div></div>
+            ),
+          "Editing Key Spelling Correction Key": props.spellingCorrectionKey ? (
             <KeySelect
               label="Spelling Correction Key"
               onKeyChange={updateSpellingCorrectionKey}

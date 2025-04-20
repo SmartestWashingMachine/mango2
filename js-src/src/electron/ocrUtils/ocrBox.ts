@@ -42,6 +42,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   speakerBox: boolean;
   useStream: boolean;
   hideKey: string;
+  clickThroughKey: string;
   spellingCorrectionKey: string;
   enabled: boolean;
   pipeOutput: string;
@@ -54,11 +55,13 @@ export class OcrBoxManager implements BoxOptionsBackend {
   _timerScanAfterEnter?: any;
   _paused?: boolean;
   _hide?: boolean;
+  _clickThrough?: boolean;
   _stateTexts: any[];
 
   _activationKeyCallback: string;
   _pauseKeyCallback: string;
   _hideKeyCallback: string;
+  _clickThroughKeyCallback: string;
   _spellingCorrectionKeyCallback: string;
 
   _websocketLoaded: boolean;
@@ -87,6 +90,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.speakerBox = DEFAULT_BOX_OPTIONS.speakerBox;
     this.useStream = DEFAULT_BOX_OPTIONS.useStream;
     this.hideKey = DEFAULT_BOX_OPTIONS.hideKey;
+    this.clickThroughKey = DEFAULT_BOX_OPTIONS.clickThroughKey;
     this.spellingCorrectionKey = DEFAULT_BOX_OPTIONS.spellingCorrectionKey;
     this.enabled = DEFAULT_BOX_OPTIONS.enabled;
 
@@ -103,6 +107,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this._timerScanAfterEnter = null;
     this._paused = false;
     this._hide = false;
+    this._clickThrough = false;
     this._speakerCallback = async () => new Promise(() => "");
 
     this._last_scanned_text = null;
@@ -113,6 +118,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this._activationKeyCallback = "";
     this._pauseKeyCallback = "";
     this._hideKeyCallback = "";
+    this._clickThroughKeyCallback = "";
     this._spellingCorrectionKeyCallback = "";
   }
 
@@ -149,6 +155,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.speakerBox = boxSettings.speakerBox || DEFAULT_BOX_OPTIONS.speakerBox;
     this.useStream = boxSettings.useStream || DEFAULT_BOX_OPTIONS.useStream;
     this.hideKey = boxSettings.hideKey || DEFAULT_BOX_OPTIONS.hideKey;
+    this.clickThroughKey =
+      boxSettings.clickThroughKey || DEFAULT_BOX_OPTIONS.clickThroughKey;
     this.spellingCorrectionKey =
       boxSettings.spellingCorrectionKey ||
       DEFAULT_BOX_OPTIONS.spellingCorrectionKey;
@@ -376,6 +384,19 @@ export class OcrBoxManager implements BoxOptionsBackend {
       );
     }
 
+    // Toggle click-through mode.
+    if (this.clickThroughKey !== DISABLED_KEY_VALUE) {
+      this._clickThroughKeyCallback = SharedGlobalShortcuts.register(
+        this.clickThroughKey,
+        async () => {
+          this._clickThrough = !this._clickThrough;
+          if (this.ocrWindow) {
+            this.ocrWindow.setIgnoreMouseEvents(this._clickThrough);
+          }
+        }
+      );
+    }
+
     // Trigger spelling correction refinement for a line of text.
     if (this.spellingCorrectionKey !== DISABLED_KEY_VALUE) {
       this._spellingCorrectionKeyCallback = SharedGlobalShortcuts.register(
@@ -537,6 +558,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
       SharedGlobalShortcuts.unregister(this.pauseKey, this._pauseKeyCallback);
     if (this.hideKey !== DISABLED_KEY_VALUE)
       SharedGlobalShortcuts.unregister(this.hideKey, this._hideKeyCallback);
+    if (this.clickThroughKey !== DISABLED_KEY_VALUE)
+      SharedGlobalShortcuts.unregister(
+        this.clickThroughKey,
+        this._clickThroughKeyCallback
+      );
     if (this.spellingCorrectionKey !== DISABLED_KEY_VALUE)
       SharedGlobalShortcuts.unregister(
         this.spellingCorrectionKey,

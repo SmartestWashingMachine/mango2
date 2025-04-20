@@ -31,6 +31,7 @@ const genericOptions = {
   removeSpeaker: false,
   useStream: true,
   hideKey: "Escape",
+  clickThroughKey: "Escape",
   spellingCorrectionKey: "Escape",
   enabled: true,
   autoEnterTime: 0,

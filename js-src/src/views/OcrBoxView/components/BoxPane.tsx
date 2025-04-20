@@ -68,6 +68,22 @@ const OcrBoxPane = ({
 
   const timer = useRef<any>(null);
 
+  // Prevent double-clicking from focusing text (annoying when trying to toggle handle color).
+  // From: https://stackoverflow.com/questions/880512/prevent-text-selection-after-double-click
+  useEffect(() => {
+    const cb = (ev: MouseEvent) => {
+      if (ev.detail > 1) {
+        ev.preventDefault();
+      }
+    };
+
+    document.addEventListener("mousedown", cb, false);
+
+    return () => {
+      document.removeEventListener("mousedown", cb);
+    };
+  }, []);
+
   useEffect(() => {
     if (!backgroundColor) return;
 

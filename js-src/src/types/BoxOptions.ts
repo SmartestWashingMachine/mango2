@@ -11,6 +11,7 @@ export type BoxOptionsFrontend = {
   strokeColor: string;
   removeSpeaker: boolean; // Removes speaker in string format: <SPEAKER>: <TEXT>
   hideKey: string;
+  clickThroughKey: string;
   enabled: boolean;
   autoEnterTime: number;
   append: boolean;
