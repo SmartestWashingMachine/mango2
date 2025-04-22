@@ -36,6 +36,7 @@ export type BoxOptionsBackend = {
   fasterScan: boolean;
   scanAfterEnter: number;
   serverSideActivationKey: boolean;
+  translateLinesIndividually: number;
 };
 
 export type BoxOptions = BoxOptionsFrontend & BoxOptionsBackend;

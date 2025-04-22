@@ -155,6 +155,7 @@ const OcrBoxPane = ({
     WebkitTextStrokeColor: strokeColor,
     fontFamily: '"ocrbox.otf", "ocrbox.ttf", Roboto, "Roboto", Arial',
     paintOrder: "stroke fill", // Necessary for pretty strokes.
+    whiteSpace: "pre-line", // May have side effects. TODO: Monitor.
   };
 
   const extraPrevTextStyles: SxProps = {
@@ -166,6 +167,7 @@ const OcrBoxPane = ({
     WebkitTextStrokeColor: strokeColor,
     fontFamily: '"ocrbox.otf", "ocrbox.ttf", Roboto, "Roboto", Arial',
     paintOrder: "stroke fill", // Necessary for pretty strokes.
+    whiteSpace: "pre-line", // May have side effects. TODO: Monitor.
   };
 
   const extraBoxStyles: SxProps = {

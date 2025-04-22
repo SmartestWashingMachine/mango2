@@ -42,9 +42,10 @@ def translate_task3_background_job(
     box_id=None,
     with_text_detect=True,
     use_stream=None,
-    already_loaded=False
+    already_loaded=False,
+    translate_lines_individually=0,
 ):
-    with logger.begin_event("Task3") as ctx:
+    with logger.begin_event("Task3", translate_lines_individually=translate_lines_individually) as ctx:
         try:
             if already_loaded:
                 opened_images = images
@@ -71,12 +72,19 @@ def translate_task3_background_job(
 
                 # NOTE: The source texts returned are those BEFORE translation app preprocessing, but after terms are replaced.
                 # In other words: A bit stale.
-                new_texts, source_text = translate_pipeline.image_to_single_text(
-                    img,
-                    with_text_detect=with_text_detect,
-                    context_input=context_input,
-                    use_stream=use_stream,
-                )
+                if translate_lines_individually is not None and translate_lines_individually != 0:
+                    new_texts, source_text = translate_pipeline.image_to_line_texts(
+                        img,
+                        use_stream=use_stream,
+                        bottom_n_lines=translate_lines_individually,
+                    )
+                else:
+                    new_texts, source_text = translate_pipeline.image_to_single_text(
+                        img,
+                        with_text_detect=with_text_detect,
+                        context_input=context_input,
+                        use_stream=use_stream,
+                    )
 
                 last_source = get_last_sentence(source_text)
                 push_to_state(last_source, new_texts, box_id)
@@ -116,6 +124,8 @@ def process_task3_route():
     if box_id is not None and len(box_id) > 0:
         box_id = box_id[0]
 
+    translate_lines_individually = int(data['translateLinesIndividually'][0])
+
     images = request.files.getlist("file")
 
     socketio.start_background_task(
@@ -125,6 +135,7 @@ def process_task3_route():
         with_text_detect,
         use_stream,
         False,
+        translate_lines_individually,
     )
 
     return {"processing": True}, 202
@@ -150,6 +161,7 @@ def process_task3_faster(data):
         data['with_text_detect'],
         use_stream,
         True,
+        data['translate_lines_individually']
     )
 
 @app.route("/processtask3new", methods=["POST"])
@@ -161,6 +173,8 @@ def process_task3new_route():
     use_stream = data["useStream"] if "useStream" in data else "off"
 
     use_stream = True if use_stream[0] == "on" else None
+
+    translate_lines_individually = int(data['translateLinesIndividually'][0])
 
     # It's an array? Huh? TODO
     with_text_detect = text_detect[0] == "on"
@@ -174,7 +188,8 @@ def process_task3new_route():
         'height': data['height'],
         'box_id': box_id,
         'with_text_detect': with_text_detect,
-        'use_stream': use_stream
+        'use_stream': use_stream,
+        'translate_lines_individually': translate_lines_individually,
     })
 
     return {"processing": True}, 202

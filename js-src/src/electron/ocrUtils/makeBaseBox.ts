@@ -33,6 +33,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   fasterScan: false,
   scanAfterEnter: 0,
   serverSideActivationKey: false,
+  translateLinesIndividually: 0,
 };
 
 export const makeBaseBox = (boxId: string) => {

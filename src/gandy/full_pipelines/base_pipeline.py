@@ -18,6 +18,7 @@ from gandy.state.debug_state import debug_state
 from gandy.utils.join_nearby_speech_bubbles import (
     join_nearby_speech_bubbles_for_source_texts,
 )
+from gandy.utils.get_bottom_rows import get_bottom_rows
 from gandy.utils.image_chunking import detect_image_chunks
 from math import floor
 from uuid import uuid4
@@ -222,6 +223,7 @@ class BasePipeline:
         forced_image=None,
         return_line_bboxes=False,
         progress_cb=None,
+        use_text_line_app=True,
     ):
         source_texts: List[str] = []
         line_bboxes = None
@@ -238,9 +240,9 @@ class BasePipeline:
             source_texts, line_bboxes, line_texts = self.text_recognition_app.process(
                 rgb_image,
                 speech_bboxes,
-                text_line_app=self.text_line_app.get_sel_app(),
+                text_line_app=self.text_line_app.get_sel_app() if use_text_line_app else None,
                 # If no lines are found, fallback to scanning the entire cropped image IF that image was cropped by a text detection app.
-                text_line_app_scan_image_if_fails=not self.text_detection_app.get_sel_app_name() == "none",
+                text_line_app_scan_image_if_fails=(not self.text_detection_app.get_sel_app_name() == "none" and use_text_line_app),
                 forced_image=forced_image,
                 on_box_done=on_box_done,
             )
@@ -418,7 +420,7 @@ class BasePipeline:
             return target_texts
 
     def image_to_untranslated_texts(
-        self, image: Image, with_text_detect=False, with_ocr=True
+        self, image: Image, with_text_detect=False, with_ocr=True,
     ):
         with logger.begin_event("Image to untranslated texts") as ctx:
             image = image.convert("RGB")
@@ -444,7 +446,7 @@ class BasePipeline:
                 return image, speech_bboxes
 
     def image_to_single_text(
-        self, image: Image, with_text_detect=False, context_input=[], use_stream=None
+        self, image: Image, with_text_detect=False, context_input=[], use_stream=None,
     ):
         with logger.begin_event("Image to single text") as ctx:
             image = image.convert("RGB")
@@ -465,3 +467,40 @@ class BasePipeline:
             )
 
             return target_texts, source_texts
+
+    def image_to_line_texts(
+        self, image: Image, use_stream=None, bottom_n_lines=0,
+    ):
+        all_targets = []
+
+        with logger.begin_event("Image to line texts") as ctx:
+            image = image.convert("RGB")
+
+            # No text detection app is used - only the line detection app.
+
+            # Line app .get_images() also handles any custom sorting logic.
+            line_bboxes = self.text_line_app.get_sel_app().get_images(image, return_image_if_fails=True).tolist()
+
+            line_rows = get_bottom_rows(bounding_boxes=line_bboxes, image_height=image.height, N=bottom_n_lines)
+
+            for row in line_rows:
+                line_texts = self.get_source_texts_from_bboxes(image, row, use_text_line_app=False)
+                line_texts = "".join(line_texts)
+
+                source_texts = merge_texts(line_texts, [])
+
+                source_texts = replace_terms_source_side([source_texts], config_state.source_terms)
+                source_texts = source_texts[0]
+
+                target_texts = self.get_target_texts_from_str(
+                    [source_texts], use_stream=use_stream
+                )
+
+                if use_stream is not None:
+                    # In case we're translating line-by-line.
+                    use_stream.put("\n\n", already_detokenized=True)
+
+                # Assuming there's no context needed for this task (since it's used for system UI stuff).
+                all_targets.append(target_texts[0])
+
+        return ["\n\n".join(all_targets)], "<LINES>"

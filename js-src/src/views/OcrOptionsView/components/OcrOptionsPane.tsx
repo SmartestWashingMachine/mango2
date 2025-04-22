@@ -36,6 +36,17 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
     changeValue("fontSize", parsed);
   };
 
+  const updateTranslateLinesIndividually = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { value } = e.currentTarget;
+    const parsed = parseInt(value, 10);
+
+    if (!Number.isSafeInteger(parsed) || parsed < 0) return;
+
+    changeValue("translateLinesIndividually", parsed);
+  };
+
   const updateFontColor = (color: string) => changeValue("fontColor", color);
 
   const updateTextAlign = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -428,6 +439,16 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               keyName="serverSideActivationKey"
               helperText="Enable this AND 'Faster Activation Key Scanning' if an application is overriding the Activation Key or preventing it from working. But if this is enabled, the box MUST be manually hidden with the Hide Key before being activated."
               label="Enable Activation Key on Stubborn Apps"
+            />
+          ),
+          "Activation Key Scanning Bottom N Lines Only": (
+            <TextField
+              label="Activation Key Scanning Bottom N Lines Only"
+              variant="standard"
+              type="number"
+              onChange={updateTranslateLinesIndividually}
+              defaultValue={props.translateLinesIndividually}
+              helperText="If greater than 0, only that many of the bottom-most text lines will be scanned and translated, and each text line will be separately translated. This can be useful when attempting to translate system elements like a battle log."
             />
           ),
         },

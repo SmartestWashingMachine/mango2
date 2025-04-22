@@ -9,7 +9,8 @@ export const translateImageGiveText = async (
   boxId: string,
   textDetect: boolean,
   tgtContextMemory: string | null,
-  streamOutput: boolean | null
+  streamOutput: boolean | null,
+  translateLinesIndividually: number = 0
 ) => {
   const apiUrl = "http://localhost:5000/processtask3";
 
@@ -27,6 +28,11 @@ export const translateImageGiveText = async (
 
   formData.append("boxId", boxId);
   formData.append("textDetect", textDetect ? "on" : "off");
+
+  formData.append(
+    "translateLinesIndividually",
+    translateLinesIndividually.toString()
+  );
 
   const output = await nodeFetch(apiUrl, {
     method: "POST",
@@ -46,7 +52,8 @@ export const translateImageGiveTextFaster = async (
   boxId: string,
   textDetect: boolean,
   tgtContextMemory: string | null,
-  streamOutput: boolean | null
+  streamOutput: boolean | null,
+  translateLinesIndividually: number = 0
 ) => {
   const apiUrl = "http://localhost:5000/processtask3new";
 
@@ -67,6 +74,11 @@ export const translateImageGiveTextFaster = async (
 
   formData.append("boxId", boxId);
   formData.append("textDetect", textDetect ? "on" : "off");
+
+  formData.append(
+    "translateLinesIndividually",
+    translateLinesIndividually.toString()
+  );
 
   const output = await nodeFetch(apiUrl, {
     method: "POST",
