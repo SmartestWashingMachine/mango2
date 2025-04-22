@@ -4,6 +4,7 @@ import OcrOptionsPane from "./components/OcrOptionsPane";
 import BaseView from "../BaseView";
 import { MainGateway } from "../../utils/mainGateway";
 import QuickSetup from "./components/QuickSetup";
+import { BoxOptions } from "../../types/BoxOptions";
 
 export type OptionsViewProps = {
   goTextTab: () => void;
@@ -112,6 +113,17 @@ const OptionsView = (props: OptionsViewProps) => {
     (x: any) => x.boxId === selId
   );
 
+  const getBoxDisplayName = (boxOptions: BoxOptions) => {
+    let curName = boxOptions.boxId || "";
+    if (boxOptions.activationKey !== "Escape") {
+      curName = `PRESS > ${boxOptions.activationKey}`;
+    } else if (boxOptions.listenClipboard) {
+      curName = "CLIPBOARD";
+    }
+
+    return `Box (${curName.slice(0, 9)})`;
+  };
+
   return (
     <BaseView>
       {curSubView !== "advanced" && (
@@ -134,7 +146,7 @@ const OptionsView = (props: OptionsViewProps) => {
           removeBox={
             !!selId ? (
               <Button variant="text" onClick={removeBox} color="info">
-                Delete Box ({selId.slice(0, 9)})
+                Delete {getBoxDisplayName(selBoxOptions)}
               </Button>
             ) : (
               <div></div>
@@ -165,7 +177,7 @@ const OptionsView = (props: OptionsViewProps) => {
                     color: x.boxId === selId ? "white" : "hsl(291, 3%, 74%)",
                   })}
                 >
-                  {`Box (${x.boxId.slice(0, 9)})`}
+                  {getBoxDisplayName(x)}
                 </Button>
               ))}
             </>
