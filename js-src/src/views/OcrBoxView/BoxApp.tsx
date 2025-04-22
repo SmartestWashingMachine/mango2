@@ -196,7 +196,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
             ]);
           } else setText([ACTIVATE_DEFAULT_TEXT(boxOptions.activationKey)]);
         } else {
-          setText([MISC_DEFAULT_TEXT]);
+          setText([MISC_DEFAULT_TEXT + ` (Box Name: ${boxOptions.boxId})`]);
         }
       }
     };

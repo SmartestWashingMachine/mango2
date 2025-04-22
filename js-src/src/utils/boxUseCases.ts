@@ -54,6 +54,19 @@ const BOX_USE_CASES: BoxUseCase[] = [
     ],
   },
   {
+    title: "2 boxes (1 system UI)",
+    description:
+      '"I want a box that reads text from the clipboard, and another box that reads text on the screen when I press a button, and this box should translate each line individually."',
+    options: [
+      { ...getOpts("Basic"), boxId: "CLIPBOARD" },
+      {
+        ...getOpts("Scanner"),
+        boxId: "PRESS > K",
+        translateLinesIndividually: 99,
+      },
+    ],
+  },
+  {
     title: "3 boxes",
     description:
       '"I want two boxes that each reads text on the screen with their own buttons, and sends the results to a third box wherever I place it."',
@@ -71,6 +84,21 @@ const BOX_USE_CASES: BoxUseCase[] = [
       { ...getOpts("Scout Receiver Transparent"), boxId: "READER" },
       { ...getOpts("Scout Sender"), boxId: "PRESS > A", pipeOutput: "READER" },
       { ...getOpts("Scanner"), boxId: "PRESS > K", pipeOutput: "READER" },
+    ],
+  },
+  {
+    title: "3 boxes (1 transparent) (1 system UI)",
+    description:
+      '"I want two boxes that each reads text on the screen with their own buttons, and sends the results to a third box (with a transparent background) wherever I place it. The second box should translate each line individually."',
+    options: [
+      { ...getOpts("Scout Receiver Transparent"), boxId: "READER" },
+      { ...getOpts("Scout Sender"), boxId: "PRESS > A", pipeOutput: "READER" },
+      {
+        ...getOpts("Scanner"),
+        boxId: "PRESS > K",
+        pipeOutput: "READER",
+        translateLinesIndividually: 99,
+      },
     ],
   },
   {
@@ -175,12 +203,51 @@ const BOX_USE_CASES: BoxUseCase[] = [
       },
     ],
   },
+  {
+    title: "7 boxes (2 transparent)",
+    description:
+      '"I want five boxes that each reads text on the screen with their own buttons. 4 boxes send the results to the first transparent box, and 1 box sends the results to the second transparent box."',
+    options: [
+      { ...getOpts("Scout Receiver Transparent"), boxId: "READER 1" },
+      { ...getOpts("Scout Receiver Transparent"), boxId: "READER 2" },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER 1",
+        activationKey: "1",
+        boxId: "(R1) > 1",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER 1",
+        activationKey: "2",
+        boxId: "(R1) > 2",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER 1",
+        activationKey: "3",
+        boxId: "(R1) > 3",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER 1",
+        activationKey: "4",
+        boxId: "(R1) > 4",
+      },
+      {
+        ...getOpts("Scanner"),
+        pipeOutput: "READER 2",
+        activationKey: "5",
+        boxId: "(R2) > 5",
+      },
+    ],
+  },
 ];
 
 // Slightly offset every box so they don't overlap.
 for (const useCase of BOX_USE_CASES) {
   for (let i = 0; i < useCase.options.length; i++) {
-    useCase.options[i].yOffset -= i * 114;
+    useCase.options[i].yOffset -= i * 78;
   }
 }
 
