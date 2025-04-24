@@ -124,9 +124,14 @@ class LlmCppTranslationApp(BaseTranslation):
             model_output = self.llm.create_chat_completion(
                 messages=messages,
                 stream=use_stream is not None,
-                temperature=0.1,
+                dry_multiplier=0.8,
+                dry_base=1.75,
+                dry_allowed_length=2,
+                dry_seq_breakers=["\n", ":", "\"", '*'],
+                dry_range=-1,
+                #temperature=0.1,
                 #top_p=0.95,
-                top_k=10,
+                #top_k=10,
             )
 
             if use_stream is not None:

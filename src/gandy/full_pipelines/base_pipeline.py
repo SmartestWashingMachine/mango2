@@ -484,6 +484,7 @@ class BasePipeline:
             line_rows = get_bottom_rows(bounding_boxes=line_bboxes, image_height=image.height, N=bottom_n_lines)
 
             for row in line_rows:
+                # TODO: Add batch for full images (not just lines)?
                 line_texts = self.get_source_texts_from_bboxes(image, row, use_text_line_app=False)
                 line_texts = "".join(line_texts)
 
