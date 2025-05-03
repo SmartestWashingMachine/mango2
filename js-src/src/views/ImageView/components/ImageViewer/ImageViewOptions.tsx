@@ -41,7 +41,15 @@ const ImageViewOptions = (props: ImageViewOptionsProps) => {
       {x.name}
     </MenuItem>,
     <MenuItem disabled value="" divider dense>
-      <em style={{ fontSize: "small" }}>{x.desc}</em>
+      <em
+        style={{
+          fontSize: "small",
+          wordWrap: "break-word",
+          whiteSpace: "initial",
+        }}
+      >
+        {x.desc}
+      </em>
     </MenuItem>,
   ];
 

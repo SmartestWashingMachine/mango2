@@ -133,6 +133,7 @@ def change_multiple_models_route():
             bottom_text_only=data["bottomTextOnly"],
             batch_ocr=data["batchOcr"],
             cut_ocr_punct=data["cutOcrPunct"],
+            cache_mt=data["cacheMt"],
             ignore_detect_single_words=data["ignoreDetectSingleWords"],
             sort_text_from_top_left=data["sortTextFromTopLeft"]
         )

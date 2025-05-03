@@ -46,6 +46,7 @@ const storeDefaults: IStore = {
   sortTextFromTopLeft: false,
   useTranslationServer: false,
   memoryEfficientTasks: false,
+  cacheMt: true,
 };
 
 export const initializeStore = () => {

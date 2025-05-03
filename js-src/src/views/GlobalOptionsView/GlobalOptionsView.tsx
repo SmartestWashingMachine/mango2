@@ -128,7 +128,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
   };
 
   const handleOpenCacheFolder = async () => {
-    await MainGateway.opencacheFolder();
+    await MainGateway.openCacheFolder();
   };
 
   const handleResetSettings = async () => {
@@ -194,7 +194,15 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
       {x.name}
     </MenuItem>,
     <MenuItem disabled value="" divider dense>
-      <em style={{ fontSize: "small" }}>{x.desc}</em>
+      <em
+        style={{
+          fontSize: "small",
+          wordWrap: "break-word",
+          whiteSpace: "initial",
+        }}
+      >
+        {x.desc}
+      </em>
     </MenuItem>,
   ];
 
@@ -233,6 +241,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     sortTextFromTopLeft,
     useTranslationServer,
     memoryEfficientTasks,
+    cacheMt,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
@@ -282,7 +291,15 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                     dense
                     key={b.description}
                   >
-                    <em style={{ fontSize: "small" }}>{b.description}</em>
+                    <em
+                      style={{
+                        fontSize: "small",
+                        wordWrap: "break-word",
+                        whiteSpace: "initial",
+                      }}
+                    >
+                      {b.description}
+                    </em>
                   </MenuItem>,
                 ])}
               </TextField>
@@ -696,6 +713,15 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                   Additional models can be installed in this folder.
                 </Typography>
               </>
+            ),
+            "Cache Translations": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="cacheMt"
+                defaultValue={cacheMt}
+                helperText={`Translations will be cached. You can also share the cache files with other users, allowing for near "instant" translations as they OCR text in games or other media.`}
+                label="Cache Translations"
+              />
             ),
             "Open Translation Cache Folder": (
               <>

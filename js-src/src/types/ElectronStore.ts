@@ -49,6 +49,7 @@ export type IStoreClientToServer = {
   sortTextFromTopLeft: boolean;
   useTranslationServer: boolean;
   memoryEfficientTasks: boolean;
+  cacheMt: boolean;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;
