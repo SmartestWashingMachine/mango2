@@ -154,7 +154,12 @@ const ReplaceTermsList = ({
         </Grid>
       </Grid>
       {terms.map((t) => (
-        <Term t={t} updateTerm={updateTerm} removeTerm={removeTerm} />
+        <Term
+          t={t}
+          updateTerm={updateTerm}
+          removeTerm={removeTerm}
+          key={t.uuid}
+        />
       ))}
       <Button variant="outlined" color="primary" onClick={createTerm}>
         Create Term
