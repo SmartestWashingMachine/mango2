@@ -26,6 +26,12 @@ export const APP_MODELS_PATH = path.join(
   "models"
 );
 
+export const APP_CACHE_FOLDER = path.join(
+  path.parse(app.getPath("exe")).dir,
+  "models",
+  "database"
+);
+
 export const BACKEND_PATH = path.join(
   path.parse(app.getPath("exe")).dir,
   "resources",
@@ -33,6 +39,6 @@ export const BACKEND_PATH = path.join(
   "run_server.exe"
 ); // "resources/backend/run_server.exe";
 
-export const DOWNLOADS_PATH = app.getPath('downloads');
+export const DOWNLOADS_PATH = app.getPath("downloads");
 
 export const DISABLED_KEY_VALUE = "Escape"; // In ocrBox and BoxApp.

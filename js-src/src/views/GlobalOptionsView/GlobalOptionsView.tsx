@@ -127,6 +127,10 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     await MainGateway.openLogsFolder();
   };
 
+  const handleOpenCacheFolder = async () => {
+    await MainGateway.opencacheFolder();
+  };
+
   const handleResetSettings = async () => {
     await MainGateway.resetSettings();
 
@@ -690,6 +694,29 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 </Button>
                 <Typography variant="caption" color="info">
                   Additional models can be installed in this folder.
+                </Typography>
+              </>
+            ),
+            "Open Translation Cache Folder": (
+              <>
+                <Button
+                  sx={{
+                    mt: 8,
+                    fontWeight: "normal",
+                    color: "white !important",
+                    backgroundColor: "primary.600",
+                  }}
+                  variant="contained"
+                  fullWidth
+                  onClick={handleOpenCacheFolder}
+                >
+                  Open Translation Cache Folder
+                </Button>
+                <Typography variant="caption" color="info">
+                  All translations are cached in the index and machine
+                  translations files. You can clear the cache or share it with
+                  other users, allowing for near "instant" translations as they
+                  OCR text in games or other media.
                 </Typography>
               </>
             ),

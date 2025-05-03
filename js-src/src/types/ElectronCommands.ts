@@ -29,6 +29,7 @@ enum ElectronCommands {
   OPEN_MODELS_FOLDER = "open-models-folder",
   OPEN_FONTS_FOLDER = "open-fonts-folder",
   OPEN_LOGS_FOLDER = "open-logs-folder",
+  OPEN_CACHE_FOLDER = "open-cache-folder",
   IMPORT_TERMS = "import-terms",
   EXPORT_TERMS = "export-terms",
   RESET_SETTINGS = "reset-settings",
