@@ -3,40 +3,6 @@
 // It would be soooooo much easier if I could just tune a "massive" LLM (i.e: 14b / 30b / 70b parameters), but this app is intended to be used on low to medium consumer grade hardware.
 export const TRANSLATION_OPTIONS = [
   {
-    // NOTE: nllb_jq is biased towards shorter texts.
-    name: "Japanese-2-English Qualia",
-    value: "nllb_jq",
-    desc: `
-    Finetuned for Japanese to English with quality-aware decoding.
-    `,
-  },
-  {
-    name: "Japanese-2-English Qualia 300",
-    value: "nllb_jq300",
-    desc: `
-    A better variant of Japanese-2-English Qualia.
-    `,
-  },
-  /* A mistake! Rotary positional embeddings seem to be a poor fit for "medium"-sized translation models. Why do T5 positional embeddings work so well?? {
-    name: "Japanese-2-English Radical",
-    value: "nllb_jqrot",
-    desc: `
-    Finetuned for Japanese to English with QAD and some other tricks. Slightly slower.
-    `,
-  }, */
-  {
-    // Little dev note: I'm still not satisfied with the idea of this model. It's massive, and yet it still uses absolute positional embeddings? Sure, it seems to be competitive with those LLama variants, but that's not a hard feat to achieve.
-    // The fact that the model generalizes well with adapters is interesting though. That would seem to imply that my dataset isn't as diverse as I'd like.
-    // Additional dev note: New project makes this model do well. Very interesting.
-    // There was another "working" variant that works with context, but I believe the model just "converged" (more like fell) into a local minima - little further learning was going on, and the model's translation quality was more lackluster compared to the non-context one.
-    // The non-context one (the current one) was also only trained on a small subset of the dataset (~34%), so it can still be improved.
-    name: "Japanese-2-English Madness",
-    value: "nllb_jmad",
-    desc: `
-    The strongest(?) Incredibly slow.
-    `,
-  },
-  {
     // LET'S GO GAMBLING!!! WOOO I LOVE GOD SEEDS!
     name: "Japanese-2-English Gem",
     value: "llm_jgem",
@@ -56,28 +22,62 @@ export const TRANSLATION_OPTIONS = [
     `,
   },
   {
-    name: "Korean-2-English Qualia",
+    // NOTE: nllb_jq is biased towards shorter texts.
+    name: "(Legacy) Japanese-2-English Qualia",
+    value: "nllb_jq",
+    desc: `
+    Finetuned for Japanese to English with quality-aware decoding.
+    `,
+  },
+  {
+    name: "(Legacy) Japanese-2-English Qualia 300",
+    value: "nllb_jq300",
+    desc: `
+    A better variant of Japanese-2-English Qualia.
+    `,
+  },
+  /* A mistake! Rotary positional embeddings seem to be a poor fit for "medium"-sized translation models. Why do T5 positional embeddings work so well?? {
+    name: "Japanese-2-English Radical",
+    value: "nllb_jqrot",
+    desc: `
+    Finetuned for Japanese to English with QAD and some other tricks. Slightly slower.
+    `,
+  }, */
+  {
+    // Little dev note: I'm still not satisfied with the idea of this model. It's massive, and yet it still uses absolute positional embeddings? Sure, it seems to be competitive with those LLama variants, but that's not a hard feat to achieve.
+    // The fact that the model generalizes well with adapters is interesting though. That would seem to imply that my dataset isn't as diverse as I'd like.
+    // Additional dev note: New project makes this model do well. Very interesting.
+    // There was another "working" variant that works with context, but I believe the model just "converged" (more like fell) into a local minima - little further learning was going on, and the model's translation quality was more lackluster compared to the non-context one.
+    // The non-context one (the current one) was also only trained on a small subset of the dataset (~34%), so it can still be improved.
+    name: "(Legacy) Japanese-2-English Madness",
+    value: "nllb_jmad",
+    desc: `
+    The strongest(?) Incredibly slow.
+    `,
+  },
+  {
+    name: "(Legacy) Korean-2-English Qualia",
     value: "nllb_ko",
     desc: `
     Finetuned for Korean to English.
     `,
   },
   {
-    name: "Chinese-2-English Qualia",
+    name: "(Legacy) Chinese-2-English Qualia",
     value: "nllb_zh",
     desc: `
     Finetuned for Chinese to English.
     `,
   },
   {
-    name: "Korean-2-English Madness",
+    name: "(Legacy) Korean-2-English Madness",
     value: "nllb_komad",
     desc: `
     Incredibly slow.
     `,
   },
   {
-    name: "Chinese-2-English Madness",
+    name: "(Legacy) Chinese-2-English Madness",
     value: "nllb_zhmad",
     desc: `
     Incredibly slow.

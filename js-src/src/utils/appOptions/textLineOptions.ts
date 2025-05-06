@@ -7,8 +7,8 @@ export const TEXT_LINE_OPTIONS = [
     `,
   },
   {
-    name: "DETR Line EX",
-    value: "yolo_line_e",
+    name: "D-FINE Line EXO-Massive",
+    value: "dfine_line_emassive",
     desc: `
     Can scan lines individually and works well with the "None" text detection app for certain games. Nearby lines will be translated as one unit.
     `,
@@ -17,21 +17,21 @@ export const TEXT_LINE_OPTIONS = [
     name: "DETR Line EX-Massive",
     value: "yolo_line_emassive",
     desc: `
-    Works like DETR Line EX but sometimes better for large images. Incredibly slow.
+    Slightly weaker but slightly faster than D-FINE Line EXO-Massive.
     `,
   },
   {
-    name: "YOLO Line Light",
+    name: "(Legacy) DETR Line EX",
+    value: "yolo_line_e",
+    desc: `
+    Can scan lines individually and works well with the "None" text detection app for certain games. Nearby lines will be translated as one unit.
+    `,
+  },
+  {
+    name: "(Legacy) YOLO Line Light",
     value: "yolo_line_light",
     desc: `
     Fast and filters out noise. Must be used with a Text Detection model.
-    `,
-  },
-  {
-    name: "D-FINE Line EXO-Massive",
-    value: "dfine_line_emassive",
-    desc: `
-    Works like DETR Line EX but usually better.
     `,
   },
   {

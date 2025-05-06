@@ -3,11 +3,11 @@ export const RERANKING_OPTIONS = [
     name: "None",
     value: "none",
     desc: `
-    Fast. No reranking will take place.
+    Fast. No reranking will take place. All the current Gem models are trained with reranking aware objectives - an additional reranking model has little effect now.
     `,
   },
   {
-    name: "List Energy",
+    name: "(Legacy) List Energy",
     value: "listenergy_nocontext",
     desc: `
     Attempts to approximate chrF++ scores and find the best
@@ -16,7 +16,7 @@ export const RERANKING_OPTIONS = [
     `,
   },
   {
-    name: "Doctor",
+    name: "(Legacy) Doctor",
     value: "doctor",
     desc: `
     Attempts to approximate chrF++ scores and find the best
@@ -24,7 +24,7 @@ export const RERANKING_OPTIONS = [
     `,
   },
   {
-    name: "Human",
+    name: "(Legacy) Human",
     value: "human",
     desc: `
     Attempts to find the translation candidate that appears the
@@ -32,7 +32,7 @@ export const RERANKING_OPTIONS = [
     `,
   },
   {
-    name: "Quality",
+    name: "(Legacy) Quality",
     value: "quality",
     desc: `
     Attempts to find the translation candidate that has the highest

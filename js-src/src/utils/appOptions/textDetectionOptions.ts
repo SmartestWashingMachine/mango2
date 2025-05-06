@@ -1,33 +1,5 @@
 export const TEXT_DETECTION_OPTIONS = [
   {
-    name: "YOLO-TD",
-    value: "yolo_td",
-    desc: `
-    Fast but inaccurate.
-    `,
-  },
-  {
-    name: "YOLO-XL",
-    value: "yolo_xl",
-    desc: `
-    Decent performing variant. Slower than YOLO-TD.
-    `,
-  },
-  {
-    name: "DETR-XL",
-    value: "detr_xl",
-    desc: `
-    Sometimes better than YOLO-XL for smaller speech bubbles.
-    `,
-  },
-  {
-    name: "DETR-XL-XXX",
-    value: "detr_xl_xxx",
-    desc: `
-    Sometimes better than DETR-XL.
-    `,
-  },
-  {
     name: "D-FINE Medium",
     value: "dfine_m",
     desc: `
@@ -49,41 +21,6 @@ export const TEXT_DETECTION_OPTIONS = [
     `,
   },
   {
-    name: "Union YOLO",
-    value: "union",
-    desc: `
-    Merges results from YOLO-XL and DETR Line EX to give even better results. Slow.
-    `,
-  },
-  {
-    name: "Union DETR",
-    value: "union_detr",
-    desc: `
-    Merges results from DETR-XL and DETR Line EX to give even better results. Slow.
-    `,
-  },
-  {
-    name: "Union YOLO Massive",
-    value: "union_massive",
-    desc: `
-    Merges results from YOLO-XL and DETR Line EX-Massive to give even better results. Very slow.
-    `,
-  },
-  {
-    name: "Union DETR Massive",
-    value: "union_massive_detr",
-    desc: `
-    Merges results from YOLO-XL and DETR Line EX-Massive to give even better results. Very slow.
-    `,
-  },
-  {
-    name: "Union DETR-XXX Massive",
-    value: "union_massive_detr_xxx",
-    desc: `
-    Merges results from DETR-XL-XXX and DETR Line EX-Massive to give even better results. Very slow.
-    `,
-  },
-  {
     name: "Union D-FINE Large Noisy",
     value: "union_dfine_noisy",
     desc: `
@@ -95,6 +32,69 @@ export const TEXT_DETECTION_OPTIONS = [
     value: "union_dfine_denoise",
     desc: `
     Slow but usually gives the best results by merging results from D-FINE Denoise and D-FINE Line EXO-Massive.
+    `,
+  },
+  {
+    name: "(Legacy) DETR-XL-XXX",
+    value: "detr_xl_xxx",
+    desc: `
+    Sometimes better than DETR-XL.
+    `,
+  },
+  {
+    name: "(Legacy) YOLO-TD",
+    value: "yolo_td",
+    desc: `
+    Fast but inaccurate.
+    `,
+  },
+  {
+    name: "(Legacy) YOLO-XL",
+    value: "yolo_xl",
+    desc: `
+    Decent performing variant. Slower than YOLO-TD.
+    `,
+  },
+  {
+    name: "(Legacy) DETR-XL",
+    value: "detr_xl",
+    desc: `
+    Sometimes better than YOLO-XL for smaller speech bubbles.
+    `,
+  },
+  {
+    name: "(Legacy) Union YOLO",
+    value: "union",
+    desc: `
+    Merges results from YOLO-XL and DETR Line EX to give even better results. Slow.
+    `,
+  },
+  {
+    name: "(Legacy) Union DETR",
+    value: "union_detr",
+    desc: `
+    Merges results from DETR-XL and DETR Line EX to give even better results. Slow.
+    `,
+  },
+  {
+    name: "(Legacy) Union YOLO Massive",
+    value: "union_massive",
+    desc: `
+    Merges results from YOLO-XL and DETR Line EX-Massive to give even better results. Very slow.
+    `,
+  },
+  {
+    name: "(Legacy) Union DETR Massive",
+    value: "union_massive_detr",
+    desc: `
+    Merges results from YOLO-XL and DETR Line EX-Massive to give even better results. Very slow.
+    `,
+  },
+  {
+    name: "(Legacy) Union DETR-XXX Massive",
+    value: "union_massive_detr_xxx",
+    desc: `
+    Merges results from DETR-XL-XXX and DETR Line EX-Massive to give even better results. Very slow.
     `,
   },
   {
