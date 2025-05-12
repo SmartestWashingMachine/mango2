@@ -402,6 +402,12 @@ export class OcrBoxManager implements BoxOptionsBackend {
           this._clickThrough = !this._clickThrough;
           if (this.ocrWindow) {
             this.ocrWindow.setIgnoreMouseEvents(this._clickThrough);
+
+            this.ocrWindow.webContents.send(
+              ElectronChannels.OCR_CLICK_THROUGH,
+              this.boxId,
+              this._clickThrough
+            );
           }
         }
       );

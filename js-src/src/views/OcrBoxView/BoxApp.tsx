@@ -58,6 +58,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
 
   const [hide, setHide] = useState(false);
   const [pause, setPause] = useState(false);
+  const [clickThrough, setClickThrough] = useState(false);
 
   const [autoEnterTimerId, setAutoEnterTimerId] =
     useState<NodeJS.Timeout | null>();
@@ -242,13 +243,20 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
   */
 
   useEffect(() => {
-    const cb = (e: any, bId: string, hid: boolean) => {
+    const hideCb = (e: any, bId: string, hid: boolean) => {
       if (boxId === bId) setHide(hid);
     };
-    const removeCb = MainGateway.listenOcrHideChange(cb);
+    const removeHideCb = MainGateway.listenOcrHideChange(hideCb);
+
+    const clickThroughCb = (e: any, bId: string, ct: boolean) => {
+      if (boxId === bId) setClickThrough(ct);
+    };
+    const removeClickThroughCb =
+      MainGateway.listenOcrClickThroughChange(clickThroughCb);
 
     const cleanup = () => {
-      removeCb();
+      removeHideCb();
+      removeClickThroughCb();
     };
 
     window.addEventListener("beforeunload", cleanup);
@@ -292,6 +300,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
         pause={pause}
         hide={hide}
         boxId={boxId} // TODO: Refactor MainGateway to only be called here, thus dispensing of boxId in OcrBoxPane.
+        clickThrough={clickThrough}
       />
     </CssBaseline>
   );

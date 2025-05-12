@@ -13,6 +13,7 @@ type OcrBoxPaneProps = BoxOptionsFrontend & {
   prevTexts: string[];
   boxId: string;
   hideHandle?: boolean;
+  clickThrough: boolean;
 };
 
 const msToSecs = (ms: number) => (ms ? ms * 1000 : 300);
@@ -56,6 +57,7 @@ const OcrBoxPane = ({
   prevTexts,
   boxId,
   hideHandle,
+  clickThrough,
 }: OcrBoxPaneProps) => {
   const [visible, setVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
@@ -189,9 +191,20 @@ const OcrBoxPane = ({
     setUseLightHandle((prev) => !prev);
   };
 
+  const getHandleOpacity = () => {
+    if (clickThrough) {
+      return 0.0;
+    }
+
+    return backgroundHidden ? 0.75 : 0.1;
+  };
+
+  let boxWindowClasses = "fullBoxApp";
+  // if (true) boxWindowClasses += " draggableWindow";
+
   return (
     <div
-      className="fullBoxApp"
+      className={boxWindowClasses}
       onMouseOver={onHoverEnter}
       onMouseOut={onHoverLeave}
       style={{ opacity: hide ? 0 : 1 }}
@@ -230,7 +243,7 @@ const OcrBoxPane = ({
                 className={
                   useLightHandle ? "boxAppHandleIcon" : "boxAppHandleIconDark"
                 }
-                sx={{ opacity: backgroundHidden ? 0.75 : 0.1 }}
+                sx={{ opacity: getHandleOpacity() }}
               />
             </div>
           )}

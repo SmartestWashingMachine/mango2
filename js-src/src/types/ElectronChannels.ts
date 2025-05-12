@@ -6,6 +6,7 @@ enum ElectronChannels {
   EMIT_STORE_DATA = "emit-store-data",
   OCR_PAUSED = "ocr-paused",
   OCR_HIDDEN = "ocr-hidden",
+  OCR_CLICK_THROUGH = "ocr-click-through",
 }
 
 export default ElectronChannels;
