@@ -1,7 +1,7 @@
 from gandy.translation.base_translation import BaseTranslation
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
-#from llama_cpp_cuda_tensorcores import Llama
+from gandy.utils.faiss_mt_cache import FAISSStore
 from typing import List
 
 
@@ -23,6 +23,8 @@ class LlmCppTranslationApp(BaseTranslation):
         self.model_sub_path = model_sub_path
         self.prepend_fn = prepend_fn
         self.lang = lang
+
+        self.mt_cache = None
 
     def can_load(self):
         return super().can_load(f"models/{self.model_sub_path}" + ".gguf")
@@ -114,6 +116,20 @@ class LlmCppTranslationApp(BaseTranslation):
 
             ctx.log('Done splitting', original_input=inp, cur_text=inp, contexts=contexts)
 
+        if config_state.cache_mt:
+            with logger.begin_event('Checking vector cache') as ctx:
+                if self.mt_cache is None:
+                    # TODO: Probably don't want to instantiate the MT cache here. Code smell.
+                    self.mt_cache = FAISSStore(db_path='models/database/cache', model_name='models/database/nite.gguf')
+
+                found_translations, sim, embed_inp = self.mt_cache.retrieve(inp, top_k=1, similarity_threshold=0.975)
+                if len(found_translations) > 0:
+                    ctx.log(f'Translation already found in cache', cosine_sim=sim[0])
+
+                    return [found_translations[0]], [inp]
+                else:
+                    ctx.log('Translation is new!')
+
         with logger.begin_event("Creating prompt from splits") as ctx:
             prompt = self.map_prompt(inp, contexts)
 
@@ -129,6 +145,7 @@ class LlmCppTranslationApp(BaseTranslation):
                 dry_allowed_length=2,
                 dry_seq_breakers=["\n", ":", "\"", '*'],
                 dry_range=-1,
+                #temperature=0.0,
                 #temperature=0.1,
                 #top_p=0.95,
                 #top_k=10,
@@ -147,6 +164,10 @@ class LlmCppTranslationApp(BaseTranslation):
                         pass # First entry has nothing, as does last (usually).
             else:
                 prediction = model_output['choices'][0]['message']['content']
+
+            if config_state.cache_mt and len(prediction) > 0:
+                with logger.begin_event('Adding to vector cache') as ctx:
+                    self.mt_cache.add_translation_from_embed(embed_inp, prediction)
 
             return [prediction], [inp]
 
