@@ -22,6 +22,13 @@ export const TRANSLATION_OPTIONS = [
     `,
   },
   {
+    name: "Chinese-2-English Gem",
+    value: "llm_zhgem",
+    desc: `
+    Finetuned for Chinese to English. Somewhat slow.
+    `,
+  },
+  {
     // NOTE: nllb_jq is biased towards shorter texts.
     name: "(Legacy) Japanese-2-English Qualia",
     value: "nllb_jq",

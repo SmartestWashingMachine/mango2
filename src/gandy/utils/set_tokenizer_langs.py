@@ -34,10 +34,11 @@ def prepend_mad_qual_ja(s: str):
     return f"<2en> {prepend_qual_mad(s)}"
 
 def prepend_gem_ja(s: str):
+    s = '<Q9>' + s
+
     if any(h in s for h in honorifics):
         s = f"<AH>{s}"
 
-    s = '<Q9>' + s
     return s
 
 ko_special_terms = { '씨', '님', '오빠', '언니', '누나', '형', }
@@ -49,6 +50,10 @@ def prepend_gem_ko(s: str):
     # The reason for this is that the quality scoring model was not trained on Korean language data, and gives poorly calibrated predictions as a result.
     # The quality scores have little to no signal. In some cases, the model gives very poor scores for decent translations.
     # Instead, the quality scores seem to bias towards the length of the translation (more so than usual), and the punctuation characters present in both source and translation.
+    return s
+
+def prepend_gem_zh(s: str):
+    s = '<Q9>' + s
     return s
 
 def prepend_mad_qual_generic(s: str):

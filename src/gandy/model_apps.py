@@ -85,7 +85,7 @@ from gandy.utils.set_tokenizer_langs import (
     remove_unnecessary_eng_tokens_mad,
 )
 from gandy.translation.llmcpp_translation import LlmCppTranslationApp
-from gandy.utils.set_tokenizer_langs import prepend_gem_ja, prepend_gem_ko
+from gandy.utils.set_tokenizer_langs import prepend_gem_ja, prepend_gem_ko, prepend_gem_zh
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
 
 yolo_xl = YOLOTDImageDetectionApp(
@@ -241,6 +241,7 @@ TEXT_RECOGNITION_APP = SwitchApp(
                 "num_beams": 5,
                 "no_repeat_ngram_size": 7,
             },
+            extra_postprocess=j_ocr_postprocess
         ),
         MagnusTextRecognitionApp(
             model_sub_path="_jmassive/",
@@ -346,6 +347,11 @@ TRANSLATION_APP = SwitchApp(
             prepend_fn=prepend_gem_ko,
             lang="Korean",
         ),
+        LlmCppTranslationApp(
+            model_sub_path="gem/gem_zh",
+            prepend_fn=prepend_gem_zh,
+            lang="Chinese",
+        ),
     ],
     app_names=[
         "nllb_jq",
@@ -357,6 +363,7 @@ TRANSLATION_APP = SwitchApp(
         "nllb_zhmad",
         "llm_jgem",
         "llm_kgem",
+        "llm_zhgem",
     ],
 )
 
