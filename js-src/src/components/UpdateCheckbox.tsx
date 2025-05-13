@@ -13,6 +13,7 @@ export type UpdateCheckboxProps = {
   helperText?: string;
   label: string;
   style?: any;
+  tooltip?: string; // Unused.
 };
 
 const UpdateCheckbox = (props: UpdateCheckboxProps) => {
