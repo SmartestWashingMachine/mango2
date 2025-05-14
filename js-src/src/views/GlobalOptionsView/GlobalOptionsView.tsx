@@ -25,6 +25,8 @@ import { useInstalledModelsRetriever } from "../../utils/useInstalledModelsRetri
 import GLOBAL_OPTIONS_PARTIAL_PRESETS, {
   PresetItem,
 } from "./globalOptionsPartialPresets";
+import { previewCaptureWindow } from "../../flaskcomms/previewCaptureWindow";
+import { getBoxDisplayName } from "../../utils/getBoxDisplayName";
 
 export type GlobalOptionsViewProps = {
   goOcrOptionsTab: () => void;
@@ -38,6 +40,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [loadedData, setLoadedData] = useState<any>({});
+
+  const [capturedWindowPreview, setCapturedWindowPreview] = useState("");
 
   const installedModels = useInstalledModelsRetriever();
 
@@ -242,9 +246,29 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     useTranslationServer,
     memoryEfficientTasks,
     cacheMt,
+    captureWindow,
+    boxes,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
+
+  const handlePreviewCaptureWindow = async () => {
+    await MainGateway.resendData();
+    const imageBase64 = await previewCaptureWindow();
+
+    setCapturedWindowPreview(imageBase64);
+  };
+
+  const handlePreviewCaptureWindowWithBox = async () => {
+    if (boxes.length === 0) return;
+    const b = boxes[0];
+
+    const coords = [b.xOffset, b.yOffset, b.width, b.height];
+
+    await MainGateway.resendData();
+    const imageBase64 = await previewCaptureWindow(coords);
+    setCapturedWindowPreview(imageBase64);
+  };
 
   return (
     <BaseView>
@@ -762,6 +786,57 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                   purposes, or to change the font used by the OCR / text box.
                 </Typography>
               </>
+            ),
+          },
+          "Capture Specific Window": {
+            "Specific Window": (
+              <div className="specificWindowContainer">
+                <img
+                  src={
+                    capturedWindowPreview.length > 0
+                      ? `data:image/png;base64,${capturedWindowPreview}`
+                      : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" // Just an empty 1x1 GIF.
+                  }
+                  className="specificWindowInner"
+                />
+              </div>
+            ),
+            "Window Name": (
+              <TextField
+                label="Window Name"
+                variant="outlined"
+                onBlur={(e) => {
+                  console.log("new val");
+                  console.log(e.currentTarget.value);
+                  setStoreValue("captureWindow", e.currentTarget.value);
+                }}
+                defaultValue={captureWindow}
+                fullWidth
+                multiline
+                size="small"
+                helperText="When you OCR a game with multiple detached boxes, you may want to overlap some boxes without them OCR'ing each other. If a window partially matching this name is found, only the contents of that window can be OCR'd."
+              />
+            ),
+            "Preview Window": (
+              <Button
+                sx={{ mt: 8 }}
+                variant="contained"
+                color="secondary"
+                fullWidth
+                onClick={handlePreviewCaptureWindow}
+              >
+                Preview Window
+              </Button>
+            ),
+            "Preview Window With First Box": (
+              <Button
+                variant="outlined"
+                color="secondary"
+                fullWidth
+                onClick={handlePreviewCaptureWindowWithBox}
+              >
+                Preview Window With Box ({getBoxDisplayName(boxes[0])})
+              </Button>
             ),
           },
           Debugging: {

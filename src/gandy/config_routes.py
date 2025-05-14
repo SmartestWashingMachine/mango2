@@ -135,7 +135,8 @@ def change_multiple_models_route():
             cut_ocr_punct=data["cutOcrPunct"],
             cache_mt=data["cacheMt"],
             ignore_detect_single_words=data["ignoreDetectSingleWords"],
-            sort_text_from_top_left=data["sortTextFromTopLeft"]
+            sort_text_from_top_left=data["sortTextFromTopLeft"],
+            capture_window=data["captureWindow"],
         )
 
         config_state.update_terms(terms=data["terms"])

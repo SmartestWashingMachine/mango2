@@ -47,6 +47,7 @@ const storeDefaults: IStore = {
   useTranslationServer: false,
   memoryEfficientTasks: false,
   cacheMt: true,
+  captureWindow: "",
 };
 
 export const initializeStore = () => {

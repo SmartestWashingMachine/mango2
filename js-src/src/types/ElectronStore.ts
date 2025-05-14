@@ -50,6 +50,7 @@ export type IStoreClientToServer = {
   useTranslationServer: boolean;
   memoryEfficientTasks: boolean;
   cacheMt: boolean;
+  captureWindow: string;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;
