@@ -3,12 +3,16 @@ from PIL import Image
 from gandy.utils.fancy_logger import logger
 from gandy.app import app, translate_pipeline, socketio
 from gandy.state.debug_state import debug_state
+from gandy.state.config_state import config_state
 from gandy.utils.get_sep_regex import get_last_sentence
 from gandy.utils.socket_stream import SocketStreamer
 from gandy.tasks.task3.task3_box_context_state_utils import push_to_state, get_context
+from gandy.tasks.task3.screenshot_window_only import capture_window_image_from_box
 from mss import mss
 from uuid import uuid4
 import os
+import base64
+from io import BytesIO
 
 # Task3 - translate images into text (from the OCR box).
 # Context here is stored on the SERVER rather than the client.
@@ -146,13 +150,22 @@ def process_task3_faster(data):
 
     coords = [int(x[0]) for x in [data['x1'], data['y1'], data['width'], data['height']]]
 
-    # From: https://python-mss.readthedocs.io/examples.html#pil
-    with mss() as sct:
-        monitor = {"top": coords[1], "left": coords[0], "width": coords[2], "height": coords[3]}
-        sct_img = sct.grab(monitor)
+    images = []
 
-        img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-        images = [img]
+    # Capturing the window alone uses low-level Windows API stuff. Prone to breaking.
+    if len(config_state.capture_window) > 0:
+        xyxy = [coords[0], coords[1], coords[0] + coords[2], coords[1] + coords[3]]
+
+        with logger.begin_event('Capturing specific window image.', capture_window=config_state.capture_window):
+            images = [capture_window_image_from_box(config_state.capture_window, xyxy)]
+    else:
+        # From: https://python-mss.readthedocs.io/examples.html#pil
+        with mss() as sct:
+            monitor = {"top": coords[1], "left": coords[0], "width": coords[2], "height": coords[3]}
+            sct_img = sct.grab(monitor)
+
+            img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+            images = [img]
 
     socketio.start_background_task(
         translate_task3_background_job,
@@ -193,3 +206,33 @@ def process_task3new_route():
     })
 
     return {"processing": True}, 202
+
+# From task1
+def encode_image(new_image):
+    buffer = BytesIO()
+    # Poor quality: new_image.save(buffer, format="JPEG")
+    new_image.save(buffer, format="PNG")
+    new_image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    return new_image_base64
+
+@app.route("/previewwindowcapture", methods=["POST"])
+def preview_window_capture():
+    data = request.form.to_dict(flat=False)
+
+    if 'x1' in data:
+        coords = [int(x[0]) for x in [data['x1'], data['y1'], data['width'], data['height']]]
+        xyxy = [coords[0], coords[1], coords[0] + coords[2], coords[1] + coords[3]]
+    else:
+        xyxy = None
+
+    # Capturing the window alone uses low-level Windows API stuff. Prone to breaking.
+    if len(config_state.capture_window) > 0:
+
+        images = [capture_window_image_from_box(config_state.capture_window, xyxy)]
+    else:
+        images = []
+
+    return {
+        'image_base64': encode_image(images[0]) if len(images) > 0 else "",
+    }, 202

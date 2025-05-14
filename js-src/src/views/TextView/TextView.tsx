@@ -89,6 +89,9 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     null
   );
 
+  // Just for informative purposes. The actual window capturing logic is in the backend task3 routes file.
+  const [captureWindow, setCaptureWindow] = useState("");
+
   const handleToggleClipboardReading = () =>
     setReadClipboardDelay((d) => (d === null ? 250 : null));
 
@@ -349,6 +352,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
 
   // If the "auto open OCR window" feature is on, automatically open that window on start.
   // Also initialize a state value from the store state (the max context amount - used for context pushing and auto text splitting).
+  // Also use this effect to retrieve the captured window value for visual purposes only (to notify the user that a window is being captured while trying to open detached boxes).
   useEffect(() => {
     let canceled = false;
 
@@ -373,6 +377,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
       }
 
       setMaxContextAmount(newCtxValue);
+      setCaptureWindow(data.captureWindow);
     };
 
     asyncCb();
@@ -435,7 +440,15 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
         title={
           <>
             <Typography color="inherit" sx={{ fontWeight: "bold" }}>
-              {disabled ? "Close" : "Open"} Detached Box
+              {disabled ? "Close" : "Open"} Detached Box{" "}
+              {captureWindow.length > 0 && (
+                <>
+                  <br />
+                  <span className="captureWindowLabel">
+                    {`(Capturing "${captureWindow}")`}
+                  </span>
+                </>
+              )}
             </Typography>
             <Typography variant="caption" sx={{ color: "hsl(291, 1%, 93%)" }}>
               Detached box(es) can scan the screen or system for text to

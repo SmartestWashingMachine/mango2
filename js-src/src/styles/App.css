@@ -500,7 +500,7 @@ body,
 .specificWindowInner {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
@@ -509,4 +509,8 @@ body,
   height: 200px;
   border: 1.25px solid rgba(60, 60, 60);
   border-radius: 1px;
+}
+
+.captureWindowLabel {
+  color: #eebaf7 !important;
 }
