@@ -73,7 +73,7 @@ class WindowMgr:
         win32gui.EnumWindows(self._window_enum_callback, wildcard)
         return self
 
-def capture_window_image_from_box(window_name: str, box_coords):
+def capture_window_image_from_box(window_name: str, box_coords, do_scale=True):
     windll.user32.SetProcessDPIAware()
 
     #hwnd = win32gui.FindWindow(None, window_name)
@@ -110,11 +110,13 @@ def capture_window_image_from_box(window_name: str, box_coords):
     img = Image.fromarray(img)
 
     if box_coords is not None:
-        scale_factor = SCALE_FACTOR # get_windows_scale_factor()
-        box_coords[0] *= scale_factor
-        box_coords[1] *= scale_factor
-        box_coords[2] *= scale_factor
-        box_coords[3] *= scale_factor
+
+        if do_scale:
+            scale_factor = SCALE_FACTOR # get_windows_scale_factor()
+            box_coords[0] *= scale_factor
+            box_coords[1] *= scale_factor
+            box_coords[2] *= scale_factor
+            box_coords[3] *= scale_factor
 
         intersection = get_intersection([screen_left, screen_top, (screen_left + w), (screen_top + h)], box_coords)
         if intersection is None:

@@ -157,7 +157,8 @@ def process_task3_faster(data):
         xyxy = [coords[0], coords[1], coords[0] + coords[2], coords[1] + coords[3]]
 
         with logger.begin_event('Capturing specific window image.', capture_window=config_state.capture_window):
-            images = [capture_window_image_from_box(config_state.capture_window, xyxy)]
+            # The client already scales the coordinates with the screen scale factor OOPS. TODO: Remove redundant code in front and backend.
+            images = [capture_window_image_from_box(config_state.capture_window, xyxy, do_scale=False)]
     else:
         # From: https://python-mss.readthedocs.io/examples.html#pil
         with mss() as sct:
