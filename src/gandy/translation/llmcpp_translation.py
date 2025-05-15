@@ -145,6 +145,7 @@ class LlmCppTranslationApp(BaseTranslation):
                 dry_allowed_length=2,
                 dry_seq_breakers=["\n", ":", "\"", '*'],
                 dry_range=-1,
+                temperature=0.01,
                 #temperature=0.0,
                 #temperature=0.1,
                 #top_p=0.95,
