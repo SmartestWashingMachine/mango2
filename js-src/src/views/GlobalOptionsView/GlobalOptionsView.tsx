@@ -789,6 +789,15 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
             ),
           },
           "Capture Specific Window": {
+            "Capture Specific Window": (
+              <Typography align="center" variant="body2">
+                When you OCR a game with multiple detached boxes, you may want
+                to overlap some boxes without them OCR'ing each other. If a
+                window partially matching this name is found, only the contents
+                of that window can be OCR'd.{" "}
+                <b>Make sure the window is visible somewhere on the screen.</b>
+              </Typography>
+            ),
             "Specific Window": (
               <div className="specificWindowContainer">
                 <img
@@ -814,7 +823,6 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 fullWidth
                 multiline
                 size="small"
-                helperText="When you OCR a game with multiple detached boxes, you may want to overlap some boxes without them OCR'ing each other. If a window partially matching this name is found, only the contents of that window can be OCR'd."
               />
             ),
             "Preview Window": (
@@ -835,12 +843,12 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 fullWidth
                 onClick={handlePreviewCaptureWindowWithBox}
               >
-                Preview Window With Box ({getBoxDisplayName(boxes[0])})
+                Preview Window With ({getBoxDisplayName(boxes[0])})
               </Button>
             ),
           },
           Debugging: {
-            "Trigger Force Stop": (
+            /* Doesn't work with Gem. "Trigger Force Stop": (
               <>
                 <Button
                   sx={{ mt: 8 }}
@@ -855,8 +863,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                   Immediately stops any active translation job.
                 </Typography>
               </>
-            ),
-            "Fix Seed": (
+            ),*/
+            /* Seed fixing currently disabled since we're using Gem as the mainline model. "Fix Seed": (
               <>
                 <Button
                   sx={{ mt: 8 }}
@@ -873,7 +881,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                   No effect otherwise.
                 </Typography>
               </>
-            ),
+            ),*/
             "Open Logs": (
               <Button
                 sx={{ mt: 8 }}

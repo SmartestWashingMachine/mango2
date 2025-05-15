@@ -11,8 +11,8 @@ const questions = [
       'Navigate to the "Text" tab.',
       "Click the shiny purple button on the bottom left.",
       `
-      A detached black text window will appear on the screen.
-      This window will automagically translate any text in the clipboard and show the translation.
+      A detached box will appear on the screen.
+      This box will automagically translate any text in the clipboard and show the translation.
       `,
       `Then, load Textractor and enable the "Copy to clipboard" extension in it. Now when Textractor hooks into a game, it will read and copy untranslated text into the clipboard, and Mango will translate it.`,
     ],
@@ -21,10 +21,10 @@ const questions = [
     title: "How do I use this to translate games without Textractor?",
     steps: [
       'Navigate to the "Text" tab, and click the blue button on the bottom left.',
-      `Look for the "Preset" field, and select the "Scanner" preset. This preset will make the box scan whatever is behind it when "K" is pressed.`,
+      `You will be prompted to select a use case. Select the use case titled "1 box" with the description "I want a box that reads text on the screen when I press a button."`,
       `Navigate back to the "Text" tab, and click the shiny purple button.`,
-      `Drag the text window wherever the game text will be. The window can be resized and moved by dragging on the edges.`,
-      `Press "K" to translate whatever is behind the Scanner box.`,
+      `A detached box will pop up on the screen. Drag this box wherever the game text will be. The box can be resized and moved by dragging on the edges.`,
+      `Press "1" to translate whatever is behind this detached box.`,
     ],
   },
   {
@@ -62,7 +62,7 @@ const questions = [
       "D. Tinkering with the decoding parameters can improve quality too. Try setting the beam size to 5 or 10 (or even 15 if you're daring...)",
       "E. Enabling a reranker model and using MBR decoding can sometimes improve quality too.",
       "F. If using the detached text window to translate games, you may want to use Textractor (to avoid any potential OCR errors).",
-      'G. Use a bigger translation model, such as "Japanese-2-English Madness".',
+      'G. Use a bigger translation model, such as "Japanese-2-English Gem".',
     ],
   },
   {
@@ -106,12 +106,12 @@ const questions = [
       'To replace the detached box font, just name the desired font "ocrbox.ttf".',
     ],
   },
-  {
+  /* {
     title: "The translator is hanging. Can I force stop it?",
     steps: [
       "Yes - translation jobs can be forcefully stopped. Press CRTL + SHIFT + Q",
     ],
-  },
+  }, */
 ];
 
 const HelpView = () => {

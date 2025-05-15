@@ -98,14 +98,24 @@ const QuickSetup = (props: QuickSetupProps) => {
 
   return (
     <Stack spacing={4}>
-      <Typography
-        variant="h3"
-        align="center"
-        sx={{ marginTop: 12 }}
-        color="primary.500"
-      >
-        What's your use case?
-      </Typography>
+      <Stack spacing={2}>
+        <Typography
+          variant="h3"
+          align="center"
+          sx={{ marginTop: 12 }}
+          color="primary.500"
+        >
+          What's your use case?
+        </Typography>
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ color: "hsl(291, 3%, 74%)" }}
+        >
+          Overlapping boxes may OCR each other. Ensure boxes do not overlap or
+          specify a specific window to capture under Settings.
+        </Typography>
+      </Stack>
       <Stack spacing={2}>
         {BOX_USE_CASES.map((x) => (
           <QuickCase
