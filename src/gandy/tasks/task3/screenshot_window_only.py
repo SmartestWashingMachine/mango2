@@ -76,7 +76,6 @@ class WindowMgr:
 def capture_window_image_from_box(window_name: str, box_coords, do_scale=True):
     windll.user32.SetProcessDPIAware()
 
-    #hwnd = win32gui.FindWindow(None, window_name)
     hwnd = WindowMgr().find_window_wildcard(window_name).handle
 
     left, top, right, bottom = win32gui.GetClientRect(hwnd)
@@ -91,6 +90,11 @@ def capture_window_image_from_box(window_name: str, box_coords, do_scale=True):
         bitmap.CreateCompatibleBitmap(mfc_dc, w, h)
         save_dc.SelectObject(bitmap)
 
+        # "What does the 3 mean?" - No idea. The documentation says that it can take the value "PW_CLIENTONLY" - maybe that's what "3" refers to?
+        # "PW_CLIENTONLY" copies the client area (supposedly not the handle at the top of the app, and probably not the tiny borders surrounding the app).
+        # I tried setting it to "0" - and some truly weird sheet happened. It captured a tiny portion of the window edges, and then everything else was just a black screen???
+        # I tried unsetting it - and got the same results as above.
+        # Why is the Windows API so poorly documented? The documentation is basically the programmer's Necronomicon - doomed to drive any reader insane.
         result = windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 3)
 
         if not result:
@@ -118,19 +122,23 @@ def capture_window_image_from_box(window_name: str, box_coords, do_scale=True):
             box_coords[2] *= scale_factor
             box_coords[3] *= scale_factor
 
-        intersection = get_intersection([screen_left, screen_top, (screen_left + w), (screen_top + h)], box_coords)
+        intersection = get_intersection([screen_left, screen_top, (screen_right), (screen_bottom)], box_coords)
         if intersection is None:
             raise RuntimeError('Bounding Box is not within the window.')
 
         # Not sure if this part is necessary.
-        adjusted_left = abs(w - (screen_right - screen_left)) // 2
-        adjusted_top = abs(h - (screen_bottom - screen_top)) // 2
+        adjusted_left = abs(w - (screen_right - screen_left)) // SCALE_FACTOR
+
+        # "Why divide by 1.25? (NOTE: Changed from 1.25 to SCALE_FACTOR)"
+        # Actually - I have no fudging (proven) idea why. Spent hours smacking my head on the wall and came up with no explanation.
+        # T assume it has to do with scale, as my PC uses Scale=125% which is 1.25. Unfortunately I have other programs running which will brick if I change the scale quickly for further testing.
+        adjusted_top = abs(h - (screen_bottom - screen_top)) // SCALE_FACTOR
 
         img = img.crop((
             intersection[0] - screen_left - adjusted_left,
             intersection[1] - screen_top - adjusted_top,
-            intersection[2] - screen_left,
-            intersection[3] - screen_top,
+            intersection[2] - screen_left - adjusted_left,
+            intersection[3] - screen_top - adjusted_top,
         ))
 
     return img
