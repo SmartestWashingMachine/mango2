@@ -259,10 +259,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     setCapturedWindowPreview(imageBase64);
   };
 
-  const handlePreviewCaptureWindowWithBox = async () => {
-    if (boxes.length === 0) return;
-    const b = boxes[0];
-
+  const handlePreviewCaptureWindowWithBox = async (b: any) => {
     const coords = [b.xOffset, b.yOffset, b.width, b.height];
 
     await MainGateway.resendData();
@@ -837,14 +834,22 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
               </Button>
             ),
             "Preview Window With First Box": (
-              <Button
-                variant="outlined"
-                color="secondary"
-                fullWidth
-                onClick={handlePreviewCaptureWindowWithBox}
-              >
-                Preview Window With ({getBoxDisplayName(boxes[0])})
-              </Button>
+              <Stack spacing={2}>
+                <Typography align="center" variant="h6">
+                  Preview Window With Box
+                </Typography>
+                {boxes.map((b: any) => (
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    fullWidth
+                    onClick={() => handlePreviewCaptureWindowWithBox(b)}
+                    key={b.boxId}
+                  >
+                    Preview - {getBoxDisplayName(b)}
+                  </Button>
+                ))}
+              </Stack>
             ),
           },
           Debugging: {
