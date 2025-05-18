@@ -56,9 +56,6 @@ from gandy.text_detection.none_image_detection import NoneImageDetectionApp
 from gandy.text_detection.union_image_detection import UnionImageDetectionApp
 from gandy.text_detection.dfine_image_detection import DFineImageDetectionApp, DFineLineImageDetectionApp
 from gandy.text_recognition.tr_recognition import TrOCRTextRecognitionApp, MagnusTextRecognitionApp
-from gandy.translation.seq2seq_translation import (
-    Seq2SeqTranslationApp,
-)
 from gandy.spell_correction.fill_pro_spell_correction import FillProApp
 from gandy.spell_correction.langsume_spell_correction import LangsumeApp
 from gandy.spell_correction.prepend_source_spell_correction import (
@@ -72,7 +69,6 @@ from gandy.onnx_models.ebr import (
     QualityRerankerONNX,
 )
 from gandy.reranking.generic_reranker import GenericRerankerApp, BaseRerankingApp
-from gandy.spell_correction.emil_spell_correction import EmilSpellCorrectionApp
 from transformers import NllbTokenizer, T5Tokenizer
 from gandy.utils.set_tokenizer_langs import (
     set_lang_as_j,
@@ -277,66 +273,6 @@ TEXT_RECOGNITION_APP = SwitchApp(
 
 TRANSLATION_APP = SwitchApp(
     apps=[
-        Seq2SeqTranslationApp(
-            model_sub_path="_jq/",
-            encoder_tokenizer_cls=NllbTokenizer,
-            extra_preprocess=prepend_qual,
-            extra_postprocess=remove_unnecessary_eng_tokens,
-            on_source_encode=set_lang_as_j,
-            target_decode_lang="eng_Latn",
-        ),
-        Seq2SeqTranslationApp(
-            model_sub_path="_kq/",
-            encoder_tokenizer_cls=NllbTokenizer,
-            extra_preprocess=prepend_qual,
-            extra_postprocess=remove_unnecessary_eng_tokens,
-            on_source_encode=set_lang_as_k,
-            target_decode_lang="eng_Latn",
-        ),
-        Seq2SeqTranslationApp(
-            model_sub_path="_cq/",
-            encoder_tokenizer_cls=NllbTokenizer,
-            extra_preprocess=prepend_qual,
-            extra_postprocess=remove_unnecessary_eng_tokens,
-            on_source_encode=set_lang_as_c,
-            target_decode_lang="eng_Latn",
-        ),
-        Seq2SeqTranslationApp(
-            model_sub_path="_jmad/",
-            encoder_tokenizer_cls=T5Tokenizer,
-            extra_preprocess=prepend_mad_qual_ja,
-            extra_postprocess=remove_unnecessary_eng_tokens_mad,
-            target_decode_lang=None,
-            max_length=200,
-            tokenizer_kwargs={ 'use_fast': False, }
-        ),
-        Seq2SeqTranslationApp(
-            model_sub_path="_jq300/",
-            encoder_tokenizer_cls=NllbTokenizer,
-            extra_preprocess=prepend_qual,
-            extra_postprocess=remove_unnecessary_eng_tokens,
-            on_source_encode=set_lang_as_j,
-            target_decode_lang="eng_Latn",
-            max_length=300,
-        ),
-        Seq2SeqTranslationApp(
-            model_sub_path="_komad/",
-            encoder_tokenizer_cls=T5Tokenizer,
-            extra_preprocess=prepend_mad_qual_generic,
-            extra_postprocess=remove_unnecessary_eng_tokens_mad,
-            target_decode_lang=None,
-            max_length=200,
-            tokenizer_kwargs={ 'use_fast': False, }
-        ),
-        Seq2SeqTranslationApp(
-            model_sub_path="_zhmad/",
-            encoder_tokenizer_cls=T5Tokenizer,
-            extra_preprocess=prepend_mad_qual_generic,
-            extra_postprocess=remove_unnecessary_eng_tokens_mad,
-            target_decode_lang=None,
-            max_length=200,
-            tokenizer_kwargs={ 'use_fast': False, }
-        ),
         LlmCppTranslationApp(
             model_sub_path="gem/gem",
             prepend_fn=prepend_gem_ja,
@@ -354,13 +290,6 @@ TRANSLATION_APP = SwitchApp(
         ),
     ],
     app_names=[
-        "nllb_jq",
-        "nllb_ko",
-        "nllb_zh",
-        "nllb_jmad",
-        "nllb_jq300",
-        "nllb_komad",
-        "nllb_zhmad",
         "llm_jgem",
         "llm_kgem",
         "llm_zhgem",
@@ -374,14 +303,6 @@ SPELL_CORRECTION_APP = SwitchApp(
         LangsumeApp(),
         PrependSourceApp(),
         PrependSourceNoContextApp(),
-        EmilSpellCorrectionApp(
-            model_sub_path="_jq/",
-            tokenizer_cls=NllbTokenizer,
-            extra_preprocess=prepend_qual,
-            extra_postprocess=remove_unnecessary_eng_tokens,
-            on_source_encode=set_lang_as_j,
-            target_decode_lang="eng_Latn",
-        )
     ],
     app_names=[
         "default",
@@ -389,7 +310,6 @@ SPELL_CORRECTION_APP = SwitchApp(
         "langsume",
         "prepend_source",
         "prepend_source_noctx",
-        "emil_j",
     ],
 )
 
