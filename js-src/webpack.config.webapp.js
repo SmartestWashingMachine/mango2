@@ -27,7 +27,7 @@ module.exports = [
       ]
     },
     output: {
-      path: __dirname + '/public/web',
+      path: __dirname + '/../src/static',
       filename: 'web_react.js'
     },
     resolve: {

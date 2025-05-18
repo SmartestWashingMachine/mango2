@@ -14,7 +14,11 @@ build
 models
 Icon.png
 f17c2246a35e5bad01ef912e71a27aae.png
-public
+
+js-src/public/*
+!js-src/public/Icon.png
+!js-src/public/screenCapture_1.3.2.bat
+
 resources
 wheels
 debugdumps
