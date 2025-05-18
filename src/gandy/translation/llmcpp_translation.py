@@ -3,6 +3,7 @@ from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
 from gandy.utils.faiss_mt_cache import FAISSStore
 from typing import List
+import torch
 
 
 # Some caveats:
@@ -109,6 +110,10 @@ class LlmCppTranslationApp(BaseTranslation):
             return inp, []
         
         return cur_text, contexts
+    
+    def load_mt_cache(self):
+        # TODO: Probably don't want to instantiate the MT cache here. Code smell.
+        self.mt_cache = FAISSStore(db_path='models/database/cache', model_name='models/database/nite.gguf')
 
     def translate_string(self, inp: str, use_stream=None):
         with logger.begin_event("Splitting input & contexts") as ctx:
@@ -119,8 +124,7 @@ class LlmCppTranslationApp(BaseTranslation):
         if config_state.cache_mt:
             with logger.begin_event('Checking vector cache') as ctx:
                 if self.mt_cache is None:
-                    # TODO: Probably don't want to instantiate the MT cache here. Code smell.
-                    self.mt_cache = FAISSStore(db_path='models/database/cache', model_name='models/database/nite.gguf')
+                    self.load_mt_cache()
 
                 found_translations, sim, embed_inp = self.mt_cache.retrieve(inp, top_k=1, similarity_threshold=0.975)
                 if len(found_translations) > 0:
@@ -198,4 +202,7 @@ class LlmCppTranslationApp(BaseTranslation):
         return output[0]
 
     def embed_text(self, s: str):
-        raise RuntimeError('Not implemented.')
+        if self.mt_cache is None:
+            self.load_mt_cache()
+
+        return torch.tensor(self.mt_cache.embed_text(s))

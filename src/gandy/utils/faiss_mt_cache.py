@@ -162,6 +162,9 @@ class FAISSStore:
         """
         self._add(source_embed, [translated_text], already_embed=True)
 
+    def embed_text(self, text: str):
+        return self.embedder.embed([text])
+
     def __del__(self):
         """
         Ensure the timer is cleaned up when the object is deleted.
