@@ -192,6 +192,35 @@ const BOX_USE_CASES: BoxUseCase[] = [
     ],
   },
   {
+    title: "4 boxes (1 transparent) (1 system UI)",
+    description:
+      '"I want three boxes that each reads text on the screen with their own buttons, and sends the results to a fourth box (with a transparent background) wherever I place it. The third box should translate each line individually."',
+    options: [
+      { ...getOpts("Scout Receiver Transparent"), boxId: "READER" },
+      {
+        ...getOpts("Scout Sender"),
+        boxId: "PRESS > 1",
+        pipeOutput: "READER",
+        activationKey: "1",
+      },
+      {
+        ...getOpts("Scanner"),
+        boxId: "PRESS > 2",
+        pipeOutput: "READER",
+        activationKey: "2",
+      },
+      {
+        ...getOpts("Scanner"),
+        boxId: "PRESS > 3",
+        pipeOutput: "READER",
+        translateLinesIndividually: 99,
+        backgroundColor: "#000000",
+        fontColor: "#FFFFFF",
+        activationKey: "3",
+      },
+    ],
+  },
+  {
     title: "5 boxes (1 transparent)",
     description:
       '"I want four boxes that each reads text on the screen with their own buttons, and sends the results to a fifth box (with a transparent background) wherever I place it."',
