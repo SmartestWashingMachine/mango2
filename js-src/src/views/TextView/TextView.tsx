@@ -523,9 +523,18 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
       </Tooltip>
       <Tooltip
         title={
-          readClipboardDelay !== null
-            ? "Stop Reading From Clipboard"
-            : "Read From Clipboard"
+          <>
+            <Typography color="inherit" sx={{ fontWeight: "bold" }}>
+              {readClipboardDelay !== null
+                ? "Stop Reading From Clipboard"
+                : "Read From Clipboard"}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "hsl(291, 1%, 93%)" }}>
+              Automatically translates text as it is copied into the clipboard.
+              Newlines, if found, will be used to split the text into separate
+              sentences.
+            </Typography>
+          </>
         }
       >
         <Paper elevation={2}>
