@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, Menu } from "electron";
+import { app, BrowserWindow, screen, Menu, session } from "electron";
 import path from "path";
 import { ElectronState } from "./types/ElectronState";
 import { initializeModelNames } from "./flaskcomms/setFlaskSettings";
@@ -96,7 +96,18 @@ app.whenReady().then(async () => {
 
   // Must be called before API calls on the main process.
   // (renderer process API calls have a similar function in react.tsx)
-  await readDangerousConfigMain();
+  const { remoteAddress } = await readDangerousConfigMain();
+
+  const additionalSources = `http://${remoteAddress}:5000 ws://${remoteAddress}:5100`;
+  const cspContent = `default-src 'self' 'unsafe-inline' http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ${additionalSources} filesystem data:`;
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        "Content-Security-Policy": [cspContent],
+      },
+    });
+  });
 
   let mainWindow = createWindow();
 

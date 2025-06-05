@@ -13,6 +13,8 @@ export const readDangerousConfigRenderer = async () => {
   for (const key in newConfig) {
     dangerousConfig[key as keyof DangerousConfig] = newConfig[key];
   }
+
+  return dangerousConfig;
 };
 
 export default dangerousConfig;

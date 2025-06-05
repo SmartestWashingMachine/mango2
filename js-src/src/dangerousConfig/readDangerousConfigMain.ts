@@ -9,6 +9,8 @@ export const readDangerousConfigMain = async () => {
   for (const key in newConfig) {
     dangerousConfig[key] = newConfig[key];
   }
+
+  return dangerousConfig;
 };
 
 export default dangerousConfig;
