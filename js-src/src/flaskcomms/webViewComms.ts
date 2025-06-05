@@ -1,4 +1,5 @@
 import { makeSocket } from "./makeSocket";
+import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
 
 /**
  * This function is called when translating a web page.
@@ -8,7 +9,7 @@ export const translateWeb = async (
   content_filter: string,
   do_preview: boolean
 ) => {
-  const apiUrl = "http://localhost:5000/processweb";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processweb`;
 
   const output = fetch(apiUrl, {
     method: "POST",

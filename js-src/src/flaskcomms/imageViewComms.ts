@@ -1,4 +1,5 @@
 import { makeSocket } from "./makeSocket";
+import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
 
 export const translateImages = async (
   files: any,
@@ -6,7 +7,7 @@ export const translateImages = async (
   taskId: string,
   processFilesByModifiedDate: boolean
 ) => {
-  const apiUrl = "http://localhost:5000/processtask1";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask1`;
 
   const formData = new FormData() as any;
 
@@ -94,7 +95,7 @@ export const pollTranslateImagesStatus = (
   });
 
 export const switchCleaningApp = async (mode: string) => {
-  const apiUrl = "http://localhost:5000/changecleaning";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/changecleaning`;
 
   const output = await fetch(apiUrl, {
     method: "POST",
@@ -108,7 +109,7 @@ export const switchCleaningApp = async (mode: string) => {
 };
 
 export const switchRedrawingApp = async (mode: string) => {
-  const apiUrl = "http://localhost:5000/changeredrawing";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/changeredrawing`;
 
   const output = await fetch(apiUrl, {
     method: "POST",
@@ -122,7 +123,7 @@ export const switchRedrawingApp = async (mode: string) => {
 };
 
 export const switchTileSize = async (tileWidth: number, tileHeight: number) => {
-  const apiUrl = "http://localhost:5000/changetilesize";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/changetilesize`;
 
   const output = await fetch(apiUrl, {
     method: "POST",

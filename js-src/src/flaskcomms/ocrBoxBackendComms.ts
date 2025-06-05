@@ -1,5 +1,6 @@
 import nodeFetch, { FormData } from "node-fetch";
 import { Blob } from "buffer";
+import dangerousConfig from "../dangerousConfig/readDangerousConfigMain";
 
 /**
  * This function is called when translating by simply pressing the scanning key. CALLED FROM ELECTRON CURRENTLY.
@@ -12,7 +13,7 @@ export const translateImageGiveText = async (
   streamOutput: boolean | null,
   translateLinesIndividually: number = 0
 ) => {
-  const apiUrl = "http://localhost:5000/processtask3";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask3`;
 
   const formData = new FormData();
   for (const f of files) {
@@ -55,7 +56,7 @@ export const translateImageGiveTextFaster = async (
   streamOutput: boolean | null,
   translateLinesIndividually: number = 0
 ) => {
-  const apiUrl = "http://localhost:5000/processtask3new";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask3new`;
 
   const formData = new FormData();
   for (const f of coords) {
@@ -99,7 +100,7 @@ export const translateTextGiveText = async (
   tgtContextMemory: string | null,
   useStream: boolean | null
 ) => {
-  const apiUrl = "http://localhost:5000/processtask2";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask2`;
 
   const formData = { text, boxId, useStream } as any;
 
@@ -130,7 +131,7 @@ export const refineTranslation = async (
   boxId: string,
   useStream: boolean | null
 ) => {
-  const apiUrl = "http://localhost:5000/processtask6";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask6`;
 
   const formData = { sourceText, targetText, boxId, useStream } as any;
 
@@ -156,7 +157,7 @@ export const scanImageGiveText = async (
   textDetect: boolean,
   tgtContextMemory: string | null
 ) => {
-  const apiUrl = "http://localhost:5000/processtask4";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask4`;
 
   const formData = new FormData();
   for (const f of files) {
@@ -182,7 +183,7 @@ export const scanImageGiveText = async (
 };
 
 export const triggerEnterNodeFetch = async () => {
-  const apiUrl = "http://localhost:5000/triggerenter";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/triggerenter`;
 
   await nodeFetch(apiUrl, {
     method: "GET",
@@ -195,7 +196,7 @@ export const triggerEnterNodeFetch = async () => {
 
 // All params here should be snake cased not camelCase.
 export const rememberBoxActivationData = async (boxData: any) => {
-  const apiUrl = "http://localhost:5000/task3rememberbox";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/task3rememberbox`;
 
   await nodeFetch(apiUrl, {
     method: "POST",
@@ -216,7 +217,7 @@ export const rememberBoxActivationData = async (boxData: any) => {
 };
 
 export const forgetBoxActivationData = async (boxId: any, thisBoxId: any) => {
-  const apiUrl = "http://localhost:5000/task3forgetbox";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/task3forgetbox`;
 
   await nodeFetch(apiUrl, {
     method: "POST",

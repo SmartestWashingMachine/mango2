@@ -9,6 +9,7 @@ import App from "./App";
 import BoxApp from "./views/OcrBoxView/BoxApp";
 import { MainGateway } from "./utils/mainGateway";
 import HelpView from "./views/HelpView/HelpView";
+import { readDangerousConfigRenderer } from "./dangerousConfig/readDangerousConfigRenderer";
 
 const container = document.getElementById("react-app");
 const root = createRoot(container!);
@@ -63,5 +64,7 @@ const loadFonts = async () => {
   styles.setAttribute("type", "text/css");
   styles.innerHTML = markup;
 };
+
+readDangerousConfigRenderer();
 
 loadFonts();

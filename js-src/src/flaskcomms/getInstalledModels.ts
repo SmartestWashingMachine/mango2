@@ -1,5 +1,7 @@
+import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
+
 export const getInstalledModels = async () => {
-  const apiUrl = "http://localhost:5000/allowedmodels";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/allowedmodels`;
 
   try {
     const output = await fetch(apiUrl, {

@@ -1,5 +1,7 @@
+import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
+
 export const setSeed = async (seed: number) => {
-  const apiUrl = "http://localhost:5000/setseed";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/setseed`;
 
   const output = await fetch(apiUrl, {
     method: "POST",
@@ -13,7 +15,7 @@ export const setSeed = async (seed: number) => {
 };
 
 export const triggerCircuitBreak = async () => {
-  const apiUrl = "http://localhost:5000/circuitbreak";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/circuitbreak`;
 
   const output = await fetch(apiUrl, {
     method: "POST",

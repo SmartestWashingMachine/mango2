@@ -1,5 +1,6 @@
 import nodeFetch from "node-fetch";
 import { IStoreClientToServer } from "../types/ElectronStore";
+import dangerousConfig from "../dangerousConfig/readDangerousConfigMain";
 
 const timeout = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -7,9 +8,10 @@ const timeout = (ms: number) => {
 
 /**
  * Called once when the app initially loads. Since all settings are saved on the electron client, every app load we update it on the server.
+ * CALLED BY ELECTRON MAIN PROCESS.
  */
 export const initializeModelNames = async (data: IStoreClientToServer) => {
-  const apiUrl = "http://localhost:5000/switchmodels";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/switchmodels`;
 
   const formData = JSON.stringify({
     ...data,

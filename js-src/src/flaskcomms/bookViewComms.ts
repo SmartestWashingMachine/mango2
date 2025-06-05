@@ -1,10 +1,11 @@
+import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
 import { makeSocket } from "./makeSocket";
 
 export const translateBook = async (
   file: any,
   tgtContextMemory: string | null
 ) => {
-  const apiUrl = "http://localhost:5000/processbookb64";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processbookb64`;
 
   const formData = new FormData() as any;
   formData.append("file", file);

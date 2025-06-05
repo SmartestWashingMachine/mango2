@@ -22,6 +22,7 @@ from eliot.stdlib import EliotHandler
 from gandy.utils.fancy_logger import logger
 import socketio as socketio_pkg
 from time import sleep
+import json
 
 app = Flask(__name__)
 web_app = Flask(__name__, template_folder=os.getcwd() + '/templates', static_folder=os.getcwd() + '/static')
@@ -35,9 +36,13 @@ socketio = socketio_pkg.Client()
 def try_socket_conn():
     while True:
         try:
-            print('Connecting...')
+            with open(os.path.expanduser("~/Documents/Mango/dangerousConfig.json"), 'r') as f:
+                dangerous_config = json.load(f)
+                socketio_address = dangerous_config['remoteAddress']
+
+            print(f'Connecting to {socketio_address}...')
             # By default SocketIO client does not reconnect on the initial connection attempt...
-            socketio.connect('ws://127.0.0.1:5100', transports=['websocket'])
+            socketio.connect(f'ws://{socketio_address}:5100', transports=['websocket'])
             break
         except Exception as e:
             print(e)

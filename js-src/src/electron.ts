@@ -19,8 +19,10 @@ import { OPTIONS_PRESETS } from "./utils/boxPresets";
 import http from "http";
 import { Server } from "socket.io";
 import isDev from "./electronDevMode";
+import { readDangerousConfigMain } from "./dangerousConfig/readDangerousConfigMain";
+import dangerousConfigActions from "./electron/actions/dangerousConfigActions";
 
-Menu.setApplicationMenu(null);
+if (!isDev) Menu.setApplicationMenu(null);
 
 app.commandLine.appendSwitch("disable-renderer-backgrounding");
 app.commandLine.appendSwitch("disable-background-timer-throttling");
@@ -92,6 +94,10 @@ const subprocess = isDev ? null : loadPython(openShellArg);
 app.whenReady().then(async () => {
   await createEssentialFolders();
 
+  // Must be called before API calls on the main process.
+  // (renderer process API calls have a similar function in react.tsx)
+  await readDangerousConfigMain();
+
   let mainWindow = createWindow();
 
   app.on("activate", () => {
@@ -122,6 +128,7 @@ app.whenReady().then(async () => {
     ...ocrBoxActions,
     ...textHistoryActions,
     ...windowActions,
+    ...dangerousConfigActions,
   ];
   createGatewayActions(electronState, mainWindow, store, ALL_ACTIONS);
 

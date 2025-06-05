@@ -1,8 +1,10 @@
+import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
+
 /**
  * This function is called when previewing the captured window from the global options view.
  */
 export const previewCaptureWindow = async (coords?: number[]) => {
-  const apiUrl = "http://localhost:5000/previewwindowcapture";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/previewwindowcapture`;
 
   const formData = new FormData();
   if (coords) {

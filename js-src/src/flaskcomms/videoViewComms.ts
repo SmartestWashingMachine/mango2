@@ -1,9 +1,10 @@
 import { makeSocket } from "./makeSocket";
+import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
 
 export const translateVideo = async (
   file: any // path string
 ) => {
-  const apiUrl = "http://localhost:5000/processtask5";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask5`;
 
   const formData = new FormData() as any;
   formData.append("videoFilePath", file);

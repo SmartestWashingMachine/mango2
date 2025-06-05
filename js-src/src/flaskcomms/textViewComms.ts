@@ -1,4 +1,5 @@
 import { makeSocket } from "./makeSocket";
+import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
 
 const buildConstraints = (constraints: string) => {
   // Each word becomes a separate constraint. Words in double quotes are treated as a phrase (single constraint).
@@ -30,7 +31,7 @@ export const translateText = async (
   constraints: string | null,
   tgtContextMemory: string | null
 ) => {
-  const apiUrl = "http://localhost:5000/processtask2";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask2`;
 
   const body: any = { text };
 

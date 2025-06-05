@@ -39,6 +39,12 @@ export const BACKEND_PATH = path.join(
   "run_server.exe"
 ); // "resources/backend/run_server.exe";
 
+export const APP_DANGEROUS_CONFIG_FILE = path.join(
+  app.getPath("documents"),
+  "./Mango",
+  "./dangerousConfig.json"
+);
+
 export const DOWNLOADS_PATH = app.getPath("downloads");
 
 export const DISABLED_KEY_VALUE = "Escape"; // In ocrBox and BoxApp.

@@ -1,4 +1,5 @@
 import { makeSocket } from "./makeSocket";
+import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
 
 export const listenTask3Updates = (
   boxId: string,
@@ -76,7 +77,7 @@ export const listenTask3Updates = (
 };
 
 export const triggerEnter = async () => {
-  const apiUrl = "http://localhost:5000/triggerenter";
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/triggerenter`;
 
   await fetch(apiUrl, {
     method: "GET",

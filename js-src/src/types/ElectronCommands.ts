@@ -37,6 +37,7 @@ enum ElectronCommands {
   READ_CLIPBOARD = "read-clipboard",
   REGENERATE_BOX_MANAGERS = "regenerate-box-managers",
   SCAN_OCR_BOX = "scan-ocr-box",
+  READ_DANGEROUS_CONFIG = "read-dangerous-config",
 }
 
 export default ElectronCommands;
