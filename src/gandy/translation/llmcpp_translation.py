@@ -3,8 +3,11 @@ from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
 from gandy.utils.faiss_mt_cache import FAISSStore
 from typing import List
-import torch
 
+try:
+    import torch
+except:
+    pass
 
 # Some caveats:
 # Does not support batch translations. Translations are always done sequentially. (moderate priority)
@@ -141,6 +144,7 @@ class LlmCppTranslationApp(BaseTranslation):
 
         with logger.begin_event("Feeding to LLM") as ctx:
             messages = [{ "role": "user", "content": prompt, }]
+
             model_output = self.llm.create_chat_completion(
                 messages=messages,
                 stream=use_stream is not None,

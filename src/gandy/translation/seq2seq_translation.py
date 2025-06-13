@@ -3,8 +3,12 @@ from gandy.utils.fancy_logger import logger
 from optimum.onnxruntime import ORTModelForSeq2SeqLM
 from gandy.state.config_state import config_state
 from onnxruntime import SessionOptions, ExecutionMode, GraphOptimizationLevel
-import torch
-import ctranslate2
+
+try:
+    import torch
+    import ctranslate2
+except:
+    pass
 
 class BreakableORTModelForSeq2SeqLM(ORTModelForSeq2SeqLM):
     def forward(self, *args, **kwargs):
