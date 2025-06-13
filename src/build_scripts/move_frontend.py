@@ -4,7 +4,10 @@ if __name__ == '__main__':
 
     shutil.move('.\\dist\\backend', '.\\..\js-src\\dist\\win-unpacked\\resources\\backend')
 
-    shutil.copytree('.\\..\js-src\\resources\\fonts', '.\\..\js-src\\dist\\win-unpacked\\resources\\fonts')
+    try:
+        shutil.copytree('.\\..\js-src\\resources\\fonts', '.\\..\js-src\\dist\\win-unpacked\\resources\\fonts')
+    except:
+        pass
 
     try:
         shutil.copytree('.\\..\src\\templates', '.\\..\js-src\\dist\\win-unpacked\\templates')
