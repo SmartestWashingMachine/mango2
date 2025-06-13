@@ -1,6 +1,15 @@
 from gandy.onnx_models.base_onnx_model import BaseONNXModel
-import torchvision.transforms as T
-import torch
+
+try:
+    import torchvision.transforms as T
+except:
+    pass
+
+try:
+    import torch
+except:
+    pass
+
 from PIL import Image
 import numpy as np
 

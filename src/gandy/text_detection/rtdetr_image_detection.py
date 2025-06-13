@@ -1,8 +1,12 @@
 from gandy.text_detection.yolo_image_detection import YOLOTDImageDetectionApp
 import numpy as np
-import torch
 from gandy.text_detection.line_mixin import LineMixin, ExpandedLineMixin
 from gandy.state.config_state import config_state
+
+try:
+    import torch
+except:
+    pass
 
 # From ultralytics
 def xywh2xyxy(x):

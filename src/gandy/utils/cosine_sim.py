@@ -1,4 +1,7 @@
-import torch
+try:
+    import torch
+except:
+    pass
 
 ### Utils from: https://github.com/UKPLab/sentence-transformers/blob/master/sentence_transformers/util.py
 

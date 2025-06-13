@@ -1,6 +1,5 @@
 from gandy.text_detection.yolo_image_detection import YOLOTDImageDetectionApp
 import numpy as np
-import torch
 from gandy.state.config_state import config_state
 from gandy.utils.fancy_logger import logger
 from gandy.onnx_models.dfine import DFineONNX

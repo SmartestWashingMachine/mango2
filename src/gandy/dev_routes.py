@@ -2,7 +2,12 @@ from flask import request
 from gandy.app import app
 import numpy as np
 import random
-import torch
+
+try:
+    import torch
+except:
+    pass
+
 from gandy.state.config_state import config_state
 from gandy.utils.fancy_logger import logger
 import time

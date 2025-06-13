@@ -5,7 +5,11 @@ from gandy.state.config_state import config_state
 from gandy.utils.fancy_logger import logger
 from gandy.translation.seq2seq_translation import BreakableORTModelForSeq2SeqLM
 from onnxruntime import SessionOptions, ExecutionMode, GraphOptimizationLevel
-import torch
+
+try:
+    import torch
+except:
+    pass
 
 # A lot of the code here is borrowed from Seq2SeqTranslationApp.
 
