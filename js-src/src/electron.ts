@@ -98,7 +98,7 @@ app.whenReady().then(async () => {
   // (renderer process API calls have a similar function in react.tsx)
   const { remoteAddress } = await readDangerousConfigMain();
 
-  const additionalSources = `http://${remoteAddress}:5000 ws://${remoteAddress}:5100`;
+  const additionalSources = `http://${remoteAddress}:5000 ws://${remoteAddress}:5100 ws://${remoteAddress}:*`;
   const cspContent = `default-src 'self' 'unsafe-inline' http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ${additionalSources} filesystem data:`;
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
@@ -145,13 +145,13 @@ app.whenReady().then(async () => {
 
   const server = http.createServer();
 
-  // TODO: Do I need expressJS? I hope not.
-
   const io = new Server(server, {
     pingTimeout: 100000,
     maxHttpBufferSize: 1e10,
   });
   io.on("connection", (socket) => {
+    console.log("Socket connected.");
+
     // Act as a bridge. Cybersecurity says what?
     socket.onAny((evName, ...args) => {
       // console.log(`Emitting ${evName}`);
@@ -168,7 +168,7 @@ app.whenReady().then(async () => {
     });
   });
 
-  server.listen(5100, () => {
+  server.listen(5100, "0.0.0.0", () => {
     console.log("Experimental WS server listening on port 5100.");
   });
 
