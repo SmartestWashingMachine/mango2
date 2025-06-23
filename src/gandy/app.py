@@ -23,6 +23,9 @@ from gandy.utils.fancy_logger import logger
 import socketio as socketio_pkg
 from time import sleep
 import json
+from gandy.utils.reroute_remote_backend import RemoteRouter
+
+remote_router = RemoteRouter()
 
 app = Flask(__name__)
 web_app = Flask(__name__, template_folder=os.getcwd() + '/templates', static_folder=os.getcwd() + '/static')
@@ -36,13 +39,9 @@ socketio = socketio_pkg.Client()
 def try_socket_conn():
     while True:
         try:
-            with open(os.path.expanduser("~/Documents/Mango/dangerousConfig.json"), 'r') as f:
-                dangerous_config = json.load(f)
-                socketio_address = dangerous_config['remoteAddress']
-
-            print(f'Connecting to {socketio_address}...')
+            print(f'Connecting to {remote_router.socketio_address}...')
             # By default SocketIO client does not reconnect on the initial connection attempt...
-            socketio.connect(f'ws://{socketio_address}:5100', transports=['websocket'])
+            socketio.connect(f'ws://{remote_router.socketio_address}:5100', transports=['websocket'])
             break
         except Exception as e:
             print(e)
@@ -66,7 +65,7 @@ socketio.patched_emit = socketio.emit
 socketio.sleep = lambda *args, **kwargs: None
 socketio.start_background_task = lambda fn, *args: fn(*args)
 
-if ENABLE_WEB_UI:
+if ENABLE_WEB_UI or remote_router.is_remote():
 
     @app.before_request
     def before_request():
@@ -79,7 +78,7 @@ if ENABLE_WEB_UI:
 def run_server():
     if ENABLE_WEB_UI:
         logic_thread = threading.Thread(target=lambda: serve(app, host='0.0.0.0', port=5000, threads=1))
-        web_thread = threading.Thread(target=lambda: serve(web_app, host='0.0.0.0', port=5100))
+        web_thread = threading.Thread(target=lambda: serve(web_app, host='0.0.0.0', port=5200))
 
         logic_thread.start()
         web_thread.start()

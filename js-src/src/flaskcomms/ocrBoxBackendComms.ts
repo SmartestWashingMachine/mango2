@@ -196,7 +196,8 @@ export const triggerEnterNodeFetch = async () => {
 
 // All params here should be snake cased not camelCase.
 export const rememberBoxActivationData = async (boxData: any) => {
-  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/task3rememberbox`;
+  // This always goes to local host first - the backend there will then push it to the remote backend.
+  const apiUrl = `http://localhost:5000/task3rememberbox`;
 
   await nodeFetch(apiUrl, {
     method: "POST",
@@ -217,7 +218,8 @@ export const rememberBoxActivationData = async (boxData: any) => {
 };
 
 export const forgetBoxActivationData = async (boxId: any, thisBoxId: any) => {
-  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/task3forgetbox`;
+  // This always goes to local host first - the backend there will then push it to the remote backend.
+  const apiUrl = `http://localhost:5000/task3forgetbox`;
 
   await nodeFetch(apiUrl, {
     method: "POST",

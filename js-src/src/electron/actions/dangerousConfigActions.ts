@@ -28,6 +28,9 @@ const readDangerousConfigAction: GatewayAction = {
   fn: async (e, w, s, store) => {
     const data = await readDangerousConfig();
 
+    console.log("Dangerous config data read. Address:");
+    console.log(data.remoteAddress);
+
     return data;
   },
 };

@@ -1,7 +1,7 @@
 from flask import request
 from PIL import Image
 from gandy.utils.fancy_logger import logger
-from gandy.app import app, translate_pipeline, socketio
+from gandy.app import app, translate_pipeline, socketio, remote_router
 from gandy.state.debug_state import debug_state
 from gandy.state.config_state import config_state
 from gandy.utils.get_sep_regex import get_last_sentence
@@ -109,6 +109,39 @@ def translate_task3_background_job(
 
             socketio.patched_emit("done_translating_task3", {})
 
+@app.route('/remote/translate_task3_background_job', methods=['POST'])
+def translate_task3_background_job_remotely():
+    if not request.is_json:
+        return {"error": "Request must be JSON"}, 400
+
+    data = request.get_json()
+
+    # Extract parameters from the JSON payload with default values
+    images = data.get('images')
+    if images is None:
+        return {"error": "Missing 'images' in JSON payload"}, 400
+
+    # Convert images from b64 to PIL
+    pil_images = remote_router.base64_to_pil(images)
+
+    box_id = data.get('box_id')
+    with_text_detect = data.get('with_text_detect', True)
+    use_stream = data.get('use_stream')
+    translate_lines_individually = data.get('translate_lines_individually', 0)
+
+    if use_stream == True:
+        use_stream = SocketStreamer(box_id=box_id)
+
+    translate_task3_background_job(
+        images=pil_images,
+        box_id=box_id,
+        with_text_detect=with_text_detect,
+        use_stream=use_stream,
+        already_loaded=True, # RemoteRouter loads images via base64_to_pil
+        translate_lines_individually=translate_lines_individually
+    )
+
+    return {}, 200
 
 @app.route("/processtask3", methods=["POST"])
 def process_task3_route():
@@ -145,9 +178,6 @@ def process_task3_route():
     return {"processing": True}, 202
 
 def process_task3_faster(data):
-    if data['use_stream']:
-        use_stream = SocketStreamer(box_id=data['box_id'])
-
     coords = [int(x[0]) for x in [data['x1'], data['y1'], data['width'], data['height']]]
 
     images = []
@@ -168,15 +198,31 @@ def process_task3_faster(data):
             img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
             images = [img]
 
-    socketio.start_background_task(
-        translate_task3_background_job,
-        images,
-        data['box_id'],
-        data['with_text_detect'],
-        use_stream,
-        True,
-        data['translate_lines_individually']
-    )
+    # Used by remember box activations (server_side_box_key_capture) & process_task3new_route.
+    if remote_router.is_remote():
+        data_to_send = {
+            'images': remote_router.pil_to_base64(images),
+            'box_id': data['box_id'],
+            'with_text_detect': data['with_text_detect'],
+            'use_stream': bool(data['use_stream']), # Can't send use_stream object here as it's over the network. So we set it to "True" and recreate it in the background job function.
+            'already_loaded': False, # Doesn't matter. Remote route always loads it anyways.
+            'translate_lines_individually': data['translate_lines_individually'],
+        }
+
+        remote_router.post('/remote/translate_task3_background_job', data=data_to_send)
+    else:
+        if data['use_stream']:
+            use_stream = SocketStreamer(box_id=data['box_id'])
+
+        socketio.start_background_task(
+            translate_task3_background_job,
+            images,
+            data['box_id'],
+            data['with_text_detect'],
+            use_stream,
+            True,
+            data['translate_lines_individually']
+        )
 
 @app.route("/processtask3new", methods=["POST"])
 def process_task3new_route():
@@ -229,7 +275,6 @@ def preview_window_capture():
 
     # Capturing the window alone uses low-level Windows API stuff. Prone to breaking.
     if len(config_state.capture_window) > 0:
-
         images = [capture_window_image_from_box(config_state.capture_window, xyxy)]
     else:
         images = []
