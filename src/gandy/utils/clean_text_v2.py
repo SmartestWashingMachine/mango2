@@ -84,7 +84,8 @@ def clean_text_v2(s: str, with_normalize=True):
     new_sentence = unicodedata.normalize("NFKC", new_sentence)
 
     # This section handles errors possibly generated during the OCR process.
-    new_sentence = dedupe_punct(new_sentence)
+    ### new_sentence = dedupe_punct(new_sentence)
+
     # Rare but possible with the Magnus OCR variants:
     new_sentence = new_sentence.replace("◎", "◯")
 

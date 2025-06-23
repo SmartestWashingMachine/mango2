@@ -83,6 +83,7 @@ from gandy.utils.set_tokenizer_langs import (
 from gandy.translation.llmcpp_translation import LlmCppTranslationApp
 from gandy.utils.set_tokenizer_langs import prepend_gem_ja, prepend_gem_ko, prepend_gem_zh
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
+from gandy.utils.robust_text_line_resize import robust_transform
 
 yolo_xl = YOLOTDImageDetectionApp(
     model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
@@ -227,26 +228,29 @@ TEXT_RECOGNITION_APP = SwitchApp(
             join_lines_with=" ",
             gen_kwargs={
                 "num_beams": 5,
-                "no_repeat_ngram_size": 7,
+                "no_repeat_ngram_size": 20,
             },
+            transform=robust_transform, # Intended for use with a line detection model.
         ),
-        MagnusTextRecognitionApp(
+        TrOCRTextRecognitionApp(
             model_sub_path="_zhmassive/",
             do_resize=False,
             gen_kwargs={
                 "num_beams": 5,
-                "no_repeat_ngram_size": 7,
+                "no_repeat_ngram_size": 20,
             },
-            extra_postprocess=j_ocr_postprocess
+            extra_postprocess=j_ocr_postprocess,
+            transform=robust_transform,
         ),
-        MagnusTextRecognitionApp(
+        TrOCRTextRecognitionApp(
             model_sub_path="_jmassive/",
             do_resize=False,
             gen_kwargs={
-                "num_beams": 5,
-                "no_repeat_ngram_size": 7,
+                "num_beams": 3, # Could also be 3.
+                "no_repeat_ngram_size": 99,
             },
             extra_postprocess=j_ocr_postprocess,
+            transform=robust_transform, # Intended for use with a line detection model.
         ),
         MagnusTextRecognitionApp(
             model_sub_path="_jmagnus/",
@@ -288,11 +292,29 @@ TRANSLATION_APP = SwitchApp(
             prepend_fn=prepend_gem_zh,
             lang="Chinese",
         ),
+        LlmCppTranslationApp(
+            model_sub_path="gem/gemgoliath",
+            prepend_fn=lambda s: s,
+            lang="Japanese",
+        ),
+        LlmCppTranslationApp(
+            model_sub_path="gem/gemgoliath_ko",
+            prepend_fn=lambda s: s,
+            lang="Korean",
+        ),
+        LlmCppTranslationApp(
+            model_sub_path="gem/gemgoliath_zh",
+            prepend_fn=lambda s: s,
+            lang="Chinese",
+        ),
     ],
     app_names=[
         "llm_jgem",
         "llm_kgem",
         "llm_zhgem",
+        "llm_jgem_goliath",
+        "llm_kgem_goliath",
+        "llm_zhgem_goliath",
     ],
 )
 

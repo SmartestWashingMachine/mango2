@@ -29,6 +29,31 @@ export const TRANSLATION_OPTIONS = [
     `,
   },
   {
+    // Unlike the normal J-GEM, this one had a second reward model to replicate translations of similar quality to top-performing online systems.
+    // Experimented with a few other variants. Here's some of them and why I didn't go further with them:
+    // ALMA-7B-R: Old llama model, so tokenization should be inefficient. Also doesn't support context prompting off the bat. It also doesn't work well for more "risque" translations due to its dataset (mainly WMT).
+    // Shisa V2 Qwen2.5 7B: Almost always seemed to produce additional headers, thoughts, or translation notes, which meant that I needed to SFT tune it first to align the structure. The baseline translations were also not as good as ALMA-7B-R. However, it could generate more "risque" translations. It seems to be more focused on generating fluent Japanese outputs rather than English outputs. I also don't like Qwen2.5 as a baseline. In addition, context prompting off the bat was flaky.
+    name: "Japanese-2-English Goliath",
+    value: "llm_jgem_goliath",
+    desc: `
+    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
+    `,
+  },
+  {
+    name: "Korean-2-English Goliath",
+    value: "llm_kgem_goliath",
+    desc: `
+    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
+    `,
+  },
+  {
+    name: "Chinese-2-English Goliath",
+    value: "llm_zhgem_goliath",
+    desc: `
+    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
+    `,
+  },
+  {
     // NOTE: nllb_jq is biased towards shorter texts.
     name: "(Legacy) Japanese-2-English Qualia",
     value: "nllb_jq",

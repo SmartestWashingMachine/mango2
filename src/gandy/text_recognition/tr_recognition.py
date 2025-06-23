@@ -6,6 +6,7 @@ import albumentations as A
 import numpy as np
 from transformers import ViTFeatureExtractor, AutoTokenizer
 from optimum.onnxruntime import ORTModelForVision2Seq
+from onnxruntime import SessionOptions, GraphOptimizationLevel, ExecutionMode
 from gandy.state.config_state import config_state
 from gandy.state.debug_state import debug_state
 from gandy.utils.fancy_logger import logger
@@ -13,6 +14,11 @@ from uuid import uuid4
 import os
 import cv2
 import regex as re
+
+try:
+    import torch
+except:
+    pass
 
 
 class TrOCRTextRecognitionApp(BaseTextRecognition):
@@ -24,14 +30,15 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         do_resize=True,
         do_stretch=False,
         extra_postprocess=None,
-        join_lines_with=""
+        join_lines_with="",
+        transform=None,
     ):
         super().__init__()
 
         self.do_resize = do_resize
 
         if self.do_resize:
-            self.transform = A.Compose(
+            self.transform = transform or A.Compose(
                 [
                     A.ToGray(always_apply=True),
                 ]
@@ -40,14 +47,14 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
             assert not do_stretch, 'Stretch is only for non resizing non-Magnus models.'
         else:
             if do_stretch:
-                self.transform = A.Compose(
+                self.transform = transform or A.Compose(
                     [
                         A.Resize(448, 448, interpolation=cv2.INTER_CUBIC),
                         A.ToGray(always_apply=True),
                     ]
                 )
             else:
-                self.transform = A.Compose(
+                self.transform = transform or A.Compose(
                     [
                         # In theory Massive OCR should be able to extrapolate rather well. Perhaps LongestMaxSize is unnecessary?
                         A.LongestMaxSize(512, always_apply=True),
@@ -84,16 +91,13 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         return super().can_load(f"models/minocr{s}/model")
 
     def load_model(self):
-        s = self.model_sub_path
-
         logger.info("Loading object recognition model...")
 
         can_cuda = config_state.use_cuda and not config_state.force_ocr_cpu
-        provider = "CUDAExecutionProvider" if can_cuda else "CPUExecutionProvider"
-        self.model = ORTModelForVision2Seq.from_pretrained(
-            f"models/minocr{s}/model", provider=provider, use_io_binding=can_cuda
-        )
 
+        self.load_generation_model(can_cuda=can_cuda)
+
+        s = self.model_sub_path
         self.load_dataloader(
             f"models/minocr{s}/tokenizer", f"models/minocr{s}/feature_extractor"
         )
@@ -101,6 +105,27 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         logger.info("Done loading object recognition model!")
 
         return super().load_model()
+    
+    def load_generation_model(self, can_cuda: bool):
+        s = self.model_sub_path
+
+        provider = "CUDAExecutionProvider" if can_cuda else "CPUExecutionProvider"
+
+        options = SessionOptions()
+        options.intra_op_num_threads = 4
+        options.inter_op_num_threads = 4
+        options.execution_mode = ExecutionMode.ORT_SEQUENTIAL
+
+        options.graph_optimization_level = GraphOptimizationLevel.ORT_ENABLE_ALL
+
+        options.enable_mem_pattern = False
+        options.enable_profiling = False
+        options.enable_cpu_mem_arena = False
+        options.enable_mem_reuse = False
+
+        self.model = ORTModelForVision2Seq.from_pretrained(
+            f"models/minocr{s}/model", provider=provider, use_io_binding=can_cuda, session_options=options, use_cache=True,
+        )
 
     def unload_model(self):
         try:
@@ -162,9 +187,15 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
             return decoded
 
     def do_generate(self, image, batched = False):
-        x = self.preprocess(image)
-        generated = self.model.generate(x, **self.gen_kwargs)
-        return self.postprocess(generated, batched=batched)
+        with logger.begin_event('Generating OCR results', batched=batched):
+            with logger.begin_event('Preprocessing for OCR'):
+                x = self.preprocess(image)
+            with logger.begin_event('Generating'):
+                generated = self.model.generate(x, num_beams=3, no_repeat_ngram_size=99)
+            with logger.begin_event('Postprocessing'):
+                postprocessed = self.postprocess(generated, batched=batched)
+
+            return postprocessed
     
     def transform_image(self, image):
         augmented = self.transform(image=image)
@@ -186,15 +217,18 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         outputs = self.do_generate(cropped_images, batched=True)
         return outputs # list of strings.
     
+    def save_debug(self, cropped: np.ndarray, msg: str, text: str):
+        debug_id = uuid4().hex
+
+        if cropped is not None:
+            os.makedirs('./debugdumps/textregions_JAv3', exist_ok=True)
+            Image.fromarray(cropped).save(f'./debugdumps/textregions_JAv3/{debug_id}.png')
+
+        logger.debug_message(msg, text=text, img_id=debug_id, category='text_region_dump')
+    
     def log_text(self, cropped: np.ndarray, msg: str, text: str):
-        if debug_state.debug:
-            debug_id = uuid4().hex
-
-            if cropped is not None:
-                os.makedirs('./debugdumps/textregions', exist_ok=True)
-                Image.fromarray(cropped).save(f'./debugdumps/textregions/{debug_id}.png')
-
-            logger.debug_message(msg, text=text, img_id=debug_id, category='text_region_dump')
+        if debug_state.debug and False:
+            self.save_debug(cropped=cropped, msg=msg, text=text)
         else:
             logger.log_message(msg, text=text)
 
@@ -221,49 +255,60 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                     forced_image if forced_image is not None else image.crop(bbox)
                 )
 
-                line_bboxes = text_line_app.get_images(text_region_image, return_image_if_fails=text_line_app_scan_image_if_fails)
+                with logger.begin_event('Detecting lines'):
+                    line_bboxes = text_line_app.get_images(text_region_image, return_image_if_fails=text_line_app_scan_image_if_fails)
 
-                if config_state.batch_ocr:
-                    # Batch in up to 4s (per text region).
-                    for batch_lines_idx in range(0, len(line_bboxes), 4):
-                        end_idx = min(len(line_bboxes), (batch_lines_idx + 4))
-                        lines_in_batch = line_bboxes[batch_lines_idx:end_idx]
+                with logger.begin_event('Actually OCR\'ing'):
+                    if config_state.batch_ocr:
+                        # Batch in up to 4s (per text region).
+                        for batch_lines_idx in range(0, len(line_bboxes), 4):
+                            end_idx = min(len(line_bboxes), (batch_lines_idx + 4))
+                            lines_in_batch = line_bboxes[batch_lines_idx:end_idx]
 
-                        crop_batch = []
-                        greatest_width = 1
-                        greatest_height = 1
-                        for bb in lines_in_batch:
+                            crop_batch = []
+                            greatest_width = 1
+                            greatest_height = 1
+                            for bb in lines_in_batch:
+                                cropped_image = text_region_image.crop(
+                                    bb
+                                )  # Further cropped to a text line.
+                                #cropped_image = np.array(cropped_image)
+                                crop_batch.append(cropped_image)
+
+                                greatest_width = max(greatest_width, cropped_image.width)
+                                greatest_height = max(greatest_height, cropped_image.height)
+
+                            # Make all images same size.
+                            for idx in range(len(crop_batch)):
+                                # Slight stretching.
+                                cropped_image: Image.Image = crop_batch[idx]
+                                cropped_image = cropped_image.resize((greatest_width, greatest_height), resample=Image.BICUBIC)
+                                crop_batch[idx] = np.array(cropped_image)
+
+                                if debug_state.debug:
+                                    self.save_debug(crop_batch[idx], msg='Saving partial line image from batch', text='N/A (Batched)')
+
+                            outp = self.process_multiple_images(crop_batch)
+                            ### outp = [""]
+                            logger.log_message(f'Processed image lines in a batch', n_lines=len(crop_batch), outp=outp)
+
+                            line_texts.extend(outp)
+                    else:
+                        for bb in line_bboxes:
                             cropped_image = text_region_image.crop(
                                 bb
                             )  # Further cropped to a text line.
-                            #cropped_image = np.array(cropped_image)
-                            crop_batch.append(cropped_image)
 
-                            greatest_width = max(greatest_width, cropped_image.width)
-                            greatest_height = max(greatest_height, cropped_image.height)
+                            ### print('cropping')
+                            ### from random import randint
+                            ### cropped_image.save(f'./test_{randint(0, 100000)}.png')
+                            cropped_image = np.array(cropped_image)
 
-                        # Make all images same size.
-                        for idx in range(len(crop_batch)):
-                            # Slight stretching.
-                            cropped_image: Image.Image = crop_batch[idx]
-                            cropped_image = cropped_image.resize((greatest_width, greatest_height), resample=Image.BICUBIC)
-                            crop_batch[idx] = np.array(cropped_image)
+                            outp = self.process_one_image(cropped_image)
+                            ### outp = ""
+                            self.log_text(cropped_image, f"Found partial text.", text=outp)
 
-                        outp = self.process_multiple_images(crop_batch)
-                        logger.log_message(f'Processed image lines in a batch', n_lines=len(crop_batch), outp=outp)
-
-                        line_texts.extend(outp)
-                else:
-                    for bb in line_bboxes:
-                        cropped_image = text_region_image.crop(
-                            bb
-                        )  # Further cropped to a text line.
-                        cropped_image = np.array(cropped_image)
-
-                        outp = self.process_one_image(cropped_image)
-                        self.log_text(cropped_image, f"Found partial text.", text=outp)
-
-                        line_texts.append(outp)
+                            line_texts.append(outp)
 
                 if self.join_lines_with is not None and len(line_texts) > 1:
                     for lt_idx in range(len(line_texts[:-1])):
@@ -274,7 +319,12 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                 cropped_image = (
                     forced_image if forced_image is not None else image.crop(bbox)
                 )
+
                 cropped_image = np.array(cropped_image)
+
+                # DEBUG STUFF
+                if debug_state.debug:#forced_image is None and True:
+                    self.save_debug(cropped_image, msg='Saving partial line image from batch', text='N/A (Batched)')
 
                 text = self.process_one_image(cropped_image)
 
