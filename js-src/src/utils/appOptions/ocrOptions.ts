@@ -5,11 +5,6 @@ export const OCR_OPTIONS = [
     desc: "Incredibly slow but slightly more accurate.",
   },
   {
-    name: "Japanese Magnus",
-    value: "trocr_jmagnus",
-    desc: "Even slower but can be more accurate for longer lines of text... sometimes.",
-  },
-  {
     name: "Korean Massive",
     value: "k_trocr_massive",
     desc: "Slow but sometimes more accurate.",
@@ -38,5 +33,10 @@ export const OCR_OPTIONS = [
     name: "(Legacy) Japanese Comics",
     value: "trocr_jcomics",
     desc: "Slow but mainly tuned for comic panels.",
+  },
+  {
+    name: "(Legacy) Japanese Magnus",
+    value: "trocr_jmagnus",
+    desc: "Even slower but can be more accurate for longer lines of text... sometimes.",
   },
 ];
