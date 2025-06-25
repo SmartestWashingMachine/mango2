@@ -291,16 +291,20 @@ TRANSLATION_APP = SwitchApp(
             model_sub_path="gem/gemgoliath",
             prepend_fn=lambda s: s,
             lang="Japanese",
+            prepend_model_output="\\nHere\\'s a translation:\\n" # Llama CPP seems to already add an extra newline.
         ),
         LlmCppTranslationApp(
             model_sub_path="gem/gemgoliath_ko",
             prepend_fn=lambda s: s,
             lang="Korean",
+            # prepend_model_output="\\nHere\\'s a translation:\\n\\n" # FUDGING LLAMA CPP JINJA REQUIRES ALL THIS SHEEP.
+            prepend_model_output="\\nHere\\'s a translation:\\n" # Llama CPP seems to already add an extra newline.
         ),
         LlmCppTranslationApp(
             model_sub_path="gem/gemgoliath_zh",
             prepend_fn=lambda s: s,
             lang="Chinese",
+            prepend_model_output="\\nHere\\'s a translation:\\n" # Llama CPP seems to already add an extra newline.
         ),
     ],
     app_names=[
@@ -320,6 +324,7 @@ SPELL_CORRECTION_APP = SwitchApp(
             model_sub_path="gem/gemgoliath_remix",
             prepend_fn=lambda s: s,
             lang="N/A", # lang is an unused parameter here TODO cleanup
+            prepend_model_output="\\nHere\\'s the refined translation:\\n" # Llama CPP seems to already add an extra newline.
         ),
     ],
     app_names=[

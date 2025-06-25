@@ -20,6 +20,7 @@ class LlmCppTranslationApp(BaseTranslation):
         model_sub_path="",
         prepend_fn=None,
         lang="",
+        prepend_model_output=None,
     ):
         super().__init__()
 
@@ -28,6 +29,8 @@ class LlmCppTranslationApp(BaseTranslation):
         self.lang = lang
 
         self.mt_cache = None
+
+        self.prepend_model_output = prepend_model_output
 
     def can_load(self):
         return super().can_load(f"models/{self.model_sub_path}" + ".gguf")
@@ -58,6 +61,7 @@ class LlmCppTranslationApp(BaseTranslation):
             use_mlock=True,
             logits_all=False,
             use_mmap=True,
+            prepend_phrase=self.prepend_model_output,
         )
 
         logger.info("Done loading translation model!")
@@ -153,7 +157,7 @@ class LlmCppTranslationApp(BaseTranslation):
             ctx.log('Done creating prompt', prompt=prompt)
 
         with logger.begin_event("Feeding to LLM") as ctx:
-            messages = [{ "role": "user", "content": prompt, }]
+            messages = [{ "role": "user", "content": prompt, }, ]
             prediction = self.call_llm(messages, use_stream)
 
         return [prediction], [inp]
