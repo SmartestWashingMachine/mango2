@@ -24,6 +24,7 @@ from math import floor
 from uuid import uuid4
 import os
 import json
+from gandy.utils.faiss_mt_cache import MTCache
 
 def dump_task1_debug_data(rgb_image: Image, speech_bboxes):
     debug_id = uuid4().hex
@@ -85,6 +86,8 @@ class BasePipeline:
         reranking_app: BaseTranslation,
         text_line_model_app: BaseImageDetection,
     ):
+        self.mt_cache = MTCache()
+
         if text_detection_app is None:
             raise RuntimeError("text_detection_app must be given.")
         else:
@@ -162,34 +165,39 @@ class BasePipeline:
     ):
         target_texts: List[str] = []
 
-        def _spell_correct_and_post_edit_translation(translation_input: str, translation_output: str, progress_idx):
-            # Reranking logic used to be here but is now gone. We implicitly train the LLMs to be reranking-aware (with certain caveats... nothing in life is free. Except free stuff)
+        # TODO(?): Batching translations together.
+        for idx, text in enumerate(source_texts):
+            found_in_cache = False # Don't translate + correct spelling if we already found one (potentially) spelling corrected translation in cache.
+            if config_state.cache_mt:
+                translation_candidates, cache_embedding = self.mt_cache.look_for_translation(text)
 
-            translation_output = self.correct_translation(
-                translation_input=translation_input, translation_output=translation_output, use_stream=use_stream,
-            )  # string
+                if translation_candidates is not None:
+                    found_in_cache = True
+
+            if not found_in_cache:
+                translation_candidates = self.translation_app.begin_process(
+                    text=text,
+                    use_stream=use_stream,
+                )  # string[]
+
+            translation_output = translation_candidates[0] # Only 1 candidate is returned.
+
+            if not found_in_cache:
+                # Reranking logic used to be here but is now gone. We implicitly train the LLMs to be reranking-aware (with certain caveats... nothing in life is free. Except free stuff)
+
+                translation_output = self.correct_translation(
+                    translation_input=text, translation_output=translation_output, use_stream=use_stream,
+                )  # string
 
             target_texts.append(translation_output)
+
+            if config_state.cache_mt and not found_in_cache and len(translation_output) > 0:
+                self.mt_cache.add_translation(cache_embedding, translation_output)
 
             if progress_cb is not None:
                 # Max progress for this part is 80.
                 # Min is 50.
-                progress_cb(compute_progress(cur_step=(progress_idx + 1), max_steps=len(source_texts), min_value=50, max_value=80))
-
-        # TODO(?): Batching translations together.
-        for idx, text in enumerate(source_texts):
-            translation_candidates = self.translation_app.begin_process(
-                text=text,
-                use_stream=use_stream,
-            )  # string[]
-
-            translation_output = translation_candidates[0] # Only 1 candidate is returned.
-
-            _spell_correct_and_post_edit_translation(
-                translation_input=text,
-                translation_output=translation_output,
-                progress_idx=idx,
-            )
+                progress_cb(compute_progress(cur_step=(idx + 1), max_steps=len(source_texts), min_value=50, max_value=80))
 
         return replace_terms_target_side(target_texts, config_state.target_terms)
 

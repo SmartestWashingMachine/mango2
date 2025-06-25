@@ -1,7 +1,6 @@
 from gandy.translation.base_translation import BaseTranslation
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
-from gandy.utils.faiss_mt_cache import FAISSStore
 from typing import List
 
 try:
@@ -113,10 +112,6 @@ class LlmCppTranslationApp(BaseTranslation):
             return inp, []
         
         return cur_text, contexts
-    
-    def load_mt_cache(self):
-        # TODO: Probably don't want to instantiate the MT cache here. Code smell.
-        self.mt_cache = FAISSStore(db_path='models/database/cache', model_name='models/database/nite.gguf')
 
     def call_llm(self, messages, use_stream):
         model_output = self.llm.create_chat_completion(
@@ -152,19 +147,6 @@ class LlmCppTranslationApp(BaseTranslation):
 
             ctx.log('Done splitting', original_input=inp, cur_text=inp, contexts=contexts)
 
-        if config_state.cache_mt:
-            with logger.begin_event('Checking vector cache') as ctx:
-                if self.mt_cache is None:
-                    self.load_mt_cache()
-
-                found_translations, sim, embed_inp = self.mt_cache.retrieve(inp, top_k=1, similarity_threshold=0.975)
-                if len(found_translations) > 0:
-                    ctx.log(f'Translation already found in cache', cosine_sim=sim[0])
-
-                    return [found_translations[0]], [inp]
-                else:
-                    ctx.log('Translation is new!')
-
         with logger.begin_event("Creating prompt from splits") as ctx:
             prompt = self.map_prompt(inp, contexts)
 
@@ -173,10 +155,6 @@ class LlmCppTranslationApp(BaseTranslation):
         with logger.begin_event("Feeding to LLM") as ctx:
             messages = [{ "role": "user", "content": prompt, }]
             prediction = self.call_llm(messages, use_stream)
-
-        if config_state.cache_mt and len(prediction) > 0:
-            with logger.begin_event('Adding to vector cache') as ctx:
-                self.mt_cache.add_translation_from_embed(embed_inp, prediction)
 
         return [prediction], [inp]
 
