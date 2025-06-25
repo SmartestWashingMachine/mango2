@@ -7,55 +7,10 @@ export const SPELLING_CORRECTION_OPTIONS = [
     `,
   },
   {
-    name: "Prepend Source",
-    value: "prepend_source_noctx",
+    name: "Goliath Remix",
+    value: "remix",
     desc: `
-    Adds the scanned source text next to the translated text. This can be helpful for debugging along an AMG redrawing app.
-    `,
-  },
-  {
-    name: "Prepend Source + Context",
-    value: "prepend_source",
-    desc: `
-    Adds the scanned source text and any context next to the translated text. This can be helpful for debugging along an AMG redrawing app.
-    `,
-  },
-  {
-    name: "(Legacy) Emil Japanese",
-    value: "emil_j",
-    desc: `
-    Translations are edited to appear more "natural". Slow.
-    `,
-  },
-  {
-    name: "(Legacy) Fill Pro",
-    value: "fillpro",
-    desc: `
-    Uses a model to try and improve pronouns in translations. Will ALWAYS
-    use target context and can extend beyond 4 sentences.
-    `,
-  },
-  {
-    name: "(Legacy) Langsume",
-    value: "langsume",
-    desc: `
-    Uses a model to predict pronouns for
-    translations. Will ALWAYS use source context and can extend
-    beyond 4 sentences. Only trained on Japanese-to-English data.   
-    `,
-  },
-  {
-    name: "(Legacy) Elevator",
-    value: "elevator",
-    desc: `
-    Refines the translation with an LLM. INCREDIBLY SLOW!
-    `,
-  },
-  {
-    name: "(Legacy) Escalator",
-    value: "escalator",
-    desc: `
-    Refines the translation with the elevator LLM. Can only be activated via the OCR box spelling correction key. Ignored otherwise.
+    An extremely large model for refining translations. Incredibly slow. Will use the GPU with the same settings as the translation model.
     `,
   },
 ];

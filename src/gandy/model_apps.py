@@ -56,12 +56,6 @@ from gandy.text_detection.none_image_detection import NoneImageDetectionApp
 from gandy.text_detection.union_image_detection import UnionImageDetectionApp
 from gandy.text_detection.dfine_image_detection import DFineImageDetectionApp, DFineLineImageDetectionApp
 from gandy.text_recognition.tr_recognition import TrOCRTextRecognitionApp, MagnusTextRecognitionApp
-from gandy.spell_correction.fill_pro_spell_correction import FillProApp
-from gandy.spell_correction.langsume_spell_correction import LangsumeApp
-from gandy.spell_correction.prepend_source_spell_correction import (
-    PrependSourceApp,
-    PrependSourceNoContextApp,
-)
 from gandy.onnx_models.ebr import (
     ListEnergyRerankerONNX,
     DiscriminativeRerankerONNX,
@@ -84,6 +78,7 @@ from gandy.translation.llmcpp_translation import LlmCppTranslationApp
 from gandy.utils.set_tokenizer_langs import prepend_gem_ja, prepend_gem_ko, prepend_gem_zh
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
 from gandy.utils.robust_text_line_resize import robust_transform
+from gandy.spell_correction.llmcpp_refinement import LlmCppRefinementApp
 
 yolo_xl = YOLOTDImageDetectionApp(
     model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
@@ -321,17 +316,15 @@ TRANSLATION_APP = SwitchApp(
 SPELL_CORRECTION_APP = SwitchApp(
     apps=[
         DefaultSpellCorrectionApp(),
-        FillProApp(),
-        LangsumeApp(),
-        PrependSourceApp(),
-        PrependSourceNoContextApp(),
+        LlmCppRefinementApp(
+            model_sub_path="gem/gemgoliath_remix",
+            prepend_fn=lambda s: s,
+            lang="N/A", # lang is an unused parameter here TODO cleanup
+        ),
     ],
     app_names=[
         "default",
-        "fillpro",
-        "langsume",
-        "prepend_source",
-        "prepend_source_noctx",
+        "remix",
     ],
 )
 

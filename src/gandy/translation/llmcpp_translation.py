@@ -118,6 +118,34 @@ class LlmCppTranslationApp(BaseTranslation):
         # TODO: Probably don't want to instantiate the MT cache here. Code smell.
         self.mt_cache = FAISSStore(db_path='models/database/cache', model_name='models/database/nite.gguf')
 
+    def call_llm(self, messages, use_stream):
+        model_output = self.llm.create_chat_completion(
+            messages=messages,
+            stream=use_stream is not None,
+            dry_multiplier=0.8,
+            dry_base=1.75,
+            dry_allowed_length=2,
+            dry_seq_breakers=["\n", ":", "\"", '*'],
+            dry_range=-1,
+            temperature=0.02,
+        )
+
+        if use_stream is not None:
+            prediction = ""
+
+            for out in model_output:
+                try:
+                    new_word = out['choices'][0]['delta']['content']
+                    use_stream.put(new_word, already_detokenized=True)
+
+                    prediction += new_word
+                except Exception as e:
+                    pass # First entry has nothing, as does last (usually).
+        else:
+            prediction = model_output['choices'][0]['message']['content']
+
+        return prediction
+
     def translate_string(self, inp: str, use_stream=None):
         with logger.begin_event("Splitting input & contexts") as ctx:
             inp, contexts = self.remap_input_with_contexts(inp)
@@ -144,41 +172,13 @@ class LlmCppTranslationApp(BaseTranslation):
 
         with logger.begin_event("Feeding to LLM") as ctx:
             messages = [{ "role": "user", "content": prompt, }]
+            prediction = self.call_llm(messages, use_stream)
 
-            model_output = self.llm.create_chat_completion(
-                messages=messages,
-                stream=use_stream is not None,
-                dry_multiplier=0.8,
-                dry_base=1.75,
-                dry_allowed_length=2,
-                dry_seq_breakers=["\n", ":", "\"", '*'],
-                dry_range=-1,
-                temperature=0.01,
-                #temperature=0.0,
-                #temperature=0.1,
-                #top_p=0.95,
-                #top_k=10,
-            )
+        if config_state.cache_mt and len(prediction) > 0:
+            with logger.begin_event('Adding to vector cache') as ctx:
+                self.mt_cache.add_translation_from_embed(embed_inp, prediction)
 
-            if use_stream is not None:
-                prediction = ""
-
-                for out in model_output:
-                    try:
-                        new_word = out['choices'][0]['delta']['content']
-                        use_stream.put(new_word, already_detokenized=True)
-
-                        prediction += new_word
-                    except Exception as e:
-                        pass # First entry has nothing, as does last (usually).
-            else:
-                prediction = model_output['choices'][0]['message']['content']
-
-            if config_state.cache_mt and len(prediction) > 0:
-                with logger.begin_event('Adding to vector cache') as ctx:
-                    self.mt_cache.add_translation_from_embed(embed_inp, prediction)
-
-            return [prediction], [inp]
+        return [prediction], [inp]
 
     def process(
         self,

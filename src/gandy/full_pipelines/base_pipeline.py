@@ -69,8 +69,8 @@ class DefaultSpellCorrectionApp(BaseSpellCorrection):
     def __init__(self):
         super().__init__()
 
-    def process(self, translation_input, translation_output):
-        return translation_output
+    def process(self, text, target, use_stream = None, **kwargs):
+        return target
 
 
 class BasePipeline:
@@ -138,13 +138,13 @@ class BasePipeline:
             redraw=self.image_redrawing_app.get_sel_app_name(),
         )
 
-    def correct_translation(self, source_texts: List[str], translation_output: str):
+    def correct_translation(self, translation_input: str, translation_output: str, use_stream=None):
         with logger.begin_event("Spelling correction"):
             # But the spelling correction apps will take care of removing any contextual sentences from the final output.
             translation_output = self.spell_correction_app.begin_process(
-                # This ignores current - source_texts[:idx], translation_output
-                source_texts,
-                translation_output,
+                text=translation_input,
+                target=translation_output,
+                use_stream=use_stream,
             )  # string
 
         return translation_output
@@ -162,14 +162,11 @@ class BasePipeline:
     ):
         target_texts: List[str] = []
 
-        def _spell_correct_and_post_edit_translation(source_text_to_use, translation_candidates_to_use, source_contexts_to_use, progress_idx):
-            with logger.begin_event("Reranking"):
-                translation_output = self.reranking_app.begin_process(
-                    source_text=source_text_to_use, candidates=translation_candidates_to_use,
-                )  # string
+        def _spell_correct_and_post_edit_translation(translation_input: str, translation_output: str, progress_idx):
+            # Reranking logic used to be here but is now gone. We implicitly train the LLMs to be reranking-aware (with certain caveats... nothing in life is free. Except free stuff)
 
             translation_output = self.correct_translation(
-                source_contexts_to_use, translation_output
+                translation_input=translation_input, translation_output=translation_output, use_stream=use_stream,
             )  # string
 
             target_texts.append(translation_output)
@@ -179,40 +176,20 @@ class BasePipeline:
                 # Min is 50.
                 progress_cb(compute_progress(cur_step=(progress_idx + 1), max_steps=len(source_texts), min_value=50, max_value=80))
 
+        # TODO(?): Batching translations together.
+        for idx, text in enumerate(source_texts):
+            translation_candidates = self.translation_app.begin_process(
+                text=text,
+                use_stream=use_stream,
+            )  # string[]
 
-        # If using the enhanced MT model on the GPU to translate images (task1), batch texts together for faster processing.
-        if config_state.use_translation_server and config_state.use_cuda and not config_state.force_translation_cpu and (use_stream is None or use_stream is False):
-            batch_size = 6
-            source_texts_batched = [source_texts[i:i + batch_size] for i in range(0, len(source_texts), batch_size)]
+            translation_output = translation_candidates[0] # Only 1 candidate is returned.
 
-            idx = 0
-            for text in source_texts_batched:
-                translation_batched_results = self.translation_app.get_sel_app().batch_translate_with_server(
-                    texts=text,
-                )  # string[][]
-
-                for translation_candidates in translation_batched_results:
-                    _spell_correct_and_post_edit_translation(
-                        source_text_to_use=source_texts[idx], 
-                        translation_candidates_to_use=translation_candidates, # string[]
-                        source_contexts_to_use=source_texts[: idx + 1],
-                        progress_idx=idx,
-                    )
-
-                    idx += 1
-        else:
-            for idx, text in enumerate(source_texts):
-                translation_candidates = self.translation_app.begin_process(
-                    text=text,
-                    use_stream=use_stream,
-                )  # string[]
-
-                _spell_correct_and_post_edit_translation(
-                    source_text_to_use=text, 
-                    translation_candidates_to_use=translation_candidates,
-                    source_contexts_to_use=source_texts[: idx + 1],
-                    progress_idx=idx,
-                )
+            _spell_correct_and_post_edit_translation(
+                translation_input=text,
+                translation_output=translation_output,
+                progress_idx=idx,
+            )
 
         return replace_terms_target_side(target_texts, config_state.target_terms)
 
@@ -331,16 +308,12 @@ class BasePipeline:
     def image_to_image(
         self,
         image: Image,
-        clear_spelling_correction_context=True,
         progress_cb=None,
         return_debug_data=False,
         return_metadata_to_translate_later=False,
     ):
         with logger.begin_event("Image to image") as ctx:
-            # Spelling correction apps may have their own internal context cache, which is only cleared on task1 start.
-            # (since every page is assumed to be independent)
-            if clear_spelling_correction_context:
-                self.spell_correction_app.get_sel_app().clear_cache()
+
             rgb_image = image.convert("RGB")
 
             if progress_cb is not None:
