@@ -6,7 +6,7 @@ from eliot import start_action, to_file, log_message
 from time import strftime
 import os
 import traceback
-
+import contextlib
 
 @dataclass
 class FancyTimeMetric:
@@ -63,8 +63,14 @@ class FancyLogger:
         new_msg = self.make_msg(msg)
         self.logger.error(new_msg)
 
+    @contextlib.contextmanager
     def begin_event(self, event_name: str, **fields):
-        return start_action(action_type=event_name, **fields)
+        with start_action(action_type=event_name, **fields) as ctx:
+            try:
+                yield ctx
+            except:
+                self.event_exception(ctx)
+                raise
     
     def log_message(self, msg: str, **fields):
         return log_message(msg, **fields)
@@ -73,6 +79,7 @@ class FancyLogger:
         return log_message(f'DEBUG: {msg}', debug=True, **fields)
 
     def event_exception(self, ctx):
+        print('An error has occurred:')
         print(traceback.format_exc())
         if ctx is not None:
             return ctx.log(traceback.format_exc())
