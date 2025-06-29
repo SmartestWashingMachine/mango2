@@ -17,6 +17,8 @@ const readOrCreateJson = async (filePath: string, defaultData: any) => {
 export const readDangerousConfig = async () => {
   const parsed = await readOrCreateJson(APP_DANGEROUS_CONFIG_FILE, {
     remoteAddress: "127.0.0.1",
+    enableWebUi: false,
+    debug: false,
   });
 
   return parsed;

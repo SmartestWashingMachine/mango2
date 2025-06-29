@@ -1,6 +1,5 @@
 from flask import send_from_directory, send_file, abort, render_template, request
-from gandy.app import app, web_app
-from gandy.get_envs import ENABLE_WEB_UI
+from gandy.app import app, web_app, dangerous_config
 from gandy.tasks.task1.task1_routes import translate_task1_background_job, socketio
 import os
 from glob import glob
@@ -10,7 +9,7 @@ from uuid import uuid4
 from PIL import Image
 from io import BytesIO
 
-if ENABLE_WEB_UI:
+if dangerous_config.enable_web_ui:
     print('CWD:')
     print(os.getcwd())
 

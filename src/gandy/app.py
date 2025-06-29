@@ -16,7 +16,6 @@ from gandy.model_apps import (
     TEXT_LINE_MODEL_APP,
     translate_pipeline,
 )
-from gandy.get_envs import ENABLE_WEB_UI
 import os
 from eliot.stdlib import EliotHandler
 from gandy.utils.fancy_logger import logger
@@ -24,8 +23,13 @@ import socketio as socketio_pkg
 from time import sleep
 import json
 from gandy.utils.reroute_remote_backend import RemoteRouter
+from gandy.state.dangerous_config import DangerousConfig
+from gandy.state.debug_state import debug_state
 
-remote_router = RemoteRouter()
+dangerous_config = DangerousConfig()
+remote_router = RemoteRouter(dangerous_config.socketio_address)
+
+debug_state.debug = dangerous_config.debug
 
 app = Flask(__name__)
 web_app = Flask(__name__, template_folder=os.getcwd() + '/templates', static_folder=os.getcwd() + '/static')
@@ -65,7 +69,7 @@ socketio.patched_emit = socketio.emit
 socketio.sleep = lambda *args, **kwargs: None
 socketio.start_background_task = lambda fn, *args: fn(*args)
 
-if ENABLE_WEB_UI or remote_router.is_remote():
+if dangerous_config.enable_web_ui or remote_router.is_remote():
 
     @app.before_request
     def before_request():
@@ -76,7 +80,7 @@ if ENABLE_WEB_UI or remote_router.is_remote():
 
 
 def run_server():
-    if ENABLE_WEB_UI:
+    if dangerous_config.enable_web_ui:
         logic_thread = threading.Thread(target=lambda: serve(app, host='0.0.0.0', port=5000, threads=1))
         web_thread = threading.Thread(target=lambda: serve(web_app, host='0.0.0.0', port=5200))
 

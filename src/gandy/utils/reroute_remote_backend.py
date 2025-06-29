@@ -6,15 +6,8 @@ from PIL import Image
 import requests
 
 class RemoteRouter():
-    def __init__(self):
-        try:
-            with open(os.path.expanduser("~/Documents/Mango/dangerousConfig.json"), 'r') as f:
-                dangerous_config = json.load(f)
-                self.socketio_address = dangerous_config['remoteAddress']
-        except Exception as e: # Can happen due to race conditions.
-            print(e)
-
-            self.socketio_address = '127.0.0.1'
+    def __init__(self, socketio_address: str):
+        self.socketio_address = socketio_address
 
     def base64_to_pil(self, base64_images):
         images = []
@@ -42,7 +35,7 @@ class RemoteRouter():
     def post(self, addr: str, data):
         response = requests.post('http://' + self.socketio_address + ':5000' + addr, json=data)
         try:
-          response.raise_for_status()
+            response.raise_for_status()
         except Exception as e:
             print('Error:')
             print(e)
