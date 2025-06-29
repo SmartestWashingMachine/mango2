@@ -74,7 +74,7 @@ from gandy.utils.set_tokenizer_langs import (
     remove_unnecessary_eng_tokens,
     remove_unnecessary_eng_tokens_mad,
 )
-from gandy.translation.llmcpp_translation import LlmCppTranslationApp
+from gandy.translation.llmcpp_translation import LlmCppTranslationApp, GoliathTranslationApp
 from gandy.utils.set_tokenizer_langs import prepend_gem_ja, prepend_gem_ko, prepend_gem_zh
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
 from gandy.utils.robust_text_line_resize import robust_transform
@@ -287,20 +287,20 @@ TRANSLATION_APP = SwitchApp(
             prepend_fn=prepend_gem_zh,
             lang="Chinese",
         ),
-        LlmCppTranslationApp(
+        GoliathTranslationApp(
             model_sub_path="gem/gemgoliath",
             prepend_fn=lambda s: s,
             lang="Japanese",
             prepend_model_output="\\nHere\\'s a translation:\\n" # Llama CPP seems to already add an extra newline.
         ),
-        LlmCppTranslationApp(
+        GoliathTranslationApp(
             model_sub_path="gem/gemgoliath_ko",
             prepend_fn=lambda s: s,
             lang="Korean",
             # prepend_model_output="\\nHere\\'s a translation:\\n\\n" # FUDGING LLAMA CPP JINJA REQUIRES ALL THIS SHEEP.
             prepend_model_output="\\nHere\\'s a translation:\\n" # Llama CPP seems to already add an extra newline.
         ),
-        LlmCppTranslationApp(
+        GoliathTranslationApp(
             model_sub_path="gem/gemgoliath_zh",
             prepend_fn=lambda s: s,
             lang="Chinese",

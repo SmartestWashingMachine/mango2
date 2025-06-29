@@ -192,3 +192,31 @@ class LlmCppTranslationApp(BaseTranslation):
             self.load_mt_cache()
 
         return torch.tensor(self.mt_cache.embed_text(s))
+
+class GoliathTranslationApp(LlmCppTranslationApp):
+    def make_single_name_entry(self, name_entry):
+        baseline = f"{name_entry['source']} = {name_entry['target']}"
+        if name_entry['gender'] == "":
+            return baseline
+        
+        return f"{baseline} ({name_entry['gender']})"
+
+    def map_name_entries(self):
+        if len(config_state.name_entries) == 0:
+            return ""
+
+        joined_entries = '\n'.join([self.make_single_name_entry(ne) for ne in config_state.name_entries]).strip()
+
+        # First space needed.
+        return f" Use the provided dictionary for named entity and term translations as needed. Pay close attention to gender information for pronoun reference.\nDictionary:\n{joined_entries}\n" # So two \n Total.
+
+    def map_prompt(self, inp: str, contexts: List[str]):
+        dictionary_injection = self.map_name_entries()
+
+        if len(contexts) == 0:
+            base_prompt = f"Translate the {self.lang} text to English.{dictionary_injection}\nText to Translate: {inp}"
+        else:
+            ctx_joined = " <SENT_SEP> ".join(contexts).strip()
+            base_prompt = f"Translate the {self.lang} text to English. Some previous texts are provided as context.{dictionary_injection}\nContext: {ctx_joined}\nText to Translate: {inp}"
+
+        return self.prepend_fn(base_prompt)
