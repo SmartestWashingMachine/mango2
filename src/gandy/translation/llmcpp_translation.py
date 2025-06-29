@@ -1,7 +1,9 @@
 from gandy.translation.base_translation import BaseTranslation
+from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClient
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
 from typing import List
+import os
 
 try:
     import torch
@@ -42,27 +44,22 @@ class LlmCppTranslationApp(BaseTranslation):
         logger.info(f"Loading translation model ({self.model_sub_path})... CanCuda={can_cuda} NGpuLayers={config_state.num_gpu_layers_mt}")
 
         if can_cuda:
-            from llama_cpp_cuda import Llama as LlamaGpu
-
-            llm_to_use = LlamaGpu
+            llama_cpp_server_path = os.path.join('models', "llamacpp_gpu", "llama-server.exe")
         else:
-            from llama_cpp import Llama as LlamaCpu
+            # Else the CUDA binaries are still loaded.
+            llama_cpp_server_path = os.path.join('models', "llamacpp_cpu", "llama-server.exe")
 
-            llm_to_use = LlamaCpu
-
-        self.llm = llm_to_use(
-            model_path=f"models/{self.model_sub_path}" + ".gguf",
-            n_ctx=512,
-            n_gpu_layers=config_state.num_gpu_layers_mt if can_cuda else 0,
-            flash_attn=can_cuda,
-            verbose=False,
-            #no_perf=True,
-            #n_threads_batch=3,
-            use_mlock=True,
-            logits_all=False,
-            use_mmap=True,
+        self.llm = LlamaCppExecutableOpenAIClient(
+            model_path=os.path.join("models", f"{self.model_sub_path}.gguf"),
+            num_gpu_layers=(config_state.num_gpu_layers_mt if can_cuda else 0),
+            can_cuda=can_cuda,
+            llama_cpp_server_path=llama_cpp_server_path,
             prepend_phrase=self.prepend_model_output,
+            # Hmmmmmmmmmmmmm we use a lot of ports in Mango... from web server, to socket server, to Flask server, to this...
+            port=8000,
         )
+
+        self.llm.start_server()
 
         logger.info("Done loading translation model!")
 
@@ -70,7 +67,9 @@ class LlmCppTranslationApp(BaseTranslation):
 
     def unload_model(self):
         try:
-            del self.llm
+            self.llm.stop_server()
+
+            del self.llm # This should automagically call llm.stop_server() - but juuuuuuust in case we also call it above.
             logger.info("Unloading translation model...")
         except:
             pass
@@ -117,34 +116,6 @@ class LlmCppTranslationApp(BaseTranslation):
         
         return cur_text, contexts
 
-    def call_llm(self, messages, use_stream):
-        model_output = self.llm.create_chat_completion(
-            messages=messages,
-            stream=use_stream is not None,
-            dry_multiplier=0.8,
-            dry_base=1.75,
-            dry_allowed_length=2,
-            dry_seq_breakers=["\n", ":", "\"", '*'],
-            dry_range=-1,
-            temperature=0.02,
-        )
-
-        if use_stream is not None:
-            prediction = ""
-
-            for out in model_output:
-                try:
-                    new_word = out['choices'][0]['delta']['content']
-                    use_stream.put(new_word, already_detokenized=True)
-
-                    prediction += new_word
-                except Exception as e:
-                    pass # First entry has nothing, as does last (usually).
-        else:
-            prediction = model_output['choices'][0]['message']['content']
-
-        return prediction
-
     def translate_string(self, inp: str, use_stream=None):
         with logger.begin_event("Splitting input & contexts") as ctx:
             inp, contexts = self.remap_input_with_contexts(inp)
@@ -158,7 +129,8 @@ class LlmCppTranslationApp(BaseTranslation):
 
         with logger.begin_event("Feeding to LLM") as ctx:
             messages = [{ "role": "user", "content": prompt, }, ]
-            prediction = self.call_llm(messages, use_stream)
+            prediction = self.llm.call_llm(messages, use_stream)
+            # prediction = self.call_llm(messages, use_stream)
 
         return [prediction], [inp]
 
