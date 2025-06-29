@@ -462,7 +462,7 @@ class BasePipeline:
             # Line app .get_images() also handles any custom sorting logic.
             line_bboxes = self.text_line_app.get_sel_app().get_images(image, return_image_if_fails=True).tolist()
 
-            line_rows = get_bottom_rows(bounding_boxes=line_bboxes, image_height=image.height, N=bottom_n_lines)
+            line_rows = get_bottom_rows(boxes=line_bboxes, N=bottom_n_lines)
 
             for row in line_rows:
                 # TODO: Add batch for full images (not just lines)?
