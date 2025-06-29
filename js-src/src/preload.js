@@ -70,5 +70,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   regenerateBoxManagers: () => ipcRenderer.invoke('regenerate-box-managers'),
   scanOcrBox: (boxId) => ipcRenderer.invoke('scan-ocr-box', boxId),
   readDangerousConfig: () => ipcRenderer.invoke('read-dangerous-config'),
+  newNameEntry: () => ipcRenderer.invoke('new-name-entry'),
+  updateNameEntry: (uuid, key, value) => ipcRenderer.invoke('update-name-entry', uuid, key, value),
+  deleteNameEntry: (uuid) => ipcRenderer.invoke('delete-name-entry', uuid),
   bridgeOn: (evName, cb) => initializeListener(`bridge_${evName}`, cb),
 });

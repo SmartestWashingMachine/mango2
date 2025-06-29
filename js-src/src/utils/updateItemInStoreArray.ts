@@ -54,3 +54,18 @@ export const updateTermValueInStoreArray = (
     value,
     idKeyName: "uuid",
   });
+
+export const updateNameEntryValueInStoreArray = (
+  store: StoreAdapter,
+  itemId: string,
+  key: any,
+  value: any
+) =>
+  updateItemInStoreArray({
+    store,
+    itemId,
+    storeKey: "nameEntries",
+    valueName: key,
+    value,
+    idKeyName: "uuid",
+  });

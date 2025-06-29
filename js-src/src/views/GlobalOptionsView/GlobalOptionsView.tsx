@@ -27,6 +27,8 @@ import GLOBAL_OPTIONS_PARTIAL_PRESETS, {
 } from "./globalOptionsPartialPresets";
 import { previewCaptureWindow } from "../../flaskcomms/previewCaptureWindow";
 import { getBoxDisplayName } from "../../utils/getBoxDisplayName";
+import DictionaryList from "./components/DictionaryList";
+import INameEntry from "../../types/NameEntry";
 
 export type GlobalOptionsViewProps = {
   goOcrOptionsTab: () => void;
@@ -36,6 +38,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
   const pushAlert = useAlerts();
 
   const [terms, setTerms] = useState<IReplaceTerm[]>([]);
+
+  const [nameEntries, setNameEntries] = useState<INameEntry[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -54,6 +58,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
       if (!didCancel) {
         setLoadedData(data);
         setTerms(data.terms);
+        setNameEntries(data.nameEntries);
 
         setIsLoading(false);
       }
@@ -71,6 +76,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     const cb = (e: any, s: any, oldS: any) => {
       //if (s.terms.length !== oldS.terms.length || s.terms.length === 0)
       setTerms(s.terms);
+      setNameEntries(s.nameEntries);
     };
     const removeCb = MainGateway.listenStoreDataChange(cb);
 
@@ -109,6 +115,22 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
 
   const exportTerms = async () => {
     await MainGateway.exportTerms();
+  };
+
+  const updateNameEntry = (
+    uuid: string,
+    k: keyof INameEntry,
+    v: string | boolean
+  ) => {
+    MainGateway.updateNameEntry(uuid, k, v);
+  };
+
+  const removeNameEntry = (uuid: string) => {
+    MainGateway.deleteNameEntry(uuid);
+  };
+
+  const createNameEntry = () => {
+    MainGateway.newNameEntry();
   };
 
   const handleFixSeed = async () => {
@@ -702,8 +724,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
               />
             ),
           },
-          Terms: {
-            Terms: (
+          Regex: {
+            Regex: (
               <ReplaceTermsList
                 terms={terms}
                 updateTerm={updateTerm}
@@ -711,6 +733,16 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 removeTerm={removeTerm}
                 importTerms={importTerms}
                 exportTerms={exportTerms}
+              />
+            ),
+          },
+          Dictionary: {
+            Dictionary: (
+              <DictionaryList
+                entries={nameEntries}
+                updateEntry={updateNameEntry}
+                createEntry={createNameEntry}
+                removeEntry={removeNameEntry}
               />
             ),
           },

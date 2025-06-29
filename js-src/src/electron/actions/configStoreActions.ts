@@ -1,9 +1,13 @@
 import ElectronCommands from "../../types/ElectronCommands";
 import IReplaceTerm from "../../types/ReplaceTerm";
+import INameEntry from "../../types/NameEntry";
 import { v4 as uuidv4 } from "uuid";
 import { initializeModelNames } from "../../flaskcomms/setFlaskSettings";
 import { GatewayAction } from "../../types/GatewayAction";
-import { updateTermValueInStoreArray } from "../../utils/updateItemInStoreArray";
+import {
+  updateNameEntryValueInStoreArray,
+  updateTermValueInStoreArray,
+} from "../../utils/updateItemInStoreArray";
 import { OPTIONS_PRESETS } from "../../utils/boxPresets";
 import { OcrBoxManager } from "../ocrUtils/ocrBox";
 
@@ -128,6 +132,68 @@ const updateTerm: GatewayAction = {
   },
 };
 
+// Events for dictionary stuff.
+
+const createNameEntry: GatewayAction = {
+  command: ElectronCommands.NEW_NAME_ENTRY,
+  commandType: "handle",
+  fn: async (e, w, s, store) => {
+    const defaultTerm: INameEntry = {
+      uuid: uuidv4(),
+      source: "",
+      target: "",
+      gender: "",
+    };
+
+    const oldItems = store.get("nameEntries") as INameEntry[];
+    const newItems = [...oldItems, defaultTerm] as INameEntry[];
+    store.set("nameEntries", newItems);
+
+    await resendDataChange.fn(e, w, s, store);
+  },
+};
+
+const deleteNameEntry: GatewayAction = {
+  command: ElectronCommands.DELETE_NAME_ENTRY,
+  commandType: "handle",
+  fn: async (e, w, s, store, uuid: string) => {
+    const oldItems = store.get("nameEntries") as INameEntry[];
+    const newItems = oldItems.filter((x) => x.uuid !== uuid);
+    store.set("nameEntries", newItems);
+
+    await resendDataChange.fn(e, w, s, store);
+  },
+};
+
+const updateNameEntry: GatewayAction = {
+  command: ElectronCommands.UPDATE_NAME_ENTRY,
+  commandType: "handle",
+  fn: (
+    e,
+    w,
+    state,
+    store,
+    uuid: string,
+    key: keyof INameEntry,
+    value: string
+  ) => {
+    updateNameEntryValueInStoreArray(store, uuid, key, value);
+
+    const WAIT_TIME = 5000;
+
+    if (state.termUpdateTimer) {
+      // Refresh the timer. Uses same timer as for terms.
+      clearTimeout(state.termUpdateTimer);
+    }
+
+    state.termUpdateTimer = setTimeout(() => {
+      initializeModelNames(store.store);
+    }, WAIT_TIME);
+  },
+};
+
+// Misc events
+
 const retrieveImageModeOptions: GatewayAction = {
   command: ElectronCommands.RETRIEVE_IMAGE_ADD_DATA,
   commandType: "handle",
@@ -151,4 +217,7 @@ export default [
   updateTerm,
   retrieveImageModeOptions,
   resetSettings,
+  createNameEntry,
+  deleteNameEntry,
+  updateNameEntry,
 ];

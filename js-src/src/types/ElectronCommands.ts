@@ -38,6 +38,9 @@ enum ElectronCommands {
   REGENERATE_BOX_MANAGERS = "regenerate-box-managers",
   SCAN_OCR_BOX = "scan-ocr-box",
   READ_DANGEROUS_CONFIG = "read-dangerous-config",
+  NEW_NAME_ENTRY = "new-name-entry",
+  UPDATE_NAME_ENTRY = "update-name-entry",
+  DELETE_NAME_ENTRY = "delete-name-entry",
 }
 
 export default ElectronCommands;

@@ -137,6 +137,7 @@ def change_multiple_models_route():
             ignore_detect_single_words=data["ignoreDetectSingleWords"],
             sort_text_from_top_left=data["sortTextFromTopLeft"],
             capture_window=data["captureWindow"],
+            name_entries=data["nameEntries"],
         )
 
         config_state.update_terms(terms=data["terms"])

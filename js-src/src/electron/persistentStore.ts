@@ -48,6 +48,7 @@ const storeDefaults: IStore = {
   memoryEfficientTasks: false,
   cacheMt: false,
   captureWindow: "",
+  nameEntries: [],
 };
 
 export const initializeStore = () => {

@@ -23,6 +23,7 @@ export type IStoreClientToServer = {
   enableCuda: boolean;
   maxLengthA: number;
   terms: any[];
+  nameEntries: any[];
   temperature: number;
   topP: number;
   topK: number;
