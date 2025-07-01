@@ -47,6 +47,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
 
   const [capturedWindowPreview, setCapturedWindowPreview] = useState("");
 
+  const [curWindowName, setCurWindowName] = useState("");
+
   const installedModels = useInstalledModelsRetriever();
 
   useEffect(() => {
@@ -590,140 +592,6 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
               />
             ),
           },
-          "Translation Algorithm": {
-            "Only change these settings if": (
-              <Typography align="center" variant="body2">
-                Only change these settings if you know what you're doing. Most
-                settings only take effect with MBR Beam Sampling or MBR Greedy
-                Decoding.{" "}
-                <b>
-                  The settings here are ignored for the Gem translation models.
-                </b>
-              </Typography>
-            ),
-            "Decoding Mode": (
-              <UpdateListField
-                changeValue={setStoreValue}
-                keyName="decodingMode"
-                defaultValue={decodingMode}
-                label="Decoding Mode"
-                helperText="May improve translation quality. Most reranking methods only work on Japanese-2-English models."
-              >
-                {DECODING_OPTIONS.map(renderItem)}
-              </UpdateListField>
-            ),
-            Beams: (
-              <UpdateNumberField
-                label="Beams"
-                changeValue={setStoreValue}
-                keyName="numBeams"
-                defaultValue={numBeams}
-                helperText="Max number of beams or candidates to use from the translation model. Increasing this will lower speed but may improve the translation quality."
-                valueType="int"
-                safeValue={2}
-                minValue={1}
-                maxValue={50}
-              />
-            ),
-            "Top K": (
-              <UpdateNumberField
-                label="Top K"
-                changeValue={setStoreValue}
-                keyName="topK"
-                defaultValue={topK}
-                helperText="Every decoding step, only allow the top K predicted tokens to be sampled. A good starter value may be 50."
-                valueType="int"
-                safeValue={0}
-                minValue={0}
-                disabled={decodingParamsIgnored}
-              />
-            ),
-            "Top P": (
-              <UpdateNumberField
-                label="Top P"
-                changeValue={setStoreValue}
-                keyName="topP"
-                defaultValue={topP}
-                helperText="Every decoding step, only the smallest set of tokens with probs adding up to P or higher can be sampled. Set this between [0, 1)."
-                valueType="float"
-                safeValue={0}
-                disabled={decodingParamsIgnored}
-              />
-            ),
-            "Epsilon Cutoff": (
-              <UpdateNumberField
-                label="Epsilon Cutoff"
-                changeValue={setStoreValue}
-                keyName="epsilonCutoff"
-                defaultValue={epsilonCutoff}
-                helperText="Every decoding step, tokens with a probability lower than this are cut off. Set this between [0, 1). A good starter value may be 0.03."
-                valueType="float"
-                safeValue={0.0}
-                disabled={decodingParamsIgnored}
-              />
-            ),
-            Temperature: (
-              <UpdateNumberField
-                label="Temperature"
-                changeValue={setStoreValue}
-                keyName="temperature"
-                defaultValue={temperature}
-                helperText="Setting this greater than 0 may increase translation diversity, and vice versa as it goes towards 0."
-                valueType="float"
-                safeValue={1.0}
-                disabled={decodingParamsIgnored}
-              />
-            ),
-            "Length Penalty": (
-              <UpdateNumberField
-                label="Length Penalty"
-                changeValue={setStoreValue}
-                keyName="lengthPenalty"
-                defaultValue={lengthPenalty}
-                helperText="Setting this greater than 0 encourages longer translations."
-                valueType="float"
-                safeValue={1.0}
-              />
-            ),
-            "No Repeat N-Gram Size": (
-              <UpdateNumberField
-                label="No Repeat N-Gram Size"
-                changeValue={setStoreValue}
-                keyName="noRepeatNgramSize"
-                defaultValue={noRepeatNgramSize}
-                helperText="N-grams of the given size will not be repeated in the translations."
-                valueType="int"
-                safeValue={5}
-                minValue={1}
-                maxValue={99}
-              />
-            ),
-            "Repetition Penalty": (
-              <UpdateNumberField
-                label="Repetition Penalty"
-                changeValue={setStoreValue}
-                keyName="repetitionPenalty"
-                defaultValue={repetitionPenalty}
-                helperText="Setting this greater than 1.0 discourages repeated words."
-                valueType="float"
-                safeValue={1.2}
-              />
-            ),
-            "Max Length A": (
-              <UpdateNumberField
-                label="Max Length A"
-                keyName="maxLengthA"
-                changeValue={setStoreValue}
-                defaultValue={maxLengthA}
-                placeholder="Set to 0 to disable the A length limit."
-                helperText="The output sentence can be up to A times as long as the input sentence."
-                valueType="float"
-                safeValue={0}
-                minValue={0}
-                maxValue={500}
-              />
-            ),
-          },
           Regex: {
             Regex: (
               <ReplaceTermsList
@@ -844,10 +712,9 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 label="Window Name"
                 variant="outlined"
                 onBlur={(e) => {
-                  console.log("new val");
-                  console.log(e.currentTarget.value);
                   setStoreValue("captureWindow", e.currentTarget.value);
                 }}
+                onChange={(e) => setCurWindowName(e.currentTarget.value)} // This is just used for disabling the preview buttons when empty.
                 defaultValue={captureWindow}
                 fullWidth
                 multiline
@@ -861,6 +728,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 color="secondary"
                 fullWidth
                 onClick={handlePreviewCaptureWindow}
+                disabled={curWindowName.length == 0}
               >
                 Preview Window
               </Button>
@@ -877,6 +745,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                     fullWidth
                     onClick={() => handlePreviewCaptureWindowWithBox(b)}
                     key={b.boxId}
+                    disabled={curWindowName.length == 0}
                   >
                     Preview - {getBoxDisplayName(b)}
                   </Button>
