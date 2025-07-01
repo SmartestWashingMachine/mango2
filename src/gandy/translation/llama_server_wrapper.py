@@ -4,9 +4,11 @@ import json
 import os
 from gandy.utils.fancy_logger import logger
 import sys
-from openai import OpenAI # Import the OpenAI client
+from openai import AsyncOpenAI # Import the OpenAI client
 import requests
 import atexit
+
+import asyncio
 
 class LlamaCppExecutableOpenAIClient:
     def __init__(self, model_path, num_gpu_layers, can_cuda,
@@ -36,7 +38,7 @@ class LlamaCppExecutableOpenAIClient:
         self.verbose = verbose
 
         # Initialize the OpenAI client pointing to the llama.cpp server
-        self.client = OpenAI(
+        self.client = AsyncOpenAI(
             base_url=self.server_url,
             api_key="sk-no-key-required" # A dummy key, as llama.cpp server doesn't require one
         )
@@ -163,7 +165,7 @@ class LlamaCppExecutableOpenAIClient:
             else:
                 ctx.log("Server is not running - doing nothing.")
 
-    def call_llm(self, messages, use_stream = None):
+    async def single_async_call(self, messages, use_stream = None):
         """
         Calls the llama.cpp server using the OpenAI client for chat completion.
         Messages should be in OpenAI chat format:
@@ -180,17 +182,16 @@ class LlamaCppExecutableOpenAIClient:
         prediction = ""
         if use_stream is not None:
             # Streaming call
-            stream_response = self.client.chat.completions.create(
+            stream_response = await self.client.chat.completions.create(
                 model=model_name,
                 messages=messages,
                 stream=True,
                 temperature=0.02,
             )
 
-            for chunk in stream_response:
+            async for chunk in stream_response:
                 try:
                     new_word = chunk.choices[0].delta.content or ""
-
                     if new_word:
                         use_stream.put(new_word, already_detokenized=True)
                         prediction += new_word
@@ -200,7 +201,7 @@ class LlamaCppExecutableOpenAIClient:
                     pass
         else:
             # Non-streaming call
-            completion = self.client.chat.completions.create(
+            completion = await self.client.chat.completions.create(
                 model=model_name,
                 messages=messages,
                 stream=False,
@@ -209,3 +210,21 @@ class LlamaCppExecutableOpenAIClient:
             prediction = completion.choices[0].message.content
 
         return prediction
+    
+    async def batch_async(self, batch_inputs, use_stream = None):
+        tasks = [self.single_async_call(messages, use_stream) for messages in batch_inputs]
+        predictions = await asyncio.gather(*tasks)
+
+        return predictions
+
+    def call_llm(self, batch_inputs, use_stream = None):
+        predictions = asyncio.run(self.batch_async(batch_inputs, use_stream))
+        return predictions
+
+    def call_llm_no_batch(self, messages, use_stream = None):
+        # For non-batched inference (99% of the calls go here).
+        return self.call_llm([messages], use_stream=use_stream)[0]
+
+    def call_llm_with_batch(self, batch_inputs):
+        # For batched inference. batch_inputs should be a List of messages.
+        return self.call_llm(batch_inputs, use_stream=None)

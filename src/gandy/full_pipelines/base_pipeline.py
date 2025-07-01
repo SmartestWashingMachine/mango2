@@ -165,7 +165,13 @@ class BasePipeline:
     ):
         target_texts: List[str] = []
 
-        # TODO(?): Batching translations together.
+        # Currently the MT model supports batching (the spelling correction does not).
+        all_translation_outputs: List[str] = ["" for _ in source_texts]
+        was_found_in_cache: List[bool] = [False for _ in source_texts]
+
+        source_texts_to_batch: List[str] = [] # Non-cached source texts will be collected into a batch.
+        source_indices_to_batch: List[int] = [] # Which indices to place the outputs from batching into 'all_translation_outputs'.
+
         for idx, text in enumerate(source_texts):
             found_in_cache = False # Don't translate + correct spelling if we already found one (potentially) spelling corrected translation in cache.
             if config_state.cache_mt:
@@ -174,16 +180,40 @@ class BasePipeline:
                 if translation_candidates is not None:
                     found_in_cache = True
 
+                translation_output = translation_candidates[0] # Only 1 candidate is returned.
+                all_translation_outputs[idx] = translation_output
+
+                was_found_in_cache[idx] = found_in_cache # True
+
             if not found_in_cache:
-                translation_candidates = self.translation_app.begin_process(
-                    text=text,
+                source_texts_to_batch.append(text)
+                source_indices_to_batch.append(idx)
+
+        # Actually batch translate now.
+        if len(source_texts_to_batch) > 1:
+            with logger.begin_event('Batching translations', n_batch={len(source_texts_to_batch)}):
+                translation_outputs = self.translation_app.begin_process(
+                    texts=source_texts_to_batch,
                     use_stream=use_stream,
                 )  # string[]
+        else:
+            translation_candidates = self.translation_app.begin_process(
+                text=source_texts_to_batch[0],
+                use_stream=use_stream, # use_stream is actually used when text= is used (not with texts=).
+            )  # string[]
+            translation_outputs = [translation_candidates[0]] # Only 1 candidate is returned.
 
-            translation_output = translation_candidates[0] # Only 1 candidate is returned.
+        assert len(translation_outputs) == len(source_indices_to_batch)
+        for output, idx in zip(translation_outputs, source_indices_to_batch):
+            all_translation_outputs[idx] = output
+            # The cache[idx] is still False, which means after the spelling correction is done the translation will be cached.
+
+        # TODO(?): Batching spelling corrections too.
+        for idx, (text, translation_output, found_in_cache) in enumerate(zip(source_texts, all_translation_outputs, was_found_in_cache)):
 
             if not found_in_cache:
-                # Reranking logic used to be here but is now gone. We implicitly train the LLMs to be reranking-aware (with certain caveats... nothing in life is free. Except free stuff)
+                # Reranking logic used to be here too but is now gone. 
+                # We implicitly train the LLMs to be reranking-aware (with certain caveats... nothing in life is free. Except free stuff)
 
                 translation_output = self.correct_translation(
                     translation_input=text, translation_output=translation_output, use_stream=use_stream,

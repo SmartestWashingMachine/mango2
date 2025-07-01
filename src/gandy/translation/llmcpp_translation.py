@@ -76,16 +76,6 @@ class LlmCppTranslationApp(BaseTranslation):
         self.llm = None
 
         return super().unload_model()
-
-    def batch_translate_with_server(self, texts: List[str]):
-        with logger.begin_event("Batch Translating with Server (no difference for LLMs currently)") as ctx:
-            tars = []
-
-            for t in texts:
-                out = self.process(t, use_stream=None)[0] # list[str]
-                tars.append(out)
-
-            return tars
         
     def map_prompt(self, inp: str, contexts: List[str]):
         if len(contexts) == 0:
@@ -115,8 +105,8 @@ class LlmCppTranslationApp(BaseTranslation):
             return inp, []
         
         return cur_text, contexts
-
-    def translate_string(self, inp: str, use_stream=None):
+    
+    def create_messages(self, inp: str):
         with logger.begin_event("Splitting input & contexts") as ctx:
             inp, contexts = self.remap_input_with_contexts(inp)
 
@@ -127,37 +117,61 @@ class LlmCppTranslationApp(BaseTranslation):
 
             ctx.log('Done creating prompt', prompt=prompt)
 
+        messages = [{ "role": "user", "content": prompt, }, ]
+        return messages
+
+    def translate_string(self, inp: str, use_stream=None):
+        messages = self.create_messages(inp)
+
         with logger.begin_event("Feeding to LLM") as ctx:
-            messages = [{ "role": "user", "content": prompt, }, ]
-            prediction = self.llm.call_llm(messages, use_stream)
-            # prediction = self.call_llm(messages, use_stream)
+            prediction = self.llm.call_llm_no_batch(messages, use_stream)
 
         return [prediction], [inp]
+    
+    def batch_translate_strings(self, inputs: List[str]):
+        batch_inputs = [self.create_messages(inp) for inp in inputs]
+
+        with logger.begin_event("Feeding to LLM") as ctx:
+            predictions = self.llm.call_llm_with_batch(batch_inputs)
+
+        return predictions
 
     def process(
         self,
         text: str = None,
-        use_stream=None,
+        use_stream = None,
+        texts: List[str] = None,
     ):
-        with logger.begin_event("Translation", using_stream=use_stream is not None) as ctx:
+        if texts is not None and text is not None:
+            raise ValueError("Either 'text' (single) or 'texts' (batched) should be passed - not both!")
+
+        with logger.begin_event("Translation", using_stream=use_stream is not None, is_batched=texts is not None) as ctx:
             if not self.loaded:
                 self.load_model()
 
-            if len(text) > 0 and not text.endswith("<TSOS>"):
-                output = self.translate_string(
-                    text, use_stream=use_stream
-                )  # [target strings], [source strings]
-                ctx.log(
-                    f"Translated",
-                    input_text=text,
-                    normalized=output[1],
-                    output_text=output[0][0] if isinstance(output[0], list) else output[0],
-                )
-            else:
-                output = [[""], [""]]  # [target strings], [source strings]
-                ctx.log(f"Poor text found - returning empty string")
+            if text is not None:
+                if len(text) > 0 and not text.endswith("<TSOS>"):
+                    output = self.translate_string(
+                        text, use_stream=use_stream
+                    )  # [target strings], [source strings]
+                    ctx.log(
+                        f"Translated",
+                        input_text=text,
+                        normalized=output[1],
+                        output_text=output[0][0] if isinstance(output[0], list) else output[0],
+                    )
+                else:
+                    output = [[""], [""]]  # [target strings], [source strings]
+                    ctx.log(f"Poor text found - returning empty string")
 
-        return output[0]
+                outputs = output[0]
+            else:
+                outputs = self.batch_translate_strings(texts) # List of strings.
+            
+            return [o.replace("\\'", "'") for o in outputs]
+    
+    def process_with_batch(self, texts: List[str]):
+        self.translate_string()
 
     def embed_text(self, s: str):
         if self.mt_cache is None:
