@@ -30,8 +30,6 @@ class LlmCppTranslationApp(BaseTranslation):
         self.prepend_fn = prepend_fn
         self.lang = lang
 
-        self.mt_cache = None
-
         self.prepend_model_output = prepend_model_output
 
     def can_load(self):
@@ -134,6 +132,12 @@ class LlmCppTranslationApp(BaseTranslation):
         with logger.begin_event("Feeding to LLM") as ctx:
             predictions = self.llm.call_llm_with_batch(batch_inputs)
 
+        ctx.log(
+            f"Translated batch",
+            inputs=inputs,
+            outputs=predictions,
+        )
+
         return predictions
 
     def process(
@@ -172,12 +176,6 @@ class LlmCppTranslationApp(BaseTranslation):
     
     def process_with_batch(self, texts: List[str]):
         self.translate_string()
-
-    def embed_text(self, s: str):
-        if self.mt_cache is None:
-            self.load_mt_cache()
-
-        return torch.tensor(self.mt_cache.embed_text(s))
 
 class GoliathTranslationApp(LlmCppTranslationApp):
     def make_single_name_entry(self, name_entry):

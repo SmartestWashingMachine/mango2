@@ -180,6 +180,11 @@ class MTCache():
     def load_mt_cache(self):
         self.mt_cache = FAISSStore(db_path='models/database/cache', model_name='models/database/nite.gguf')
 
+    def embed_text(self, inp: str):
+        if self.mt_cache is None:
+            self.load_mt_cache()
+        return self.mt_cache.embed_text(inp)
+
     def look_for_translation(self, inp: str):
         with logger.begin_event('Checking vector cache') as ctx:
             # Cut any context. TODO: Sure about this?

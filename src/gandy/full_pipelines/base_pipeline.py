@@ -26,6 +26,11 @@ import os
 import json
 from gandy.utils.faiss_mt_cache import MTCache
 
+try:
+    import torch
+except:
+    pass
+
 def dump_task1_debug_data(rgb_image: Image, speech_bboxes):
     debug_id = uuid4().hex
     logger.debug_message('Dumping task1 data', category='task1_dump', debug_id=debug_id)
@@ -151,9 +156,9 @@ class BasePipeline:
             )  # string
 
         return translation_output
-    
+
     def embed_text(self, s: str):
-        return self.translation_app.get_sel_app().embed_text(s)
+        return torch.tensor(self.mt_cache.embed_text(s))
 
     def get_target_texts_from_str(
         self,
@@ -189,19 +194,29 @@ class BasePipeline:
                 source_texts_to_batch.append(text)
                 source_indices_to_batch.append(idx)
 
+        # Only GPU can batch.
+        translation_can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+
         # Actually batch translate now.
-        if len(source_texts_to_batch) > 1:
-            with logger.begin_event('Batching translations', n_batch={len(source_texts_to_batch)}):
+        if len(source_texts_to_batch) > 1 and translation_can_cuda:
+            with logger.begin_event('Batching translations', n_batch=len(source_texts_to_batch)):
                 translation_outputs = self.translation_app.begin_process(
                     texts=source_texts_to_batch,
                     use_stream=use_stream,
                 )  # string[]
-        else:
-            translation_candidates = self.translation_app.begin_process(
-                text=source_texts_to_batch[0],
-                use_stream=use_stream, # use_stream is actually used when text= is used (not with texts=).
-            )  # string[]
-            translation_outputs = [translation_candidates[0]] # Only 1 candidate is returned.
+        elif len(source_texts_to_batch) <= 1 or not translation_can_cuda:
+            translation_outputs = []
+
+            for idx, source_item in enumerate(source_texts_to_batch):
+                translation_candidates = self.translation_app.begin_process(
+                    text=source_item,
+                    use_stream=use_stream, # use_stream is actually used when text= is used (not with texts=).
+                )  # string[]
+
+                translation_outputs.append(translation_candidates[0]) # Only 1 candidate is returned.
+
+                if progress_cb is not None:
+                    progress_cb(compute_progress(cur_step=(idx + 1), max_steps=len(source_texts_to_batch), min_value=50, max_value=70))
 
         assert len(translation_outputs) == len(source_indices_to_batch)
         for output, idx in zip(translation_outputs, source_indices_to_batch):
@@ -226,8 +241,8 @@ class BasePipeline:
 
             if progress_cb is not None:
                 # Max progress for this part is 80.
-                # Min is 50.
-                progress_cb(compute_progress(cur_step=(idx + 1), max_steps=len(source_texts), min_value=50, max_value=80))
+                # Min is 70.
+                progress_cb(compute_progress(cur_step=(idx + 1), max_steps=len(source_texts), min_value=70, max_value=80))
 
         return replace_terms_target_side(target_texts, config_state.target_terms)
 
