@@ -281,16 +281,27 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
           ),
         },
         Actions: {
-          "Activation Key": props.activationKey ? (
-            <KeySelect
-              label="Activation Key"
-              onKeyChange={updateActivationKey}
-              value={props.activationKey}
-              helperText="Which key to press to translate the box contents. Press ESCAPE to disable."
-            />
-          ) : (
-            <div></div>
-          ),
+          "Activation Key OR Translation OR Translate Key":
+            props.activationKey ? (
+              <KeySelect
+                label="Activation Key"
+                onKeyChange={updateActivationKey}
+                value={props.activationKey}
+                helperText={
+                  <>
+                    Which key to press to translate the box contents. Press
+                    ESCAPE to disable.
+                    <br />
+                    <span style={{ color: "#cc8500", fontStyle: "italic" }}>
+                      Any editing model will NOT be used - paste the text into
+                      the Text input page to see the fully edited translation.
+                    </span>
+                  </>
+                }
+              />
+            ) : (
+              <div></div>
+            ),
           "Pause Key": props.pauseKey ? (
             <KeySelect
               label="Pause Key"
@@ -322,7 +333,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
             ) : (
               <div></div>
             ),
-          "Editing Key Spelling Correction Key": props.spellingCorrectionKey ? (
+          /*"Editing Key Spelling Correction Key": props.spellingCorrectionKey ? (
             <KeySelect
               label="Spelling Correction Key"
               onKeyChange={updateSpellingCorrectionKey}
@@ -331,7 +342,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
             />
           ) : (
             <div></div>
-          ),
+          ),*/
           "Auto Scan Background": (
             <UpdateCheckbox
               changeValue={changeValue}

@@ -5,7 +5,7 @@ type KeySelectProps = {
   onKeyChange: (key: string) => void;
   value: string;
   label: string;
-  helperText: string;
+  helperText: string | any;
 };
 
 const KeySelect = ({
