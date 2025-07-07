@@ -226,7 +226,9 @@ class BasePipeline:
         # TODO(?): Batching spelling corrections too.
         for idx, (text, translation_output, found_in_cache) in enumerate(zip(source_texts, all_translation_outputs, was_found_in_cache)):
 
-            if not found_in_cache:
+            # If use_stream is NOT None (OCR'ing with detached text boxes), we don't correct the translation.
+            # Instead, users are expected to retype the text in the Text input for corrected translations.
+            if not found_in_cache and use_stream is None:
                 # Reranking logic used to be here too but is now gone. 
                 # We implicitly train the LLMs to be reranking-aware (with certain caveats... nothing in life is free. Except free stuff)
 
