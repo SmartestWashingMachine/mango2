@@ -4,6 +4,10 @@ from gandy.utils.fancy_logger import logger
 
 
 def push_to_state(last_source: str, new_texts, box_id):
+    if last_source == "<LINES>":
+        # From text line model. Ignore it.
+        return
+
     context_state.update_source_list(
         last_source,
         config_state.n_context,
