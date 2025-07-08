@@ -121,6 +121,7 @@ def change_multiple_models_route():
             decoding_mode=data["decodingMode"],
             max_length_a=max_length_a if max_length_a > 0 else 0,
             force_translation_cpu=data["forceTranslationCPU"],
+            force_spelling_correction_cpu=data["forceSpellingCorrectionCPU"],
             force_td_cpu=data["forceTdCpu"],
             force_tl_cpu=data["forceTlCpu"],
             memory_efficient_tasks=data["memoryEfficientTasks"],

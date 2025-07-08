@@ -36,6 +36,7 @@ export type IStoreClientToServer = {
   numGpuLayersMt: number;
   translationThreads: number;
   forceTranslationCPU: boolean;
+  forceSpellingCorrectionCPU: boolean;
   forceTdCpu: boolean;
   forceTlCpu: boolean;
   forceOcrCpu: boolean;

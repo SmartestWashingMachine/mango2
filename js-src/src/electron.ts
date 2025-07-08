@@ -14,7 +14,7 @@ import textHistoryActions from "./electron/actions/textHistoryActions";
 import windowActions from "./electron/actions/windowActions";
 import { OcrBoxManager } from "./electron/ocrUtils/ocrBox";
 import { createEssentialFolders } from "./electron/fileUtils/createEssentialFolders";
-import { OPTIONS_PRESETS } from "./utils/boxPresets";
+import { getDefaultBoxes } from "./utils/boxPresets";
 
 import http from "http";
 import { Server } from "socket.io";
@@ -121,10 +121,10 @@ app.whenReady().then(async () => {
   });
 
   // Initialize OCR box managers.
-  const boxes = store.get("boxes") as any[];
+  let boxes = store.get("boxes") as any[];
 
   if (boxes.length === 0) {
-    const boxes = [{ ...OPTIONS_PRESETS[0].options, boxId: "firstbox" }];
+    boxes = getDefaultBoxes();
     store.set("boxes", boxes);
   }
 

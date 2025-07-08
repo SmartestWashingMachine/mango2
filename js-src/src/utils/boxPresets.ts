@@ -45,6 +45,25 @@ const genericOptions = {
 
 export const OPTIONS_PRESETS: BoxPreset[] = [
   {
+    presetName: "Scanner",
+    description:
+      "Translates text in the region when 'k' is pressed. Press 'h' to hide it.",
+    options: {
+      ...genericOptions,
+      fontColor: "#000000",
+      backgroundColor: "#FFFFFF",
+      activationKey: "k",
+      hideKey: "h",
+      pauseKey: "Escape",
+      listenClipboard: false,
+      backgroundOpacity: 0.75,
+      useStream: true,
+      pipeOutput: "Self",
+      fasterScan: true,
+    },
+    disabled: () => false,
+  },
+  {
     presetName: "Basic",
     description:
       "Translates all text copied in the clipboard at all times and displays the output one character at a time.",
@@ -78,33 +97,14 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
     disabled: () => false,
   },
   {
-    presetName: "Scanner",
-    description:
-      "Translates text in the region when 'k' is pressed. Press 'h' to hide it.",
-    options: {
-      ...genericOptions,
-      fontColor: "#000000",
-      backgroundColor: "#FFFFFF",
-      activationKey: "k",
-      hideKey: "h",
-      pauseKey: "Escape",
-      listenClipboard: false,
-      backgroundOpacity: 0.75,
-      useStream: true,
-      pipeOutput: "Self",
-      fasterScan: true,
-    },
-    disabled: () => false,
-  },
-  {
     presetName: "Scout Sender",
     description:
-      "Translates text in the region when 'a' is pressed. Press 'h' to hide it. The text is sent to the 'Scout Receiver' box.",
+      "Translates text in the region when '1' is pressed. Press 'h' to hide it. The text is sent to the 'Scout Receiver' box.",
     options: {
       ...genericOptions,
       fontColor: "#000000",
       backgroundColor: "#FFFFFF",
-      activationKey: "a",
+      activationKey: "1",
       hideKey: "h",
       pauseKey: "Escape",
       listenClipboard: false,
@@ -153,3 +153,21 @@ export const OPTIONS_PRESETS: BoxPreset[] = [
     disabled: () => false,
   },
 ];
+
+export const getDefaultBoxes = () => {
+  // Scout Receiver Transparent & Scout Sender.
+  const boxes = [
+    {
+      ...OPTIONS_PRESETS.find((x) =>
+        x.presetName.includes("Scout Receiver Transparent")
+      )?.options,
+      backgroundOpacity: 0.2,
+    },
+    {
+      ...OPTIONS_PRESETS.find((x) => x.presetName.includes("Scout Sender"))
+        ?.options,
+    },
+  ];
+
+  return boxes;
+};

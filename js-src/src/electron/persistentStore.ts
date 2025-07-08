@@ -3,13 +3,13 @@ import IStore from "../types/ElectronStore";
 
 const storeDefaults: IStore = {
   boxes: [],
-  textLineModelName: "none",
-  translationModelName: "nllb_jq300",
+  textLineModelName: "dfine_line_emassive",
+  translationModelName: "llm_jgem",
   textDetectionModelName: "dfine_l_denoise",
   textRecognitionModelName: "trocr_jmassive",
   spellCorrectionModelName: "default",
   rerankingModelName: "none",
-  contextAmount: "three",
+  contextAmount: "zero",
   enableCuda: false,
   maxLengthA: 0,
   terms: [],
@@ -26,7 +26,8 @@ const storeDefaults: IStore = {
   numBeams: 3,
   numGpuLayersMt: 22,
   translationThreads: 2, // TODO: remove
-  forceTranslationCPU: true,
+  forceTranslationCPU: false,
+  forceSpellingCorrectionCPU: true,
   forceTdCpu: false,
   forceTlCpu: false,
   forceOcrCpu: false,

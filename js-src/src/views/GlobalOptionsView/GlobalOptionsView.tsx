@@ -245,6 +245,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     spellCorrectionModelName,
     enableCuda,
     forceTranslationCPU,
+    forceSpellingCorrectionCPU,
     forceTdCpu,
     forceTlCpu,
     forceOcrCpu,
@@ -434,7 +435,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 changeValue={setStoreValue}
                 keyName="numGpuLayersMt"
                 defaultValue={numGpuLayersMt}
-                helperText="Only works on Gem translation models. The number of layers to offload to the GPU if CUDA is enabled. This is used to reduce the memory usage of the translation model. This can safely be set to 22 if you have 4 GB VRAM."
+                helperText="Only works on Gem translation models. The number of layers to offload to the GPU if CUDA is enabled. This is used to reduce the memory usage of the translation model. This can safely be set to 22 if you have 4 GB VRAM. Set to 99 to offload all layers."
                 valueType="int"
                 safeValue={22}
                 minValue={-1}
@@ -497,6 +498,16 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 tooltip="Has no effect if CUDA is disabled."
                 label="Force MT on CPU"
                 helperText="The translation model will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
+              />
+            ),
+            "Force Editing on CPU": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="forceSpellingCorrectionCPU"
+                defaultValue={forceSpellingCorrectionCPU}
+                tooltip="Has no effect if CUDA is disabled."
+                label="Force Editing on CPU"
+                helperText="The editing model will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
               />
             ),
             "Context Amount": (

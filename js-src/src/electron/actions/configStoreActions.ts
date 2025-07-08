@@ -8,7 +8,7 @@ import {
   updateNameEntryValueInStoreArray,
   updateTermValueInStoreArray,
 } from "../../utils/updateItemInStoreArray";
-import { OPTIONS_PRESETS } from "../../utils/boxPresets";
+import { getDefaultBoxes } from "../../utils/boxPresets";
 import { OcrBoxManager } from "../ocrUtils/ocrBox";
 
 const getStoreData: GatewayAction = {
@@ -39,12 +39,13 @@ const resetSettings: GatewayAction = {
   command: ElectronCommands.RESET_SETTINGS,
   commandType: "handle",
   fn: (e, w, state, store, key, value) => {
+    // See store defaults in persistentStore.ts
     store.clear();
 
-    const boxes = store.get("boxes") as any[];
+    let boxes = store.get("boxes") as any[];
 
     if (boxes.length === 0) {
-      const boxes = [{ ...OPTIONS_PRESETS[0].options, boxId: "firstbox" }];
+      boxes = getDefaultBoxes();
       store.set("boxes", boxes);
 
       state.managers = boxes.map(
@@ -61,7 +62,7 @@ const regenerateBoxManagers: GatewayAction = {
     let boxes = store.get("boxes") as any[];
 
     if (boxes.length === 0) {
-      boxes = [{ ...OPTIONS_PRESETS[0].options, boxId: "firstbox" }];
+      boxes = getDefaultBoxes();
       store.set("boxes", boxes);
     }
 
