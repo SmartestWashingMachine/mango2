@@ -34,11 +34,21 @@ class LlmCppTranslationApp(BaseTranslation):
 
     def can_load(self):
         return super().can_load(f"models/{self.model_sub_path}" + ".gguf")
+    
+    def get_n_context(self):
+        return 750
+    
+    def get_server_port(self):
+        return 8000
+    
+    def get_can_cuda(self):
+        can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+        return can_cuda
 
     def load_model(
         self,
     ):
-        can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+        can_cuda = self.get_can_cuda()
         logger.info(f"Loading translation model ({self.model_sub_path})... CanCuda={can_cuda} NGpuLayers={config_state.num_gpu_layers_mt}")
 
         if can_cuda:
@@ -54,7 +64,8 @@ class LlmCppTranslationApp(BaseTranslation):
             llama_cpp_server_path=llama_cpp_server_path,
             prepend_phrase=self.prepend_model_output,
             # Hmmmmmmmmmmmmm we use a lot of ports in Mango... from web server, to socket server, to Flask server, to this...
-            port=8000,
+            n_context=self.get_n_context(),
+            port=self.get_server_port(),
         )
 
         self.llm.start_server()

@@ -12,7 +12,7 @@ import asyncio
 
 class LlamaCppExecutableOpenAIClient:
     def __init__(self, model_path, num_gpu_layers, can_cuda,
-                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False):
+                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750):
         """
         Initializes the client to interact with a llama.cpp server executable using the OpenAI client.
 
@@ -36,6 +36,8 @@ class LlamaCppExecutableOpenAIClient:
         self.prepend_phrase = prepend_phrase
 
         self.verbose = verbose
+        
+        self.n_context = n_context
 
         # Initialize the OpenAI client pointing to the llama.cpp server
         self.client = AsyncOpenAI(
@@ -78,7 +80,7 @@ class LlamaCppExecutableOpenAIClient:
                 "--port",
                 str(self.port),
                 "-c", # Context size (equivalent to n_ctx)
-                "800",
+                str(self.n_context),
                 # "--mmap",
                 "--mlock", # Lock model in memory
                 # --- Sampling Parameters (replicating your llama-cpp-python settings) ---
@@ -96,8 +98,9 @@ class LlamaCppExecutableOpenAIClient:
                 "--top-k", "40",
                 "--min-p", "0.05",
                 # Misc.
-                "--no-webui",
-                "--no-mmproj",
+                # "--no-webui",
+                # "--no-mmproj",
+                # "--cache-reuse", "128",
             ]
 
             if self.verbose:
@@ -106,6 +109,11 @@ class LlamaCppExecutableOpenAIClient:
             if self.can_cuda and self.num_gpu_layers > 0:
                 command.extend(["-ngl", str(self.num_gpu_layers)])
                 command.append("--flash-attn")
+            else:
+                # ik_llama deluxe! Building this from source was SO FUN!
+                # This sheep randomly makes some models hang. WHY? WHY? WHY?
+                # command.append("--run-time-repack")
+                pass
 
             ctx.log(f"Starting server with command", command=' '.join(command))
             try:
@@ -145,7 +153,7 @@ class LlamaCppExecutableOpenAIClient:
                 response = requests.get(health_url, timeout=1)
                 if response.status_code == 200 and response.json().get("status") == "ok":
                     return True
-            except (requests.exceptions.ConnectionError, json.JSONDecodeError):
+            except (requests.exceptions.ConnectionError, json.JSONDecodeError, requests.exceptions.ReadTimeout):
                 pass
             time.sleep(1)
 
