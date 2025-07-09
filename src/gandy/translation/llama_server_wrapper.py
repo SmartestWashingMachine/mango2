@@ -8,6 +8,9 @@ from openai import AsyncOpenAI # Import the OpenAI client
 import requests
 import atexit
 
+import win32api
+import win32con
+import win32job
 import asyncio
 
 class LlamaCppExecutableOpenAIClient:
@@ -35,7 +38,7 @@ class LlamaCppExecutableOpenAIClient:
         self.llama_cpp_server_path = llama_cpp_server_path
         self.prepend_phrase = prepend_phrase
 
-        self.verbose = verbose
+        self.verbose = True #verbose
         
         self.n_context = n_context
 
@@ -128,6 +131,30 @@ class LlamaCppExecutableOpenAIClient:
                 )
                 ctx.log("Llama.cpp server process started.")
 
+                # 2. Create and configure the Job Object
+                self.hJob = win32job.CreateJobObject(None, "")
+                if not self.hJob:
+                    raise win32api.error(win32api.GetLastError(), "CreateJobObject")
+
+                extended_info = win32job.QueryInformationJobObject(self.hJob, win32job.JobObjectExtendedLimitInformation)
+                extended_info['BasicLimitInformation']['LimitFlags'] |= win32job.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE # Use |= to preserve other flags
+                win32job.SetInformationJobObject(self.hJob, win32job.JobObjectExtendedLimitInformation, extended_info)
+                print(f"Job Object {self.hJob} created and configured to kill on close.")
+
+                # 3. Get a handle to the server process
+                # PROCESS_TERMINATE is essential for Job Object to terminate it
+                perms = win32con.PROCESS_TERMINATE | win32con.PROCESS_SET_QUOTA
+                hProcess = win32api.OpenProcess(perms, False, self.server_process.pid)
+                if not hProcess:
+                    raise win32api.error(win32api.GetLastError(), "OpenProcess")
+
+                # 4. Assign the server process to the Job Object
+                win32job.AssignProcessToJobObject(self.hJob, hProcess)
+                print(f"Server process {self.server_process.pid} assigned to Job Object {self.hJob}.")
+
+                # 5. Close the process handle (Job Object now manages the reference)
+                win32api.CloseHandle(hProcess)
+
                 self._wait_for_server_ready()
                 ctx.log("Llama.cpp server is ready.")
             except FileNotFoundError:
@@ -172,6 +199,11 @@ class LlamaCppExecutableOpenAIClient:
                 self.server_process = None
             else:
                 ctx.log("Server is not running - doing nothing.")
+
+            if self.hJob:
+                print(f"Closing Job Object handle {self.hJob}.")
+                win32api.CloseHandle(self.hJob)
+                self.hJob = None
 
     async def single_async_call(self, messages, use_stream = None):
         """
