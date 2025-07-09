@@ -8,10 +8,7 @@ block_cipher = None
 a = Analysis(
     ['run_server.py'],
     pathex=['.venv/Lib/site-packages'],
-    binaries=[
-        ('C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.0/bin/cudart64_12.dll', 'resources/backend/llama_cpp_cuda/lib'),
-        ('C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.0/bin/cublas64_12.dll', 'resources/backend/llama_cpp_cuda/lib'),
-    ],
+    binaries=[],
     datas=[('.venv/Lib/site-packages/unidic_lite', 'unidic_lite')],
     hiddenimports=[
         'engineio.async_drivers.eventlet',
@@ -38,13 +35,11 @@ a = Analysis(
         'torch',
         'torchvision',
         'sentencepiece',
-        'llama_cpp',
-        'llama_cpp_cuda',
         'faiss',
         'faiss_cpu',
         'encodings',
     ],
-    hookspath=['./build_hooks'],
+    hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
