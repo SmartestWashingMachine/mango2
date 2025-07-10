@@ -17,11 +17,17 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
   {
     name: "Manga / Games",
     description:
-      "This preset is good for translating Japanese manga panels or for playing games with the detached Text Box.",
+      "This preset is good for translating Japanese manga panels or games.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["trocr_jmassive", "trocr_jbig"],
-      translationModelName: ["llm_jgem", "nllb_jmad", "nllb_jq300", "nllb_jq"],
+      translationModelName: [
+        "llm_jgem_goliath",
+        "llm_jgem",
+        "nllb_jmad",
+        "nllb_jq300",
+        "nllb_jq",
+      ],
       textLineModelName: ["none"],
       numBeams: 3,
       bottomTextOnly: false,
@@ -34,12 +40,18 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
   {
     name: "Manga / Games Alternative",
     description:
-      "This preset is also good for translating Japanese manga panels or games. It uses an additional text line detection model to improve the OCR quality.",
+      "This preset is good for translating Japanese manga panels or games. It uses an additional text line detection model to improve the OCR quality.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["trocr_jmassive", "trocr_jbig"],
-      translationModelName: ["llm_jgem", "nllb_jmad", "nllb_jq300", "nllb_jq"],
-      textLineModelName: ["dfine_line_emassive", "yolo_line_emassive"],
+      translationModelName: [
+        "llm_jgem_goliath",
+        "llm_jgem",
+        "nllb_jmad",
+        "nllb_jq300",
+        "nllb_jq",
+      ],
+      textLineModelName: ["dfine_line_emassive", "yolo_line_emassive", "none"],
       numBeams: 3,
       bottomTextOnly: false,
       contextAmount: "three",
@@ -54,9 +66,15 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       "This preset is good for translating Japanese videos with text drawn on the screen.",
     opts: {
       textDetectionModelName: ["none"],
-      textRecognitionModelName: ["trocr_jmagnus"],
-      translationModelName: ["llm_jgem", "nllb_jmad", "nllb_jq300", "nllb_jq"],
-      textLineModelName: ["dfine_line_emassive", "yolo_line_emassive"],
+      textRecognitionModelName: ["trocr_jmassive"],
+      translationModelName: [
+        "llm_jgem_goliath",
+        "llm_jgem",
+        "nllb_jmad",
+        "nllb_jq300",
+        "nllb_jq",
+      ],
+      textLineModelName: ["dfine_line_emassive", "yolo_line_emassive", "none"],
       numBeams: 3,
       bottomTextOnly: false,
       contextAmount: "three",
@@ -71,7 +89,12 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["k_trocr_massive"],
-      translationModelName: ["llm_kgem", "nllb_komad", "nllb_ko"],
+      translationModelName: [
+        "llm_jgem_goliath",
+        "llm_kgem",
+        "nllb_komad",
+        "nllb_ko",
+      ],
       textLineModelName: ["dfine_line_emassive", "none"],
       numBeams: 3,
       bottomTextOnly: false,
@@ -87,8 +110,8 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["zh_trocr_massive"],
-      translationModelName: ["llm_zhgem"],
-      textLineModelName: ["dfine_line_emassive_loose", "none"],
+      translationModelName: ["llm_zhgem_goliath", "llm_zhgem"],
+      textLineModelName: ["dfine_line_emassive", "none"],
       numBeams: 3,
       bottomTextOnly: false,
       contextAmount: "three",
