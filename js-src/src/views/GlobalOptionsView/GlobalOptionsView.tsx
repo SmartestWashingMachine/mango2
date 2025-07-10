@@ -292,6 +292,17 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     setCapturedWindowPreview(imageBase64);
   };
 
+  const getCustomTranslationOptions = (installedModels: string[]) => {
+    return installedModels
+      .filter((x) => x.startsWith("(Custom Translator) "))
+      .map((x) => {
+        return {
+          name: x,
+          value: x,
+        };
+      });
+  };
+
   return (
     <BaseView>
       <PaginatedTabs
@@ -392,7 +403,14 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 defaultValue={translationModelName}
                 label="Translation Model"
               >
-                {TRANSLATION_OPTIONS.map(renderItem)}
+                {[
+                  ...TRANSLATION_OPTIONS.map(renderItem),
+                  ...getCustomTranslationOptions(installedModels).map((x) => (
+                    <MenuItem value={x.value} dense>
+                      {x.name}
+                    </MenuItem>
+                  )),
+                ]}
               </UpdateListField>
             ),
             "Reranking Model": (

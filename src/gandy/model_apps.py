@@ -75,10 +75,12 @@ from gandy.utils.set_tokenizer_langs import (
     remove_unnecessary_eng_tokens_mad,
 )
 from gandy.translation.llmcpp_translation import LlmCppTranslationApp, GoliathTranslationApp
+from gandy.translation.custom_gguf_translation import CustomGgufTranslationApp
 from gandy.utils.set_tokenizer_langs import prepend_gem_ja, prepend_gem_ko, prepend_gem_zh
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
 from gandy.utils.robust_text_line_resize import robust_transform
 from gandy.spell_correction.llmcpp_refinement import LlmCppRefinementApp
+import os
 
 yolo_xl = YOLOTDImageDetectionApp(
     model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
@@ -416,6 +418,24 @@ TEXT_LINE_MODEL_APP = SwitchApp(
     ],
     app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive", "yolo_line_light", "dfine_line_emassive"],
 )
+
+# CUSTOM TRANSLATION MODEL GGUFS
+
+os.makedirs("models/custom_translators", exist_ok=True)
+
+for model in os.listdir("models/custom_translators"):
+    if model.endswith(".gguf"):
+        print(f'Found model: "{model}"')
+        model_name = model[:-5] # GGUF attachment automatically added
+        if os.path.exists(f"models/custom_translators/{model_name}.mango_config.json"):
+            custom_translation_app = CustomGgufTranslationApp(
+                model_sub_path=model_name,
+                prepend_fn=lambda s: s,
+                lang="Generic",
+            )
+
+            user_model_name = f"(Custom Translator) {model_name}"
+            TRANSLATION_APP.add_app(custom_translation_app, user_model_name)
 
 # disable for debug
 translate_pipeline = AdvancedPipeline(

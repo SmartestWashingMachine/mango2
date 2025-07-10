@@ -23,6 +23,10 @@ class SwitchApp:
         self.apps = apps
         self.app_names = app_names
 
+    def add_app(self, app: BaseApp, app_name: str):
+        self.apps.append(app)
+        self.app_names.append(app_name)
+
     def select_app(self, app_name):
         """
         Select the app with the given name. All further process calls on this app will redirect to the newly selected app.
