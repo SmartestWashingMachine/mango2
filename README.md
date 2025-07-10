@@ -79,8 +79,8 @@ Mango 4 comes preinstalled with the necessary models. There are additional model
 
 Unzipping a model pack will reveal a `models` folder. Drag this `models` folder to where `mango.exe` is located.
 
-- Stronger MT model [Supports Japanese/Korean/Chinese to English and is just generally better albeit slower] [COMING SOON]
-- Korean + Chinese OCR models [Self-explanatory] [COMING SOON]
+- [Stronger MT model](https://drive.google.com/file/d/15gvST4_UgWgaIBZ_J4cugr23ahQ2Zzom/view?usp=sharing) [Supports Japanese/Korean/Chinese to English and is just generally better albeit slower]
+- [Korean + Chinese OCR models](https://drive.google.com/file/d/1Cg1haoMSqEqQRqkbWn8qsZ_rJruKkIvU/view?usp=sharing) [Self-explanatory]
 - [Post editing model](https://drive.google.com/file/d/1bClqgpoBPYms8ZCja8UymQrx2kJOqY1G/view?usp=sharing) [Refines translations for even better quality but is slow as [REDACTED]]
 - Caching model [Allows translation caching for creating and using shared translation cache files] [COMING SOON]
 - 2X Stronger MT model [Supports CJK to English and may be even better albeit EVEN slower] [MAYBE COMING SOON]
