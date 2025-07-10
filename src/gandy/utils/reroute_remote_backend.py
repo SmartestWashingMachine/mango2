@@ -33,11 +33,13 @@ class RemoteRouter():
         return images
     
     def post(self, addr: str, data):
-        response = requests.post('http://' + self.socketio_address + ':5000' + addr, json=data)
+        addr = 'http://' + self.socketio_address + ':5000' + addr
+
+        response = requests.post(addr, json=data)
         try:
             response.raise_for_status()
         except Exception as e:
-            print('Error:')
+            print('Error POSTING to remote router:')
             print(e)
             raise e
 

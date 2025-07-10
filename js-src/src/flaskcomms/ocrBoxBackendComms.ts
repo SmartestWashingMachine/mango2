@@ -56,7 +56,8 @@ export const translateImageGiveTextFaster = async (
   streamOutput: boolean | null,
   translateLinesIndividually: number = 0
 ) => {
-  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask3new`;
+  // This always goes to local host first - the backend there will then push it to the remote backend.
+  const apiUrl = `http://localhost:5000/processtask3new`;
 
   const formData = new FormData();
   for (const f of coords) {

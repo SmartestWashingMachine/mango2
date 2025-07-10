@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 
 class DangerousConfig():
     def __init__(self):
@@ -11,7 +12,8 @@ class DangerousConfig():
                 self.enable_web_ui = dangerous_config['enableWebUi']
                 self.debug = dangerous_config['debug']
         except Exception as e: # Can happen due to race conditions.
-            print(e)
+            print('Failed to read dangerous config:')
+            print(traceback.format_exc())
 
             # Actual config file created in ElectronJS see 'readDangerousConfig()'
             self.socketio_address = '127.0.0.1'
