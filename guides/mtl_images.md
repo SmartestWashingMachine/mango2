@@ -1,4 +1,4 @@
-# Using Mango 2 to translate images or manga pages
+# Using Mango to translate images or manga pages
 
 
 ## Navigate to the Images tab.
@@ -27,7 +27,7 @@
 
 The first image will likely take longer to translate than the rest as the models have to be loaded into memory.
 
-Mango 2 runs all models on the CPU by default. You can enable GPU CUDA usage in the settings tab.
+Mango runs all models on the CPU by default. You can enable GPU CUDA usage in the settings tab.
 
 ## Profit!
 
