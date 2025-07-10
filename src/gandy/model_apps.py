@@ -425,9 +425,10 @@ os.makedirs("models/custom_translators", exist_ok=True)
 
 for model in os.listdir("models/custom_translators"):
     if model.endswith(".gguf"):
-        print(f'Found model: "{model}"')
         model_name = model[:-5] # GGUF attachment automatically added
         if os.path.exists(f"models/custom_translators/{model_name}.mango_config.json"):
+            print(f'Found model: "{model}"')
+
             custom_translation_app = CustomGgufTranslationApp(
                 model_sub_path=model_name,
                 prepend_fn=lambda s: s,
@@ -436,6 +437,8 @@ for model in os.listdir("models/custom_translators"):
 
             user_model_name = f"(Custom Translator) {model_name}"
             TRANSLATION_APP.add_app(custom_translation_app, user_model_name)
+        else:
+            print(f'WARNING: No config found for "{model}"')
 
 # disable for debug
 translate_pipeline = AdvancedPipeline(

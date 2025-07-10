@@ -44,6 +44,9 @@ class LlmCppTranslationApp(BaseTranslation):
     def get_can_cuda(self):
         can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
         return can_cuda
+    
+    def get_model_path_for_llmcpp(self):
+        return os.path.join("models", f"{self.model_sub_path}.gguf")
 
     def load_model(
         self,
@@ -58,7 +61,7 @@ class LlmCppTranslationApp(BaseTranslation):
             llama_cpp_server_path = os.path.join('models', "llamacpp_cpu", "llama-server.exe")
 
         self.llm = LlamaCppExecutableOpenAIClient(
-            model_path=os.path.join("models", f"{self.model_sub_path}.gguf"),
+            model_path=self.get_model_path_for_llmcpp(),
             num_gpu_layers=(config_state.num_gpu_layers_mt if can_cuda else 0),
             can_cuda=can_cuda,
             llama_cpp_server_path=llama_cpp_server_path,
@@ -150,6 +153,9 @@ class LlmCppTranslationApp(BaseTranslation):
         )
 
         return predictions
+    
+    def misc_postprocess(self, output: str):
+        return output.replace("\\'", "'")
 
     def process(
         self,
@@ -183,7 +189,7 @@ class LlmCppTranslationApp(BaseTranslation):
             else:
                 outputs = self.batch_translate_strings(texts) # List of strings.
             
-            return [o.replace("\\'", "'") for o in outputs]
+            return [self.misc_postprocess(o) for o in outputs]
     
     def process_with_batch(self, texts: List[str]):
         self.translate_string()

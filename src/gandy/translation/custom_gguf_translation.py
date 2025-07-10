@@ -3,6 +3,7 @@ from gandy.utils.fancy_logger import logger
 from typing import List
 import json
 import regex as re
+import os
 
 """
 
@@ -30,12 +31,18 @@ import regex as re
     "<think>"
     "<think>\n</think>\n\n"
 
+- extract_from_output:
+    "" (No extraction done.)
+    "Translated Text: (.+)"
+
+- n_context (integer): Max amount of tokens that the model can parse - not to be confused with context inputs in Mango.
 
 As we can see, there are a few "operators" for templating purposes:
 - {{PREFIX_EACH_CONTEXT(...)}}: This is used to prefix each context with a string.
 - {{JOIN_EACH_CONTEXT(...)}}: This is used to join each context with a string (in other words: the first context is not prefixed, but the rest are).
 - {{CONTEXT}}: This is used to insert the CURRENT source-side context sentence into the message. Should only be used in create_each_context_message.
 - {{SOURCE}}: This is used to insert the source text into the message.
+- {{IF_CONTEXT_EXISTS(...)}}: Only inserts the string if there is context.
 
 Target-side context is not supported. Personally, I found them to dilute the model's attention.
 """
@@ -49,7 +56,10 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             mango_config = json.load(f)
 
         return mango_config
-    
+
+    def get_model_path_for_llmcpp(self):
+        return os.path.join("models", "custom_translators", f"{self.model_sub_path}.gguf")
+
     def can_load(self):
         return True
     
@@ -70,9 +80,16 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             return sep + sep.join(contexts)
         return sep.join(contexts)
     
+    def map_if_context_exists(self, contexts: List[str], sep):
+        if len(contexts) == 0:
+            return ""
+        return sep.group(1) if sep is not None else ""
+    
     def populate_template_str(self, msg: str, contexts: List[str], source: str):
         msg = re.sub(r"\{\{PREFIX_EACH_CONTEXT\((.*?)\)\}\}", lambda m: self.map_contexts_template(contexts, m), msg)
         msg = re.sub(r"\{\{JOIN_EACH_CONTEXT\((.*?)\)\}\}", lambda m: self.map_contexts_template(contexts, m, prefix=False), msg)
+
+        msg = re.sub(r"\{\{IF_CONTEXT_EXISTS\((.*?)\)\}\}", lambda m: self.map_if_context_exists(contexts, m), msg)
 
         msg = msg.replace("{{SOURCE}}", source)
 
@@ -140,3 +157,15 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             ctx.log('Done creating list of messages', messages=messages)
 
         return messages
+
+    def misc_postprocess(self, output: str):
+        if self.ignore_field(self.mango_config["extract_from_output"]):
+            return output
+
+        try:
+            return re.search(self.mango_config["extract_from_output"], output).group(1)
+        except:
+            return output
+
+    def get_n_context(self):
+        return int(self.mango_config.get("n_context"))
