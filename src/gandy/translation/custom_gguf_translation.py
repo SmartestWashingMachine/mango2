@@ -11,22 +11,26 @@ import os
 
 - create_system_message: 
     "" (No system message made - make sure create_current_user_message is set up correctly in this case.)
+    "file" (Instead, the model will read from "<modelname>.create_system_message.txt" in the same directory as the .mango_config.json file.)
     "Translate from Japanese to English.{{PREFIX_EACH_CONTEXT(\nContext: )}}\nSource to Translate: {{SOURCE}}"
 
 - create_each_context_message:
     (This creates a user message for each context.)
 
     "" (No additional user messages made.)
+    "file" (Instead, the model will read from "<modelname>.create_each_context_message.txt" in the same directory as the .mango_config.json file.)
     "Context: {{CONTEXT}}"
 
 - create_current_user_message:
     "" (No user messages made - make sure create_system_message is set up correctly in this case.)
+    "file" (Instead, the model will read from "<modelname>.create_current_user_message.txt" in the same directory as the .mango_config.json file.)
     "Translate: {{SOURCE}}"
     "{{JOIN_EACH_CONTEXT(\nContext: )}}\nTranslate: {{SOURCE}}"
     "{{PREFIX_EACH_CONTEXT(\nContext: )}}\nTranslate: {{SOURCE}}"
 
 - create_assistant_prefix:
     "" (No text is "pre-fed" to the model. This is usually what you want.)
+    "file" (Instead, the model will read from "<modelname>.create_assistant_prefix.txt" in the same directory as the .mango_config.json file.)
     "Sure! Here is the translation:"
     "<think>"
     "<think>\n</think>\n\n"
@@ -43,6 +47,10 @@ As we can see, there are a few "operators" for templating purposes:
 - {{CONTEXT}}: This is used to insert the CURRENT source-side context sentence into the message. Should only be used in create_each_context_message.
 - {{SOURCE}}: This is used to insert the source text into the message.
 - {{IF_CONTEXT_EXISTS(...)}}: Only inserts the string if there is context.
+- file: This is used to read the contents of a file in the same directory as the .mango_config.json file, with the same name as the field, but with a .txt extension instead of .mango_config.json.
+    All the other templating operators can be used in the file as well.
+    This does not work in extract_from_output, as it is not a message template, but rather a regex pattern.
+- file_no_strip: Similar to "file", but does not strip any whitespace from the beginning and end of the file contents. This should almost never be used.
 
 Target-side context is not supported. Personally, I found them to dilute the model's attention.
 """
@@ -52,8 +60,10 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         return f"models/custom_translators/{self.model_sub_path}" + ".mango_config.json"
     
     def load_mango_config(self):
-        with open(self.get_mango_config_path(), 'r', encoding='utf-8') as f:
-            mango_config = json.load(f)
+        with logger.begin_event("Loading Mango config") as ctx:
+            with open(self.get_mango_config_path(), 'r', encoding='utf-8') as f:
+                mango_config = json.load(f)
+                ctx.log('Loaded Mango config', mango_config=mango_config)
 
         return mango_config
 
@@ -70,6 +80,17 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
     
     def ignore_field(self, msg: str):
         return msg == "" or msg is None
+    
+    def get_field_value(self, msg: str):
+        fv = self.mango_config[msg]
+
+        if fv == "file" or fv == "file_no_strip":
+            with open(f"models/custom_translators/{self.model_sub_path}.{msg}.txt", 'r', encoding='utf-8') as f:
+                fv = f.read()
+        if fv == "file_no_strip":
+            fv = fv.strip()
+
+        return fv
     
     def map_contexts_template(self, contexts: List[str], sep, prefix = True):
         sep = sep.group(1)
@@ -100,7 +121,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         return msg
 
     def map_system_message(self, contexts: List[str], source: str):
-        field: str = self.mango_config["create_system_message"]
+        field = self.get_field_value("create_system_message")
         if self.ignore_field(field):
             return []
         
@@ -110,7 +131,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         return [{ "role": "system", "content": m, } for m in mapped]
     
     def map_each_context_message(self, contexts: List[str], source: str):
-        field: str = self.mango_config["create_each_context_message"]
+        field = self.get_field_value("create_each_context_message")
         if self.ignore_field(field):
             return []
 
@@ -122,7 +143,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         return [{ "role": "user", "content": m, } for m in messages]
 
     def map_current_user_message(self, contexts: List[str], source: str):
-        field: str = self.mango_config["create_current_user_message"]
+        field = self.get_field_value("create_current_user_message")
         if self.ignore_field(field):
             return []
 
@@ -132,7 +153,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         return [{ "role": "user", "content": m, } for m in mapped]
 
     def map_assistant_prefix(self, contexts: List[str], source: str):
-        field: str = self.mango_config["create_assistant_prefix"]
+        field = self.get_field_value("create_assistant_prefix")
         if self.ignore_field(field):
             return []
 
@@ -168,4 +189,4 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             return output
 
     def get_n_context(self):
-        return int(self.mango_config.get("n_context"))
+        return int(self.mango_config["n_context"])
