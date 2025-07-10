@@ -630,7 +630,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
                   placeholder={
                     matchDownMd
                       ? "Type text here or click the purple button above!"
-                      : "Type text here... Using Textractor instead? Click the purple button above!"
+                      : "Type text here... Playing a game? Click the purple button above!"
                   }
                   value={inputText}
                   multiline
