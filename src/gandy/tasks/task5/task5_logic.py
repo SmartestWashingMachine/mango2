@@ -14,6 +14,8 @@ from gandy.state.debug_state import debug_state
 from gandy.state.config_state import config_state
 from gandy.utils.text_processing import pack_context, pack_context_dedupe
 from uuid import uuid4
+from gc import collect
+
 """
 
 I didn't think I would need to write a pseudo design document for this task, but there are a lot of heuristics involved here, so I want to
@@ -145,9 +147,10 @@ def process_task5(
 
     if config_state.memory_efficient_tasks:
         # Unload unnecessary models.
-        app_container.text_detection_app.unload_all()
-        app_container.text_recognition_app.unload_all()
-        app_container.text_line_app.unload_all()
+        app_container.text_detection_app.unload_all(do_collect=False)
+        app_container.text_recognition_app.unload_all(do_collect=False)
+        app_container.text_line_app.unload_all(do_collect=False)
+        collect()
 
     ## STAGE 3: Translate each frame.
     segments = translate_text_in_frames(

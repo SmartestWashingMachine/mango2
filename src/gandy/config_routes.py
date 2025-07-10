@@ -5,7 +5,7 @@ from gandy.state.context_state import context_state
 from gandy.utils.fancy_logger import logger
 from gandy.full_pipelines.switch_app import SwitchApp
 from typing import List
-
+from gc import collect
 
 @app.route("/changecleaning", methods=["POST"])
 def change_cleaning_route():
@@ -108,6 +108,15 @@ def change_multiple_models_route():
             c_amount = 1
 
         max_length_a = float(data["maxLengthA"])
+
+        # Might lead to unnecessary loading but oh well
+        translate_pipeline.text_recognition_app.unload_all(do_collect=False)
+        translate_pipeline.text_detection_app.unload_all(do_collect=False)
+        translate_pipeline.reranking_app.unload_all(do_collect=False)
+        translate_pipeline.translation_app.unload_all(do_collect=False)
+        translate_pipeline.text_line_app.unload_all(do_collect=False)
+        translate_pipeline.spell_correction_app.unload_all(do_collect=False)
+        collect()
 
         config_state.set_decoding_params(
             top_p=float(data["topP"]),

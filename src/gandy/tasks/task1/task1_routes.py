@@ -10,6 +10,7 @@ from gandy.state.debug_state import debug_state
 from gandy.state.config_state import config_state
 from gandy.tasks.task1.stitch_images_together import stack_horizontally, stack_vertically
 from gandy.tasks.task1.smart_vertical_merging import smart_vertical_merging
+from gc import collect
 
 # Task1 - translate images into images.
 
@@ -227,9 +228,10 @@ def translate_task1_background_job(
                 # This allows us to get a full GPU pipeline going with <= 4 GB VRAM.
 
                 # Unload unnecessary models.
-                translate_pipeline.text_detection_app.unload_all()
-                translate_pipeline.text_recognition_app.unload_all()
-                translate_pipeline.text_line_app.unload_all()
+                translate_pipeline.text_detection_app.unload_all(do_collect=False)
+                translate_pipeline.text_recognition_app.unload_all(do_collect=False)
+                translate_pipeline.text_line_app.unload_all(do_collect=False)
+                collect()
 
                 for img_idx, (images_data_inner, mem_eff_data) in enumerate(zip(images_data, memory_efficient_data_to_translate_later)):
                     img_name = images_data_inner[1]
