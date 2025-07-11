@@ -442,9 +442,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 changeValue={setStoreValue}
                 keyName="enableCuda"
                 defaultValue={enableCuda}
-                tooltip="4 GB VRAM can work if MT model is forced onto the CPU."
                 label="Enable CUDA"
-                helperText="Will improve speed IF using a good GPU that supports CUDA. 4 GB of VRAM is required to use a non-Gem translation model for text or clipboard translations alone, and 8 GB VRAM is usually required to OCR and translate images on a GPU. But the entire process can be run on 4 GB VRAM if a Gem translation model is used instead. You can also force parts of the process to run on the CPU instead with the options below."
+                helperText="Will improve speed IF using a good GPU that supports CUDA. The entire process can be run on 4 GB VRAM. You can also force parts of the process to run on the CPU instead with the options below."
               />
             ),
             "(Gem) Number of GPU Layers to Offload": (
