@@ -188,8 +188,11 @@ class LlmCppTranslationApp(BaseTranslation):
                 outputs = output[0]
             else:
                 outputs = self.batch_translate_strings(texts) # List of strings.
-            
-            return [self.misc_postprocess(o) for o in outputs]
+
+            final_outputs = [self.misc_postprocess(o) for o in outputs]
+            ctx.log("Postprocessed translations", before=outputs, after=final_outputs)
+
+            return final_outputs
     
     def process_with_batch(self, texts: List[str]):
         self.translate_string()
