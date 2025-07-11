@@ -9,7 +9,10 @@ import IReplaceTerm from "../../types/ReplaceTerm";
 import BaseView from "../BaseView";
 import { TEXT_DETECTION_OPTIONS } from "../../utils/appOptions/textDetectionOptions";
 import { TEXT_LINE_OPTIONS } from "../../utils/appOptions/textLineOptions";
-import { TRANSLATION_OPTIONS } from "../../utils/appOptions/translationOptions";
+import {
+  LEGACY_TRANSLATION_OPTIONS,
+  TRANSLATION_OPTIONS,
+} from "../../utils/appOptions/translationOptions";
 import { RERANKING_OPTIONS } from "../../utils/appOptions/rerankingOptions";
 import { SPELLING_CORRECTION_OPTIONS } from "../../utils/appOptions/spellingCorrectionOptions";
 import { DECODING_OPTIONS } from "../../utils/appOptions/decodingOptions";
@@ -410,6 +413,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                       {x.name}
                     </MenuItem>
                   )),
+                  ...LEGACY_TRANSLATION_OPTIONS.map(renderItem),
                 ]}
               </UpdateListField>
             ),

@@ -53,6 +53,9 @@ export const TRANSLATION_OPTIONS = [
     Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
     `,
   },
+];
+
+export const LEGACY_TRANSLATION_OPTIONS = [
   {
     // NOTE: nllb_jq is biased towards shorter texts.
     name: "(Legacy) Japanese-2-English Qualia",
