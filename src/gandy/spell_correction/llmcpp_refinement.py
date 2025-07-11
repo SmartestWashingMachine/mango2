@@ -75,7 +75,7 @@ class LlmCppRefinementApp(LlmCppTranslationApp):
             return prediction.strip()
 
         if end_index == -1:
-            return prediction[:start_index].strip()
+            return prediction[start_index + len(start_tag):].strip()
         else:
             return prediction[start_index + len(start_tag):end_index].strip()
     
