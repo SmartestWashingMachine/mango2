@@ -184,9 +184,8 @@ class BasePipeline:
 
                 if translation_candidates is not None:
                     found_in_cache = True
-
-                translation_output = translation_candidates[0] # Only 1 candidate is returned.
-                all_translation_outputs[idx] = translation_output
+                    translation_output = translation_candidates[0] # Only 1 candidate is returned.
+                    all_translation_outputs[idx] = translation_output
 
                 was_found_in_cache[idx] = found_in_cache # True
 

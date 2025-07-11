@@ -15,7 +15,7 @@ import asyncio
 
 class LlamaCppExecutableOpenAIClient:
     def __init__(self, model_path, num_gpu_layers, can_cuda,
-                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750):
+                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750, embedding=False):
         """
         Initializes the client to interact with a llama.cpp server executable using the OpenAI client.
 
@@ -39,6 +39,8 @@ class LlamaCppExecutableOpenAIClient:
         self.prepend_phrase = prepend_phrase
 
         self.verbose = True #verbose
+
+        self.embedding = embedding
         
         self.n_context = n_context
 
@@ -117,6 +119,21 @@ class LlamaCppExecutableOpenAIClient:
                 # This sheep randomly makes some models hang. WHY? WHY? WHY?
                 # command.append("--run-time-repack")
                 pass
+
+            if self.embedding:
+                # command.append("--embeddings")
+                command = [
+                    self.llama_cpp_server_path,
+                    "-m",
+                    self.model_path,
+                    "--host",
+                    self.host,
+                    "--port",
+                    str(self.port),
+                    "-c", # Context size (equivalent to n_ctx)
+                    str(self.n_context),
+                    "--embeddings",
+                ]
 
             ctx.log(f"Starting server with command", command=' '.join(command))
             try:
@@ -205,6 +222,9 @@ class LlamaCppExecutableOpenAIClient:
                 win32api.CloseHandle(self.hJob)
                 self.hJob = None
 
+    def get_model_name(self):
+        return self.model_path.split(os.sep)[-1] # Just the model name (e.g., "my_model.gguf")
+
     async def single_async_call(self, messages, use_stream = None):
         """
         Calls the llama.cpp server using the OpenAI client for chat completion.
@@ -217,7 +237,7 @@ class LlamaCppExecutableOpenAIClient:
         if self.prepend_phrase is not None:
             messages = messages + [{"role": "assistant", "content": self.prepend_phrase}]
 
-        model_name = self.model_path.split(os.sep)[-1] # Just the model name (e.g., "my_model.gguf")
+        model_name = self.get_model_name()
 
         prediction = ""
         if use_stream is not None:
@@ -268,3 +288,13 @@ class LlamaCppExecutableOpenAIClient:
     def call_llm_with_batch(self, batch_inputs):
         # For batched inference. batch_inputs should be a List of messages.
         return self.call_llm(batch_inputs, use_stream=None)
+    
+    async def embed_async(self, msg: str):
+        model_name = self.get_model_name()
+        response = await self.client.embeddings.create(input=[msg], model=model_name)
+
+        return response.data[0].embedding
+    
+    def call_embed_no_batch(self, msg: str):
+        emb = asyncio.run(self.embed_async(msg))
+        return emb

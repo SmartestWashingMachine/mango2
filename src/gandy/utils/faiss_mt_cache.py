@@ -5,6 +5,7 @@ import threading
 from gandy.state.config_state import config_state
 from gandy.utils.fancy_logger import logger
 import numpy as np
+from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClient
 
 # Vibe coded bro.
 
@@ -16,19 +17,40 @@ class FAISSEmbedder:
         :param model_name: Name of the multilingual model.
         """
 
-        can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+        can_cuda = self.get_can_cuda()
         logger.info(f"Loading embedding model...")
 
-        if can_cuda:
-            from llama_cpp_cuda import Llama as LlamaGpu
-
-            llm_to_use = LlamaGpu
+        if can_cuda and False:
+            llama_cpp_server_path = os.path.join('models', "llamacpp_gpu", "llama-server.exe")
         else:
-            from llama_cpp import Llama as LlamaCpu
+            # Else the CUDA binaries are still loaded.
+            llama_cpp_server_path = os.path.join('models', "llamacpp_cpu_embedding", "llama-server.exe")
 
-            llm_to_use = LlamaCpu
+        self.llm = LlamaCppExecutableOpenAIClient(
+            model_path=self.get_model_path_for_llmcpp(model_name),
+            num_gpu_layers=(config_state.num_gpu_layers_mt if can_cuda else 0),
+            can_cuda=can_cuda,
+            llama_cpp_server_path=llama_cpp_server_path,
+            prepend_phrase=lambda s: s,
+            n_context=self.get_n_context(),
+            port=self.get_server_port(),
+            embedding=True,
+        )
 
-        self.model = llm_to_use(model_name, n_gpu_layers=0, embedding=True, verbose=False)
+        self.llm.start_server()
+
+    def get_n_context(self):
+        return 750
+    
+    def get_server_port(self):
+        return 7998
+    
+    def get_can_cuda(self):
+        can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+        return can_cuda
+    
+    def get_model_path_for_llmcpp(self, model_sub_path: str):
+        return os.path.join("models", "database", f"{model_sub_path}.gguf")
 
     def embed(self, sentences: list) -> np.ndarray:
         """
@@ -37,7 +59,9 @@ class FAISSEmbedder:
         :param sentences: List of sentences to embed.
         :return: Numpy array of embeddings.
         """
-        return self.model.embed(sentences)
+        embed = [self.llm.call_embed_no_batch(s) for s in sentences] # An array of N elements where N is the number of sentences. Then each inner item has "384" (hidden dim) elements.
+
+        return embed
 
 class FAISSStore:
     def __init__(self, db_path: str, model_name: str, hnsw_m: int = 32, save_interval: int = 50):
@@ -178,7 +202,7 @@ class MTCache():
         self.mt_cache = None
 
     def load_mt_cache(self):
-        self.mt_cache = FAISSStore(db_path='models/database/cache', model_name='models/database/nite.gguf')
+        self.mt_cache = FAISSStore(db_path='models/database/cache', model_name='nite')
 
     def embed_text(self, inp: str):
         if self.mt_cache is None:
