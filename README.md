@@ -73,9 +73,11 @@ A Nvidia GPU should **NOT** be required for CPU usage. A Nvidia GPU is only requ
 
 [How to enable CUDA for faster translations](guides/cuda.md)
 
+[Adding custom translator models](guides/loading_custom_translator_llms.md)
+
 # Model packs
 
-Mango 4 comes preinstalled with the necessary models. There are additional model packs here which may enhance the experience.
+Mango 4 comes preinstalled with the necessary models. There are additional model packs here which may enhance the experience (not to be confused with other custom models).
 
 Unzipping a model pack will reveal a `models` folder. Drag this `models` folder to where `mango.exe` is located.
 

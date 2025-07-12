@@ -1,0 +1,9 @@
+{
+  "create_system_message": "",
+  "create_each_context_message": "",
+  "create_current_user_message": "file",
+  "create_assistant_prefix": "<answer>",
+  "extract_from_output": "<answer>(.+)</answer>",
+  "n_context": 1024,
+  "stop_words": "</answer>"
+}
