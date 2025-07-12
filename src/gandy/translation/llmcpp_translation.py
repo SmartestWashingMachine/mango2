@@ -47,6 +47,9 @@ class LlmCppTranslationApp(BaseTranslation):
     
     def get_model_path_for_llmcpp(self):
         return os.path.join("models", f"{self.model_sub_path}.gguf")
+    
+    def get_stop_words(self):
+        return None
 
     def load_model(
         self,
@@ -60,6 +63,8 @@ class LlmCppTranslationApp(BaseTranslation):
             # Else the CUDA binaries are still loaded.
             llama_cpp_server_path = os.path.join('models', "llamacpp_cpu", "llama-server.exe")
 
+        print('GET STOP WORDS:')
+        print(self.get_stop_words())
         self.llm = LlamaCppExecutableOpenAIClient(
             model_path=self.get_model_path_for_llmcpp(),
             num_gpu_layers=(config_state.num_gpu_layers_mt if can_cuda else 0),
@@ -69,6 +74,7 @@ class LlmCppTranslationApp(BaseTranslation):
             # Hmmmmmmmmmmmmm we use a lot of ports in Mango... from web server, to socket server, to Flask server, to this...
             n_context=self.get_n_context(),
             port=self.get_server_port(),
+            stop=self.get_stop_words(),
         )
 
         self.llm.start_server()

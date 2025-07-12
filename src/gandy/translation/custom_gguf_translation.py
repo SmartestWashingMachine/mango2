@@ -43,6 +43,8 @@ import os
 
 - n_context (integer): Max amount of tokens that the model can parse - not to be confused with context inputs in Mango.
 
+- stop_words (string | array of strings | null): Extra words/phrases to stop generation once reached.
+
 As we can see, there are a few "operators" for templating purposes:
 - {{PREFIX_EACH_CONTEXT(...)}}: This is used to prefix each context with a string.
 - {{JOIN_EACH_CONTEXT(...)}}: This is used to join each context with a string (in other words: the first context is not prefixed, but the rest are).
@@ -211,15 +213,32 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             ctx.log('Done creating list of messages', messages=messages)
 
         return messages
+    
+    def remove_stop_words(self, output: str):
+        sw = self.get_stop_words()
+        if sw is None or len(sw) == 0:
+            return output
+        
+        if isinstance(sw, str):
+            sw = [sw]
+
+        for stop in sw:
+            output = output.rsplit(stop, maxsplit=1)[0].strip()
+        return output
 
     def misc_postprocess(self, output: str):
         if self.ignore_field(self.mango_config["extract_from_output"]):
-            return output
+            return self.remove_stop_words(output)
 
         try:
-            return re.search(self.mango_config["extract_from_output"], output).group(1)
+            output = re.search(self.mango_config["extract_from_output"], output, flags=re.DOTALL).group(1)
+
+            return self.remove_stop_words(output)
         except:
-            return output
+            return self.remove_stop_words(output)
 
     def get_n_context(self):
         return int(self.mango_config["n_context"])
+
+    def get_stop_words(self):
+        return self.mango_config["stop_words"]

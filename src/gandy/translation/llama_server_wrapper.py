@@ -4,7 +4,7 @@ import json
 import os
 from gandy.utils.fancy_logger import logger
 import sys
-from openai import AsyncOpenAI # Import the OpenAI client
+from openai import AsyncOpenAI, NOT_GIVEN # Import the OpenAI client
 import requests
 import atexit
 
@@ -15,7 +15,7 @@ import asyncio
 
 class LlamaCppExecutableOpenAIClient:
     def __init__(self, model_path, num_gpu_layers, can_cuda,
-                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750, embedding=False):
+                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750, embedding=False, stop = None):
         """
         Initializes the client to interact with a llama.cpp server executable using the OpenAI client.
 
@@ -43,6 +43,11 @@ class LlamaCppExecutableOpenAIClient:
         self.embedding = embedding
         
         self.n_context = n_context
+
+        self.stop = stop
+        if self.stop is None:
+            # Yeah None might work instead of NOT_GIVEN but you never know with these fudging developers, so let's keep things by the book.
+            self.stop = NOT_GIVEN
 
         # Initialize the OpenAI client pointing to the llama.cpp server
         self.client = AsyncOpenAI(
@@ -247,6 +252,7 @@ class LlamaCppExecutableOpenAIClient:
                 messages=messages,
                 stream=True,
                 temperature=0.02,
+                stop=self.stop,
             )
 
             async for chunk in stream_response:
@@ -266,6 +272,7 @@ class LlamaCppExecutableOpenAIClient:
                 messages=messages,
                 stream=False,
                 temperature=0.02,
+                stop=self.stop,
             )
             prediction = completion.choices[0].message.content
 
