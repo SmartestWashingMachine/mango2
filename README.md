@@ -45,7 +45,7 @@ Mango 4 is a tool to machine translate Japanese media such as games and manga to
 
 # Installation
 
-1. [Download Mango](https://drive.google.com/file/d/1LBIw4C9K8EjRMtkSojZ_rLb6ysYce_Ni/view?usp=sharing)
+1. [Download Mango](https://drive.google.com/file/d/1EZs0Cd5nHGP3lQsl7qGBXatBpqb5EGCJ/view?usp=sharing)
 2. Unzip the file. 7zip was used to zip it.
 3. Open "mango.exe" - it will take a minute to load.
 
