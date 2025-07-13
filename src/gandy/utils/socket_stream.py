@@ -40,7 +40,9 @@ class SocketStreamer(TextStreamer):
 
         # Prints until the last space char (simple heuristic to avoid printing incomplete words,
         # which may change with the subsequent token -- there are probably smarter ways to do this!)
-        printable_text = text[:text.rfind(" ") + 1]
+        ### printable_text = text[:text.rfind(" ") + 1]
+
+        printable_text = text
 
         self.on_finalized_text(printable_text)
 
