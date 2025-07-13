@@ -65,6 +65,8 @@ const restoreWindowBounds = (win: BrowserWindow) => {
   });
 };
 
+const openShellArg = app.commandLine.hasSwitch("showpy");
+
 const createWindow = () => {
   const win = new BrowserWindow({
     webPreferences: {
@@ -78,6 +80,7 @@ const createWindow = () => {
     titleBarStyle: isDev ? "default" : "hidden",
     backgroundColor: "#FFF",
     alwaysOnTop: lockTop || undefined,
+    skipTaskbar: !openShellArg,
   });
 
   restoreWindowBounds(win);
@@ -87,11 +90,31 @@ const createWindow = () => {
   return win;
 };
 
-const openShellArg = app.commandLine.hasSwitch("showpy");
-
 const subprocess = isDev ? null : loadPython(openShellArg);
 
 app.whenReady().then(async () => {
+  const splashWindow = new BrowserWindow({
+    webPreferences: {
+      devTools: false,
+    },
+    icon: path.join(__dirname, "Icon.png"),
+    opacity: 1,
+    frame: false, // No menu bars nor top bar.
+    resizable: false,
+    center: true,
+    show: false,
+    titleBarStyle: "hidden",
+    backgroundColor: "#FFF",
+    width: 500,
+    height: 400,
+    alwaysOnTop: true,
+  });
+  splashWindow.loadFile(path.join(__dirname, "./splash.html"));
+
+  splashWindow.once("ready-to-show", () => {
+    splashWindow.show();
+  });
+
   await createEssentialFolders();
 
   // Must be called before API calls on the main process.
@@ -175,8 +198,16 @@ app.whenReady().then(async () => {
   // API call.
   await initializeModelNames(store.store);
 
-  mainWindow.setOpacity(1);
+  mainWindow.webContents.on("did-finish-load", () => {
+    mainWindow.setOpacity(1);
+    mainWindow.focus();
+  });
+
   mainWindow.loadFile(path.join(__dirname, "./index.html"));
+
+  splashWindow.destroy();
+
+  mainWindow.setSkipTaskbar(false);
 });
 
 app.on("window-all-closed", () => {
