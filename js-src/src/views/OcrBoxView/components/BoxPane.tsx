@@ -176,8 +176,6 @@ const OcrBoxPane = ({
     background,
   };
 
-  const timeoutMs = msToSecs(fadeAwayTime);
-
   // If options wasn't given, render null.
   if (!fontSize || hide) {
     return null;
@@ -212,7 +210,7 @@ const OcrBoxPane = ({
     >
       <Fade
         in={visible || isHovering}
-        timeout={{ enter: 300, appear: 300, exit: timeoutMs }}
+        timeout={{ enter: 300, appear: 300, exit: 600 }}
       >
         <Box className="boxApp" sx={extraBoxStyles}>
           <div className="boxAppHandleTopLeft" />
