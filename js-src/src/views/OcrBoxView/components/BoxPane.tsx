@@ -46,6 +46,7 @@ const OcrBoxPane = ({
   fontColor,
   fontSize,
   bionicReading,
+  bold,
   backgroundColor,
   fadeAwayTime,
   backgroundOpacity,
@@ -121,10 +122,25 @@ const OcrBoxPane = ({
     }
   }, [text]);
 
+  const getTextContent = useCallback(
+    (t: string) => {
+      if (pause) return `${t} (PAUSED)`;
+      return t;
+    },
+    [pause]
+  );
+
   const renderText = useCallback(() => {
+    if (bold) {
+      return (
+        <>
+          <b>{getTextContent(text)}</b>
+        </>
+      );
+    }
+
     if (!bionicReading || !text || text.length <= 1) {
-      if (pause) return `${text} (PAUSED)`;
-      return text;
+      return getTextContent(text);
     }
 
     const middleIndex = Math.floor(text.length / 2);
@@ -135,7 +151,7 @@ const OcrBoxPane = ({
       <b key={`${char}_${index}`}>{char}</b>
     ));
 
-    if (pause) secondHalf += " (PAUSED)";
+    secondHalf = getTextContent(secondHalf);
 
     return (
       <>

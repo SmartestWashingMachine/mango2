@@ -240,6 +240,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Bionic Reading"
             />
           ),
+          Bolden: (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.bold}
+              keyName="bold"
+              helperText="Boldens all of the text. Overrides 'Bionic Reading' if enabled."
+              label="Bolden"
+            />
+          ),
           "Mini Backlog": (
             <UpdateCheckbox
               changeValue={changeValue}

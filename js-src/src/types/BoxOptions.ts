@@ -3,6 +3,7 @@ export type BoxOptionsFrontend = {
   fontColor: string;
   fontSize: string | number;
   bionicReading: boolean;
+  bold: boolean;
   backgroundColor: string;
   fadeAwayTime: number;
   fadeInOnEnter: boolean; // Unused?

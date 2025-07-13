@@ -12,6 +12,7 @@ const genericOptions = {
   fontColor: "#FFFFFF",
   textAlign: "left",
   bionicReading: false,
+  bold: false,
   backgroundColor: "#000000",
   fadeAwayTime: 0,
   fadeInOnEnter: false,
