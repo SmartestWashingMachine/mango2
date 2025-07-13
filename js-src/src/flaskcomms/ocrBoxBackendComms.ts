@@ -184,6 +184,8 @@ export const scanImageGiveText = async (
 };
 
 export const triggerEnterNodeFetch = async () => {
+  console.log("Requesting ENTER key press from Python backend.");
+
   const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/triggerenter`;
 
   await nodeFetch(apiUrl, {

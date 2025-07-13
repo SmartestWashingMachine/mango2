@@ -41,8 +41,9 @@ def trigger_circuit_breaker():
 
 @app.route("/triggerenter", methods=["GET"])
 def trigger_enter():
-    keyboard.press('enter')
-    time.sleep(0.1) # Necessary for some games.
-    keyboard.release('enter')
+    with logger.begin_event("Triggering ENTER key (likely from a box with scanAfterEnter)"):
+        keyboard.press('enter')
+        time.sleep(0.18) # Necessary for some games.
+        keyboard.release('enter')
 
     return {}, 200

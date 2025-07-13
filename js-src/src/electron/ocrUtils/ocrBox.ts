@@ -450,7 +450,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
             clearTimeout(this._timerScanAfterEnter);
 
           this._timerScanAfterEnter = setTimeout(async () => {
-            await this.scanAndTranslateBoxContents();
+            console.log(
+              "Scanning box after some time has passed with ENTER key being pressed..."
+            );
+            await this.scanAndTranslateBox();
           }, this.scanAfterEnter * 1000);
         },
         true
