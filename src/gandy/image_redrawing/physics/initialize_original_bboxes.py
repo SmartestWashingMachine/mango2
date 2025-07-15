@@ -2,6 +2,9 @@ from gandy.image_redrawing.physics.misc_utils import bbox_width, bbox_aspect_rat
 from PIL import Image
 from gandy.image_redrawing.physics.text_block import TextBlock
 from typing import List
+from gandy.utils.fancy_logger import logger
+from gandy.image_redrawing.physics.compute_global_font_size import wrap_text
+from gandy.image_redrawing.physics.draw_manager import DrawManager
 
 def adjust_box_for_aspect_ratio(x_min, y_min, x_max, y_max, target_aspect_ratio):
     """
@@ -67,8 +70,8 @@ def adjust_box_for_image_coverage(bb, image_width: int, image_height: int, max_a
 
     if width_expansion_amount <= 0 or bb_width <= 0:
         return 0.0
-    
-    return max(1.0 - (width_expansion_amount / bb_width), 0)
+
+    return max(width_expansion_amount / bb_width, 0)
 
 def expand_bb_width(bb, left_pct: float, right_pct: float):
     wid = bbox_width(bb)
@@ -80,61 +83,72 @@ def expand_bb_width(bb, left_pct: float, right_pct: float):
         bb[3],
     ]
 
-def expand_bboxes(blocks: List[TextBlock], image: Image.Image, scale_until_aspect_ratio=1.3):
-    bbox_margins = max(image.width * 0.02, image.height * 0.02)
+def expand_bboxes(blocks: List[TextBlock], image: Image.Image, draw_manager: DrawManager, scale_until_aspect_ratio=1.3):
+    with logger.begin_event("Expanding initial original box widths") as ctx:
+        bbox_margins = max(image.width * 0.02, image.height * 0.02)
 
-    for bl_A in blocks:
-        # This is usually what is used: Try to increase the width until the aspect ratio (width/height) is 1.3.
-        increase_from_balancing_aspect_ratio = adjust_box_for_aspect_ratio(
-            x_min=bl_A.original_bbox[0],
-            y_min=bl_A.original_bbox[1],
-            x_max=bl_A.original_bbox[2],
-            y_max=bl_A.original_bbox[3],
-            target_aspect_ratio=scale_until_aspect_ratio,
-        )
-        # This is used as a safety measure in conjunction with "min" to "cap" the above factor:
-        # Find the maximum width increase that doesn't go over 20% of the image area.
-        increase_from_image_area_coverage = adjust_box_for_image_coverage(
-            bl_A.original_bbox,
-            image.width,
-            image.height,
-            max_allowed_coverage_pct=0.2
-        )
-        pct_increase = min(increase_from_balancing_aspect_ratio, increase_from_image_area_coverage)
+        for bl_A in blocks:
+            with logger.begin_event("Expanding box", translated_text=bl_A.translated_text):
+                # This is usually what is used: Try to increase the width until the aspect ratio (width/height) is 1.3.
+                increase_from_balancing_aspect_ratio = adjust_box_for_aspect_ratio(
+                    x_min=bl_A.original_bbox[0],
+                    y_min=bl_A.original_bbox[1],
+                    x_max=bl_A.original_bbox[2],
+                    y_max=bl_A.original_bbox[3],
+                    target_aspect_ratio=scale_until_aspect_ratio,
+                )
+                # This is used as a safety measure in conjunction with "min" to "cap" the above factor:
+                # Find the maximum width increase that doesn't go over 20% of the image area.
+                increase_from_image_area_coverage = adjust_box_for_image_coverage(
+                    bl_A.original_bbox,
+                    image.width,
+                    image.height,
+                    max_allowed_coverage_pct=0.2
+                )
+                expansion_options = [increase_from_balancing_aspect_ratio, increase_from_image_area_coverage]
+                pct_increase = min(expansion_options)
 
-        if pct_increase == 0.0:
-            continue # Already sufficient in aspect ratio / area covered.
+                if pct_increase == 0.0:
+                    ctx.log(f"Box is already sufficient - no need to expand.", expansion_options=expansion_options, translated_text=bl_A.translated_text)
+                    continue # Already sufficient in aspect ratio / area covered.
+                else:
+                    ctx.log(f"Attempting to expand box.", expansion_options=expansion_options, chosen_option=pct_increase, translated_text=bl_A.translated_text)
 
-        reduce_each_step = 0.1 # Reduce pct_increase by 10% each failed attempt.
-        max_steps = 10 # Max attempts before giving up in expanding the box.
+                reduce_each_step = 0.1 # Reduce pct_increase by 10% each failed attempt.
+                max_steps = 10 # Max attempts before giving up in expanding the box.
 
-        for step_i in range(max_steps):
-            pct_reduct = pct_increase * reduce_each_step * step_i
-            scale_pct = 1.0 + (pct_increase - pct_reduct)
+                for step_i in range(max_steps):
+                    pct_reduct = pct_increase * reduce_each_step * step_i
+                    scale_pct = (pct_increase - pct_reduct)
 
-            expanded_original_bbox = expand_bb_width(bl_A.original_bbox, scale_pct, scale_pct)
+                    expanded_original_bbox = expand_bb_width(bl_A.original_bbox, scale_pct, scale_pct)
+                    print('BBOX:')
+                    print(scale_pct)
+                    print(bl_A.original_bbox)
+                    print(expanded_original_bbox)
 
-            is_valid = True
+                    is_valid = True
 
-            for bl_B in blocks:
-                if bl_A.uuid == bl_B.uuid:
-                    continue # Same box - the inner loop is to iterate over every OTHER box.
+                    for bl_B in blocks:
+                        if bl_A.uuid == bl_B.uuid:
+                            continue # Same box - the inner loop is to iterate over every OTHER box.
 
-                if bboxes_overlap(expanded_original_bbox, bl_B.original_bbox, margin=bbox_margins):
-                    is_valid = False
-                    break
+                        if bboxes_overlap(expanded_original_bbox, bl_B.original_bbox, margin=bbox_margins):
+                            is_valid = False
+                            break
 
-            if is_valid:
-                bl_A.original_bbox = expanded_original_bbox
-                break
+                    if is_valid:
+                        ctx.log(f"Expanded box", old_box=bl_A.original_bbox, new_box=expanded_original_bbox)
+                        bl_A.original_bbox = expanded_original_bbox
+                        break
 
+                if not is_valid:
+                    ctx.log(f"Failed to expand box")
 
-Keep scaling aspect ratio until width is a bit more than height
-With exceptions:
-If box height is massive relative to image height, scale it "less":
-    - less as in 
+        for bl in blocks:
+            bl.font_size = bl.font_size
 
-    - As a simple heuristic, scale it such that it cannot take more than twice the image AREA it already is.
+            additional_width_tolerance = 1.3 # +30%
 
-
-so now find the max pct increase before it goes to image AREA - then take min ebtween the two
+            bl.wrapped_lines = wrap_text(bl.translated_text, bl.font_size, bbox_width(bl.original_bbox) * additional_width_tolerance)
+            bl.final_bbox = draw_manager.bbox_from_wrapped_text(bl.wrapped_lines, bl.font_size)
