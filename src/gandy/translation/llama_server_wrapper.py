@@ -13,6 +13,10 @@ import win32con
 import win32job
 import asyncio
 
+# Thank you AsyncIO documentation, very cool: https://github.com/openai/openai-python/issues/1254
+# "Um akshually you shouldn't do <seemingly legitimate behavior>" - THEN WHY DON'T YOU DOCUMENT IT FOOL?! 
+loop = asyncio.new_event_loop()
+
 class LlamaCppExecutableOpenAIClient:
     def __init__(self, model_path, num_gpu_layers, can_cuda,
                  llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750, embedding=False, stop = None):
@@ -27,6 +31,7 @@ class LlamaCppExecutableOpenAIClient:
             host (str): The host address for the llama.cpp server.
             port (int): The port for the llama.cpp server.
         """
+
         self.model_path = model_path
 
         self.host = host
@@ -107,6 +112,7 @@ class LlamaCppExecutableOpenAIClient:
                 "--top-p", "0.95",
                 "--top-k", "40",
                 "--min-p", "0.05",
+                "--timeout", "3600",
                 # Misc.
                 # "--no-webui",
                 # "--no-mmproj",
@@ -285,7 +291,7 @@ class LlamaCppExecutableOpenAIClient:
         return predictions
 
     def call_llm(self, batch_inputs, use_stream = None):
-        predictions = asyncio.run(self.batch_async(batch_inputs, use_stream))
+        predictions = loop.run_until_complete(self.batch_async(batch_inputs, use_stream))
         return predictions
 
     def call_llm_no_batch(self, messages, use_stream = None):
@@ -303,5 +309,5 @@ class LlamaCppExecutableOpenAIClient:
         return response.data[0].embedding
     
     def call_embed_no_batch(self, msg: str):
-        emb = asyncio.run(self.embed_async(msg))
+        emb = loop.run_until_complete(self.embed_async(msg))
         return emb
