@@ -90,13 +90,17 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
     def get_field_value(self, msg: str):
         fv = self.mango_config[msg]
 
+        do_strip = False
+
         if fv == "file" or fv == "file_no_strip":
             with open(f"models/custom_translators/{self.model_sub_path}.{msg}.txt", 'r', encoding='utf-8') as f:
                 fv = f.read().replace("\\n", "\n")
+
+                do_strip = True
         if fv == "file_no_strip":
             fv = fv.strip()
 
-        return fv
+        return fv, do_strip
     
     def map_contexts_template(self, contexts: List[str], sep, prefix = True):
         sep = sep.group(1)
@@ -142,10 +146,11 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         msg = re.sub(r"\{\{PREFIX_EACH_CONTEXT\((.*?)\)\}\}", lambda m: self.map_contexts_template(contexts, m), msg, flags=re.DOTALL)
         msg = re.sub(r"\{\{JOIN_EACH_CONTEXT\((.*?)\)\}\}", lambda m: self.map_contexts_template(contexts, m, prefix=False), msg, flags=re.DOTALL)
 
+        # Must come before IF_EXISTS - order matters.
+        msg = re.sub(r"\{\{JOIN_EACH_DICTIONARY_NAME_PAIR\((.*?)\)\}\}", lambda m: self.map_dictionary_template(m), msg, flags=re.DOTALL)
+
         msg = re.sub(r"\{\{IF_CONTEXT_EXISTS\((.*?)\)\}\}", lambda m: self.map_if_context_exists(contexts, m), msg, flags=re.DOTALL)
         msg = re.sub(r"\{\{IF_DICTIONARY_EXISTS\((.*?)\)\}\}", lambda m: self.map_if_dictionary_exists(m), msg, flags=re.DOTALL)
-
-        msg = re.sub(r"\{\{JOIN_EACH_DICTIONARY_NAME_PAIR\((.*?)\)\}\}", lambda m: self.map_dictionary_template(m), msg, flags=re.DOTALL)
 
         msg = msg.replace("{{SOURCE}}", source)
 
@@ -156,43 +161,51 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         return msg
 
     def map_system_message(self, contexts: List[str], source: str):
-        field = self.get_field_value("create_system_message")
+        field, do_strip = self.get_field_value("create_system_message")
         if self.ignore_field(field):
             return []
         
         mapped = self.populate_template_str(field, contexts, source)
+        if do_strip:
+            mapped = mapped.strip()
         mapped = [mapped]
 
         return [{ "role": "system", "content": m, } for m in mapped]
     
     def map_each_context_message(self, contexts: List[str], source: str):
-        field = self.get_field_value("create_each_context_message")
+        field, do_strip = self.get_field_value("create_each_context_message")
         if self.ignore_field(field):
             return []
 
         messages = []
         for context in contexts:
             mapped = self.populate_template_str(field, [context], source)
+            if do_strip:
+                mapped = mapped.strip()
             messages.append(mapped)
     
         return [{ "role": "user", "content": m, } for m in messages]
 
     def map_current_user_message(self, contexts: List[str], source: str):
-        field = self.get_field_value("create_current_user_message")
+        field, do_strip = self.get_field_value("create_current_user_message")
         if self.ignore_field(field):
             return []
 
         mapped = self.populate_template_str(field, contexts, source)
+        if do_strip:
+            mapped = mapped.strip()
         mapped = [mapped]
     
         return [{ "role": "user", "content": m, } for m in mapped]
 
     def map_assistant_prefix(self, contexts: List[str], source: str):
-        field = self.get_field_value("create_assistant_prefix")
+        field, do_strip = self.get_field_value("create_assistant_prefix")
         if self.ignore_field(field):
             return []
 
         mapped = self.populate_template_str(field, contexts, source)
+        if do_strip:
+            mapped = mapped.strip()
         mapped = [mapped]
 
         return [{ "role": "assistant", "content": m, } for m in mapped]
@@ -235,10 +248,15 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
 
             return self.remove_stop_words(output)
         except:
+            if self.mango_config.get("keep_empty_extraction", False):
+                return self.remove_stop_words("")
+
             return self.remove_stop_words(output)
 
     def get_n_context(self):
         return int(self.mango_config["n_context"])
 
     def get_stop_words(self):
-        return self.mango_config["stop_words"]
+        stops = self.mango_config["stop_words"]
+        if len(stops) == 0:
+            stops = None
