@@ -33,6 +33,13 @@ export const REDRAWING_OPTIONS = [
     `,
   },
   {
+    name: "Scientific",
+    value: "physics",
+    desc: `
+    Draws text with the power of physics!
+    `,
+  },
+  {
     name: "Global",
     value: "global",
     desc: `

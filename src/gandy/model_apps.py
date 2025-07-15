@@ -41,6 +41,7 @@ from gandy.image_redrawing.image_redraw_global_smart_bg import (
 )
 from gandy.image_redrawing.image_redraw_big_global import ImageRedrawBigGlobalApp
 from gandy.image_redrawing.image_redraw_big_global_amg import ImageRedrawBigGlobalAMGApp
+from gandy.image_redrawing.physics.image_redraw_physics import ImageRedrawPhysics
 from gandy.text_detection.yolo_image_detection import (
     YOLOTDImageDetectionApp,
     YOLOLineImageDetectionApp,
@@ -372,6 +373,7 @@ IMAGE_REDRAWING_APP = SwitchApp(
         ImageRedrawGlobalSmarter(ACTIONS),
         ImageRedrawGlobalSmarter(ACTIONS_SMART_TOON),
         ImageRedrawGlobalSmartBackgroundApp(),
+        ImageRedrawPhysics(),
     ],
     app_names=[
         "amg_convert",
@@ -383,6 +385,7 @@ IMAGE_REDRAWING_APP = SwitchApp(
         "smart",
         "smart_toon",
         "smart_bg",
+        "physics",
     ],
     # default_idx=-1
 )
