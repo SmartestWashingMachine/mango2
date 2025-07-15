@@ -18,6 +18,9 @@ def bbox_center(bb: SpeechBubble):
 def bbox_area(bb: SpeechBubble):
     return bbox_width(bb) * bbox_height(bb)
 
+def bbox_aspect_ratio(bb: SpeechBubble):
+    return bbox_width(bb) / bbox_height(bb)
+
 def bboxes_overlap(box1, box2, margin=0):
     """
     Determines if two boxes overlap or are within a given margin.

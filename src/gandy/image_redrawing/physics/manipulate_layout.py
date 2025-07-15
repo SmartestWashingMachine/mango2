@@ -144,7 +144,7 @@ def compute_stop_threshold(image_width: int, image_height: int):
 
     return (diag * ALPHA)
 
-def manipulate_layout(blocks: List[TextBlock], image: Image.Image):
+def manipulate_layout(blocks: List[TextBlock], image: Image.Image, MAX_ITERATIONS = 300):
     with logger.begin_event("Manipulating layout") as ctx:
         for bl in blocks:
             bl.anchor_point = bbox_center(bl.original_bbox)
@@ -156,7 +156,6 @@ def manipulate_layout(blocks: List[TextBlock], image: Image.Image):
 
             bl.displacement = initialize_displacement()
 
-        MAX_ITERATIONS = 300
         damping_factor = 0.9
 
         bbox_margins = max(image.width * 0.02, image.height * 0.02)
@@ -193,7 +192,7 @@ def manipulate_layout(blocks: List[TextBlock], image: Image.Image):
                         bl_B.displacement[0] -= repulsion[0] * (bl_A.mass / total_mass)
                         bl_B.displacement[1] -= repulsion[1] * (bl_A.mass / total_mass)
 
-                        can_end = False
+                        can_end = False # Did collide sadly.
 
                 # After displacing other boxes, "spring" or "lure" block A slightly back to its original position.
                 anchor_force = compute_attraction_to_anchor_point(bl_A)
@@ -204,6 +203,10 @@ def manipulate_layout(blocks: List[TextBlock], image: Image.Image):
                 image_margins = max(image.width * 0.015, image.height * 0.015)
                 boundary_force = compute_boundary_repulsion(bl_A, image.width, image.height, margin=image_margins)
                 bl_A.displacement = modify_displacement(bl_A.displacement, boundary_force)
+
+                if boundary_force[0] != 0.0 or boundary_force[1] != 0.0:
+                    can_end = False # Still out of bounds.
+
                 #print(f'({bl_A.uuid[:4]}) WITH BOUNDARY FORCE: {bl_A.displacement}')
 
             total_movement = 0.0
@@ -218,6 +221,7 @@ def manipulate_layout(blocks: List[TextBlock], image: Image.Image):
                         raise RuntimeError('NOOOO')
 
                 total_movement = total_movement + compute_displacement_size(bl.displacement)
+                bl.final_bbox = displace_bbox(bl.final_bbox, bl.displacement)
 
                 bl.displacement = initialize_displacement()
 
@@ -228,4 +232,4 @@ def manipulate_layout(blocks: List[TextBlock], image: Image.Image):
             if i >= MAX_ITERATIONS:
                 break
 
-    ctx.log(f'Done manipulating layout', iterations_used=(MAX_ITERATIONS - (i+1)))
+    ctx.log(f'Done manipulating layout', iterations_used=(i+1))

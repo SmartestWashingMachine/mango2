@@ -7,6 +7,8 @@ from gandy.image_redrawing.physics.compute_global_font_size import compute_globa
 from gandy.image_redrawing.physics.text_block import TextBlock
 from gandy.image_redrawing.physics.draw_manager import DrawManager
 from gandy.image_redrawing.physics.font_manager import FONT_MANAGER
+from gandy.image_redrawing.physics.initialize_original_bboxes import expand_bboxes
+from gandy.image_redrawing.physics.last_ditch_layout import last_ditch_layout
 from gandy.state.debug_state import debug_state
 from gandy.state.config_state import config_state
 import json
@@ -143,7 +145,12 @@ class ImageRedrawPhysics(BaseImageRedraw):
 
         compute_global_font_size(blocks, draw_manager, text_canvas)
 
+        # Expand initial (original) box widths AFTER computing the font size.
+        expand_bboxes(blocks, text_canvas, draw_manager, scale_until_aspect_ratio=0.8)
+
         manipulate_layout(blocks, text_canvas)
+
+        last_ditch_layout(blocks, draw_manager, text_canvas, min_font_size=8)
 
         with logger.begin_event("Downscale text canvas", original_size=[original_image_width, original_image_height], cur_size=text_canvas.size):
             if should_upscale:
