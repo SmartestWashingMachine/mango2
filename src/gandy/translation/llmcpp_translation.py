@@ -142,6 +142,9 @@ class LlmCppTranslationApp(BaseTranslation):
         messages = self.create_messages(inp)
 
         with logger.begin_event("Feeding to LLM") as ctx:
+            if use_stream is not None:
+                use_stream.postprocess_before_sending = lambda s: self.misc_postprocess(s)
+
             prediction = self.llm.call_llm_no_batch(messages, use_stream)
 
         return [prediction], [inp]

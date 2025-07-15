@@ -15,6 +15,8 @@ class SocketStreamer(TextStreamer):
         self.old_text = None
         self.metadata = metadata
 
+        self.postprocess_before_sending = lambda s: s
+
     # This is a slightly more optimized put for our models.
     # Most code from TextStreamer.
     def optimized_put(self, value, replace=False, already_detokenized=False):
@@ -61,6 +63,8 @@ class SocketStreamer(TextStreamer):
         self.old_text = text
 
         text = replace_many(text, config_state.target_terms, ctx=None)
+
+        text = self.postprocess_before_sending(text)
 
         data_to_send = {
             "text": text,
