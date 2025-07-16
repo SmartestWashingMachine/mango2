@@ -111,6 +111,8 @@ Examples:
 
 - stop_words (string | array of strings | null): Extra words/phrases to stop generation once reached.
 
+- keep_empty_extraction (boolean): If true and if `extract_from_output` can not find a match, an empty output will be extracted instead.
+
 ## Templating
 
 As shown above, there are several operators that can be used for templating purposes:
