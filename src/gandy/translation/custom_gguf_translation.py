@@ -62,9 +62,14 @@ Target-side context is not supported. Personally, I found them to dilute the mod
 """
 
 class CustomGgufTranslationApp(LlmCppTranslationApp):
+    def __init__(self, model_sub_path="", prepend_fn=None, lang="", prepend_model_output=None, config_sub_path=None):
+        super().__init__(model_sub_path, prepend_fn, lang, prepend_model_output)
+
+        self.config_sub_path = config_sub_path or model_sub_path
+
     def get_mango_config_path(self):
-        return f"models/custom_translators/{self.model_sub_path}" + ".mango_config.json"
-    
+        return f"models/custom_translators/{self.config_sub_path}" + ".mango_config.json"
+
     def load_mango_config(self):
         with logger.begin_event("Loading Mango config") as ctx:
             with open(self.get_mango_config_path(), 'r', encoding='utf-8') as f:
@@ -77,7 +82,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         return os.path.join("models", "custom_translators", f"{self.model_sub_path}.gguf")
 
     def can_load(self):
-        return True
+        return os.path.exists(self.get_mango_config_path())
     
     def load_model(self):
         self.mango_config = self.load_mango_config()
@@ -93,7 +98,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         do_strip = False
 
         if fv == "file" or fv == "file_no_strip":
-            with open(f"models/custom_translators/{self.model_sub_path}.{msg}.txt", 'r', encoding='utf-8') as f:
+            with open(f"models/custom_translators/{self.config_sub_path}.{msg}.txt", 'r', encoding='utf-8') as f:
                 fv = f.read().replace("\\n", "\n")
 
                 do_strip = True

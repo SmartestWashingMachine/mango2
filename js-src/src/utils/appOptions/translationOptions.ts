@@ -1,31 +1,54 @@
-// So TL;DR: Use nllb_jmad for the fastest translations possible (albeit the slowest to initially load + no context). Use llm_jgem for the highest quality albeit at the cost of speed. Use the other gem models for other languages.
 // All the other models are legacy - I don't like them at all.
 // It would be soooooo much easier if I could just tune a "massive" LLM (i.e: 14b / 30b / 70b parameters), but this app is intended to be used on low to medium consumer grade hardware.
 export const TRANSLATION_OPTIONS = [
+  {
+    name: "Japanese-2-English Qwen Medium",
+    value: "llm_jqwen_moderate",
+    desc: `
+    For Japanese texts exclusively.
+    `,
+  },
+  {
+    name: "Korean-2-English Qwen Medium",
+    value: "llm_kqwen_moderate",
+    desc: `
+    For Korean texts exclusively.
+    `,
+  },
+  {
+    name: "Chinese-2-English Qwen Medium",
+    value: "llm_zhqwen_moderate",
+    desc: `
+    For Chinese texts exclusively.
+    `,
+  },
+  {
+    name: "Japanese-2-English Qwen Massive",
+    value: "llm_jqwen_massive",
+    desc: `
+    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
+    `,
+  },
+  {
+    name: "Korean-2-English Qwen Massive",
+    value: "llm_kqwen_massive",
+    desc: `
+    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
+    `,
+  },
+  {
+    name: "Chinese-2-English Qwen Massive",
+    value: "llm_zhqwen_massive",
+    desc: `
+    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
+    `,
+  },
   {
     // LET'S GO GAMBLING!!! WOOO I LOVE GOD SEEDS!
     name: "Japanese-2-English Gem",
     value: "llm_jgem",
     desc: `
-    Another interesting contender. Somewhat slow.
-    `,
-  },
-  {
-    // Seems to be the best performing variant in this app for KO.
-    // So it seems quality aware decoding is a bust for KO.
-    // One posible remedy would be to instead distil quality data from an LLM (prompt it to predict a scalar score), and train a small regression model from that.
-    // But the research papers online discussing the validity of this approach are mixed, and I don't have the funds to create a distilled dataset of satisfactory size.
-    name: "Korean-2-English Gem",
-    value: "llm_kgem",
-    desc: `
-    Finetuned for Korean to English. Somewhat slow.
-    `,
-  },
-  {
-    name: "Chinese-2-English Gem",
-    value: "llm_zhgem",
-    desc: `
-    Finetuned for Chinese to English. Somewhat slow.
+    Another interesting contender.
     `,
   },
   {
@@ -56,6 +79,24 @@ export const TRANSLATION_OPTIONS = [
 ];
 
 export const LEGACY_TRANSLATION_OPTIONS = [
+  {
+    // Seems to be the best performing variant in this app for KO.
+    // So it seems quality aware decoding is a bust for KO.
+    // One posible remedy would be to instead distil quality data from an LLM (prompt it to predict a scalar score), and train a small regression model from that.
+    // But the research papers online discussing the validity of this approach are mixed, and I don't have the funds to create a distilled dataset of satisfactory size.
+    name: "(Legacy) Korean-2-English Gem",
+    value: "llm_kgem",
+    desc: `
+    Finetuned for Korean to English. Somewhat slow.
+    `,
+  },
+  {
+    name: "(Legacy) Chinese-2-English Gem",
+    value: "llm_zhgem",
+    desc: `
+    Finetuned for Chinese to English. Somewhat slow.
+    `,
+  },
   {
     // NOTE: nllb_jq is biased towards shorter texts.
     name: "(Legacy) Japanese-2-English Qualia",

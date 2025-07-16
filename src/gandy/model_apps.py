@@ -309,6 +309,42 @@ TRANSLATION_APP = SwitchApp(
             lang="Chinese",
             prepend_model_output="Here\'s a translation:\n\n" # Llama CPP seems to already add an extra newline.
         ),
+        CustomGgufTranslationApp(
+            model_sub_path="qwenmoderate",
+            prepend_fn=lambda s: s,
+            lang="Generic",
+            config_sub_path="qwenmoderate_j",
+        ),
+        CustomGgufTranslationApp(
+            model_sub_path="qwenmoderate",
+            prepend_fn=lambda s: s,
+            lang="Generic",
+            config_sub_path="qwenmoderate_k",
+        ),
+        CustomGgufTranslationApp(
+            model_sub_path="qwenmoderate",
+            prepend_fn=lambda s: s,
+            lang="Generic",
+            config_sub_path="qwenmoderate_zh",
+        ),
+        CustomGgufTranslationApp(
+            model_sub_path="qwenmassive",
+            prepend_fn=lambda s: s,
+            lang="Generic",
+            config_sub_path="qwenmassive_j"
+        ),
+        CustomGgufTranslationApp(
+            model_sub_path="qwenmassive",
+            prepend_fn=lambda s: s,
+            lang="Generic",
+            config_sub_path="qwenmassive_k"
+        ),
+        CustomGgufTranslationApp(
+            model_sub_path="qwenmassive",
+            prepend_fn=lambda s: s,
+            lang="Generic",
+            config_sub_path="qwenmassive_zh"
+        ),
     ],
     app_names=[
         "llm_jgem",
@@ -317,6 +353,12 @@ TRANSLATION_APP = SwitchApp(
         "llm_jgem_goliath",
         "llm_kgem_goliath",
         "llm_zhgem_goliath",
+        "llm_jqwen_moderate",
+        "llm_kqwen_moderate",
+        "llm_zhqwen_moderate",
+        "llm_jqwen_massive",
+        "llm_kqwen_massive",
+        "llm_zhqwen_massive",
     ],
 )
 
@@ -426,11 +468,16 @@ TEXT_LINE_MODEL_APP = SwitchApp(
 
 os.makedirs("models/custom_translators", exist_ok=True)
 
+IGNORE_FILES = ['qwenmoderate', 'qwenmassive'] # These are my models.
+
 for model in os.listdir("models/custom_translators"):
     if model.endswith(".gguf"):
         model_name = model[:-5] # GGUF attachment automatically added
         if os.path.exists(f"models/custom_translators/{model_name}.mango_config.json"):
             print(f'Found model: "{model}"')
+
+            if model_name in IGNORE_FILES:
+                continue
 
             custom_translation_app = CustomGgufTranslationApp(
                 model_sub_path=model_name,
