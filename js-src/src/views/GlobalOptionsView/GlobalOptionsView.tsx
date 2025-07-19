@@ -450,26 +450,17 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 helperText="Will improve speed IF using a good GPU that supports CUDA. The entire process can be run on 4 GB VRAM. You can also force parts of the process to run on the CPU instead with the options below."
               />
             ),
-            "(Gem) Number of GPU Layers to Offload": (
+            "Number of GPU Layers to Offload": (
               <UpdateNumberField
-                label="(Gem) Number of GPU Layers to Offload"
+                label="Number of GPU Layers to Offload"
                 changeValue={setStoreValue}
                 keyName="numGpuLayersMt"
                 defaultValue={numGpuLayersMt}
-                helperText="Only works on Gem translation models. The number of layers to offload to the GPU if CUDA is enabled. This is used to reduce the memory usage of the translation model. This can safely be set to 22 if you have 4 GB VRAM. Set to 99 to offload all layers."
+                helperText="The number of layers to offload to the GPU if CUDA is enabled. This is used to reduce the memory usage of the translation model. This can safely be set to 22 if you have 4 GB VRAM. Set to 99 to offload all layers."
                 valueType="int"
                 safeValue={22}
                 minValue={-1}
                 maxValue={99}
-              />
-            ),
-            "(Non Gem) Use Efficient Translator": (
-              <UpdateCheckbox
-                changeValue={setStoreValue}
-                keyName="useTranslationServer"
-                defaultValue={useTranslationServer}
-                label="Use Efficient Translator"
-                helperText="Certain translation models will run faster. Requires efficient translation models to be installed."
               />
             ),
             "Memory Efficient Tasks": (
@@ -478,7 +469,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 keyName="memoryEfficientTasks"
                 defaultValue={memoryEfficientTasks}
                 label="Memory Efficient Tasks"
-                helperText="Translating images or videos will require much less memory, but the models have to be loaded at the start of every task. This allows you to run a full non-Gem OCR + translation process on a GPU with 4 GB VRAM if 'Use Efficient Translator' is enabled."
+                helperText="Translating images or videos will require much less memory, but the models have to be loaded at the start of every task."
               />
             ),
             "Force Text Box on CPU": (

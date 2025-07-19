@@ -2,24 +2,11 @@
 // It would be soooooo much easier if I could just tune a "massive" LLM (i.e: 14b / 30b / 70b parameters), but this app is intended to be used on low to medium consumer grade hardware.
 export const TRANSLATION_OPTIONS = [
   {
-    name: "Japanese-2-English Qwen Medium",
-    value: "llm_jqwen_moderate",
+    // LET'S GO GAMBLING!!! WOOO I LOVE GOD SEEDS!
+    name: "Japanese-2-English Gem",
+    value: "llm_jgem",
     desc: `
-    For Japanese texts exclusively.
-    `,
-  },
-  {
-    name: "Korean-2-English Qwen Medium",
-    value: "llm_kqwen_moderate",
-    desc: `
-    For Korean texts exclusively.
-    `,
-  },
-  {
-    name: "Chinese-2-English Qwen Medium",
-    value: "llm_zhqwen_moderate",
-    desc: `
-    For Chinese texts exclusively.
+    Another interesting contender.
     `,
   },
   {
@@ -41,14 +28,6 @@ export const TRANSLATION_OPTIONS = [
     value: "llm_zhqwen_massive",
     desc: `
     Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
-    `,
-  },
-  {
-    // LET'S GO GAMBLING!!! WOOO I LOVE GOD SEEDS!
-    name: "Japanese-2-English Gem",
-    value: "llm_jgem",
-    desc: `
-    Another interesting contender.
     `,
   },
   {
