@@ -43,10 +43,10 @@ class LlamaCppExecutableOpenAIClient:
         self.llama_cpp_server_path = llama_cpp_server_path
         self.prepend_phrase = prepend_phrase
 
-        self.verbose = True #verbose
+        self.verbose = verbose
 
         self.embedding = embedding
-        
+
         self.n_context = n_context
 
         self.stop = stop
@@ -183,7 +183,7 @@ class LlamaCppExecutableOpenAIClient:
                 # 5. Close the process handle (Job Object now manages the reference)
                 win32api.CloseHandle(hProcess)
 
-                self._wait_for_server_ready()
+                self._wait_for_server_ready(ctx=ctx)
                 ctx.log("Llama.cpp server is ready.")
             except FileNotFoundError:
                 ctx.log(f"Error: Server executable not found.", looking_in_path=self.llama_cpp_server_path)
@@ -195,9 +195,8 @@ class LlamaCppExecutableOpenAIClient:
 
                 raise e
 
-    def _wait_for_server_ready(self, timeout=120):
+    def _wait_for_server_ready(self, timeout=120, ctx=None):
         """Waits until the llama.cpp server is accessible."""
-
         start_time = time.time()
 
         # The /health endpoint is provided by llama.cpp server
@@ -207,10 +206,12 @@ class LlamaCppExecutableOpenAIClient:
                 # Use requests directly for the health check.
                 response = requests.get(health_url, timeout=1)
                 if response.status_code == 200 and response.json().get("status") == "ok":
+                    ctx.log("Check - Server is healthy!")
                     return True
             except (requests.exceptions.ConnectionError, json.JSONDecodeError, requests.exceptions.ReadTimeout):
                 pass
             time.sleep(1)
+            ctx.log("Check - Server is unhealthy. waiting 1 second before checking again...")
 
         raise TimeoutError(f"Llama.cpp server did not become ready within {timeout} seconds.")
 
