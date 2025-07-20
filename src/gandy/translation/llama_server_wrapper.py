@@ -13,24 +13,17 @@ import win32con
 import win32job
 import asyncio
 
+import ctypes
+
+from gandy.translation.subprocess_pyinstaller_patch import subprocess_args
+
 # Thank you AsyncIO documentation, very cool: https://github.com/openai/openai-python/issues/1254
 # "Um akshually you shouldn't do <seemingly legitimate behavior>" - THEN WHY DON'T YOU DOCUMENT IT FOOL?! 
 loop = asyncio.new_event_loop()
 
 class LlamaCppExecutableOpenAIClient:
     def __init__(self, model_path, num_gpu_layers, can_cuda,
-                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750, embedding=False, stop = None):
-        """
-        Initializes the client to interact with a llama.cpp server executable using the OpenAI client.
-
-        Args:
-            num_gpu_layers (int): Number of layers to offload to the GPU.
-            can_cuda (bool): Whether CUDA is available and should be used.
-            llama_cpp_server_path (str): The full path to the llama.cpp 'server' executable.
-                                         e.g., "/path/to/llama.cpp/build/bin/server"
-            host (str): The host address for the llama.cpp server.
-            port (int): The port for the llama.cpp server.
-        """
+                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750, embedding=False, stop = None, mmproj = None):
 
         self.model_path = model_path
 
@@ -48,6 +41,8 @@ class LlamaCppExecutableOpenAIClient:
         self.embedding = embedding
 
         self.n_context = n_context
+
+        self.mmproj = mmproj
 
         self.stop = stop
         if self.stop is None:
@@ -133,6 +128,10 @@ class LlamaCppExecutableOpenAIClient:
                 # command.append("--run-time-repack")
                 pass
 
+            if self.mmproj is not None:
+                command.append("--mmproj")
+                command.append(self.mmproj)
+
             if self.embedding:
                 # command.append("--embeddings")
                 command = [
@@ -148,16 +147,17 @@ class LlamaCppExecutableOpenAIClient:
                     "--embeddings",
                 ]
 
-            ctx.log(f"Starting server with command", command=' '.join(command))
+            command = ' '.join(command)
+            ctx.log(f"Starting server with command", command=command)
+            if self.verbose:
+                print(f'COMMAND:')
+                print(command)
+
             try:
-                stdout_to_use = subprocess.DEVNULL
-                stderr_to_use = subprocess.DEVNULL
-                if self.verbose:
-                    stdout_to_use = sys.stdout
-                    stderr_to_use = sys.stderr
+                ctypes.windll.kernel32.SetDllDirectoryA(None) # NECESSARY!
 
                 self.server_process = subprocess.Popen(
-                    command, stdout=stdout_to_use, stderr=stderr_to_use,
+                    command, close_fds=True, shell=True, **subprocess_args(True),
                 )
                 ctx.log("Llama.cpp server process started.")
 
