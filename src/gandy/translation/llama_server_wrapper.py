@@ -116,7 +116,9 @@ class LlamaCppExecutableOpenAIClient:
                 # Misc.
                 # "--no-webui",
                 # "--no-mmproj",
-                # "--cache-reuse", "128",
+                # Since we aren't using ik_llama anymore, we can reuse cache-reuse...
+                # ik_llama had an issue with prefilling.
+                "--cache-reuse", "128",
             ]
 
             if self.verbose:

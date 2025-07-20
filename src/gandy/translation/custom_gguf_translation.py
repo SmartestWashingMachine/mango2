@@ -56,7 +56,6 @@ As we can see, there are a few "operators" for templating purposes:
 - file: This is used to read the contents of a file in the same directory as the .mango_config.json file, with the same name as the field, but with a .txt extension instead of .mango_config.json.
     All the other templating operators can be used in the file as well.
     This does not work in extract_from_output, as it is not a message template, but rather a regex pattern.
-- file_no_strip: Similar to "file", but does not strip any whitespace from the beginning and end of the file contents. This should almost never be used.
 
 Target-side context is not supported. Personally, I found them to dilute the model's attention.
 """
@@ -66,6 +65,8 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         super().__init__(model_sub_path, prepend_fn, lang, prepend_model_output)
 
         self.config_sub_path = config_sub_path or model_sub_path
+
+        self.file_field_values = {}
 
     def get_mango_config_path(self):
         return f"models/custom_translators/{self.config_sub_path}" + ".mango_config.json"
@@ -95,15 +96,16 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
     def get_field_value(self, msg: str):
         fv = self.mango_config[msg]
 
-        do_strip = False
+        do_strip = fv == "file"
 
-        if fv == "file" or fv == "file_no_strip":
+        if fv == "file":
+            if msg in self.file_field_values:
+                return self.file_field_values[msg], do_strip # Cached.
+
             with open(f"models/custom_translators/{self.config_sub_path}.{msg}.txt", 'r', encoding='utf-8') as f:
-                fv = f.read().replace("\\n", "\n")
+                fv = f.read().strip().replace("\\n", "\n")
 
-                do_strip = True
-        if fv == "file_no_strip":
-            fv = fv.strip()
+                self.file_field_values[msg] = fv
 
         return fv, do_strip
     
@@ -232,7 +234,20 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
 
         return messages
     
+    def remove_other_words(self, output: str):
+        rw = self.mango_config.get("remove_words", [])
+        if rw is None or len(rw) == 0 or not isinstance(rw, list):
+            return output
+
+        for r in rw:
+            output = output.replace(r, "")
+        output = output.strip()
+
+        return output
+
     def remove_stop_words(self, output: str):
+        output = self.remove_other_words(output)
+
         sw = self.get_stop_words()
         if sw is None or len(sw) == 0:
             return output
@@ -248,15 +263,21 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         if self.ignore_field(self.mango_config["extract_from_output"]):
             return self.remove_stop_words(output)
 
-        try:
-            output = re.search(self.mango_config["extract_from_output"], output, flags=re.DOTALL).group(1)
+        with logger.begin_event(f"Extracting translation from output according to config") as ctx:
+            try:
+                initial = output
+                output = re.search(self.mango_config["extract_from_output"], output, flags=re.DOTALL).group(1)
+                ctx.log(f"Extracted", initial=initial, extracted=output)
 
-            return self.remove_stop_words(output)
-        except:
-            if self.mango_config.get("keep_empty_extraction", False):
-                return self.remove_stop_words("")
+                return self.remove_stop_words(output).strip()
+            except:
+                keep_empty = self.mango_config.get("keep_empty_extraction", False)
+                ctx.log(f"Failed to find extraction.", keep_empty_extraction=keep_empty)
 
-            return self.remove_stop_words(output)
+                if keep_empty:
+                    return self.remove_stop_words("")
+
+                return self.remove_stop_words(output).strip()
 
     def get_n_context(self):
         return int(self.mango_config["n_context"])

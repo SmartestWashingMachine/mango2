@@ -31,7 +31,7 @@ class FAISSEmbedder:
             num_gpu_layers=(config_state.num_gpu_layers_mt if can_cuda else 0),
             can_cuda=can_cuda,
             llama_cpp_server_path=llama_cpp_server_path,
-            prepend_phrase=lambda s: s,
+            prepend_phrase=None,
             n_context=self.get_n_context(),
             port=self.get_server_port(),
             embedding=True,

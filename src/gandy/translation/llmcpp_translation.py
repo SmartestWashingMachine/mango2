@@ -63,8 +63,6 @@ class LlmCppTranslationApp(BaseTranslation):
             # Else the CUDA binaries are still loaded.
             llama_cpp_server_path = os.path.join('models', "llamacpp_cpu", "llama-server.exe")
 
-        print('GET STOP WORDS:')
-        print(self.get_stop_words())
         self.llm = LlamaCppExecutableOpenAIClient(
             model_path=self.get_model_path_for_llmcpp(),
             num_gpu_layers=(config_state.num_gpu_layers_mt if can_cuda else 0),
