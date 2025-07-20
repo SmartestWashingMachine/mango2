@@ -7,6 +7,7 @@ from time import strftime
 import os
 import traceback
 import contextlib
+import functools
 
 @dataclass
 class FancyTimeMetric:
@@ -15,9 +16,10 @@ class FancyTimeMetric:
     begin_time: datetime
     end_time: datetime
 
-
 class FancyLogger:
     def __init__(self) -> None:
+        self.do_print = False # Set to True by app.py when the config is loaded if DEBUG is enabled.
+
         self.logger = logging.getLogger("Gandy")
 
         self.cached_metrics = []
@@ -67,6 +69,20 @@ class FancyLogger:
     def begin_event(self, event_name: str, **fields):
         with start_action(action_type=event_name, **fields) as ctx:
             try:
+                old_log = ctx.log
+
+                @functools.wraps(old_log)
+                def wrapped_log(message_type, do_print = self.do_print, **fields):
+                    if do_print:
+                        print(f'>>>>>> {message_type}')
+                        for f in fields.items():
+                            print(f'^^^ {f[0]}:')
+                            print(f[1])
+
+                    return old_log(message_type, **fields)
+
+                ctx.log = wrapped_log
+
                 yield ctx
             except:
                 self.event_exception(ctx)
