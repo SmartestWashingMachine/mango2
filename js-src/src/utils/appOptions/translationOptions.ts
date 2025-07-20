@@ -10,27 +10,6 @@ export const TRANSLATION_OPTIONS = [
     `,
   },
   {
-    name: "Japanese-2-English Qwen Massive",
-    value: "llm_jqwen_massive",
-    desc: `
-    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
-    `,
-  },
-  {
-    name: "Korean-2-English Qwen Massive",
-    value: "llm_kqwen_massive",
-    desc: `
-    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
-    `,
-  },
-  {
-    name: "Chinese-2-English Qwen Massive",
-    value: "llm_zhqwen_massive",
-    desc: `
-    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
-    `,
-  },
-  {
     // Unlike the normal J-GEM, this one had a second reward model to replicate translations of similar quality to top-performing online systems.
     // Experimented with a few other variants. Here's some of them and why I didn't go further with them:
     // ALMA-7B-R: Old llama model, so tokenization should be inefficient. Also doesn't support context prompting off the bat. It also doesn't work well for more "risque" translations due to its dataset (mainly WMT).
@@ -38,21 +17,42 @@ export const TRANSLATION_OPTIONS = [
     name: "Japanese-2-English Goliath",
     value: "llm_jgem_goliath",
     desc: `
-    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
+    Ridiculously large. Recommended to have at least 10GB of GPU VRAM to run it. Forget about running it on a CPU.
     `,
   },
   {
     name: "Korean-2-English Goliath",
     value: "llm_kgem_goliath",
     desc: `
-    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
+    Ridiculously large. Recommended to have at least 10GB of GPU VRAM to run it.
     `,
   },
   {
     name: "Chinese-2-English Goliath",
     value: "llm_zhgem_goliath",
     desc: `
-    Ridiculously large. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
+    Ridiculously large. Recommended to have at least 10GB of GPU VRAM to run it.
+    `,
+  },
+  {
+    name: "Japanese-2-English Qwen Massive",
+    value: "llm_jqwen_massive",
+    desc: `
+    Somehow even larger. Recommended to have at least 12GB of GPU VRAM to run it.
+    `,
+  },
+  {
+    name: "Korean-2-English Qwen Massive",
+    value: "llm_kqwen_massive",
+    desc: `
+    Somehow even larger. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
+    `,
+  },
+  {
+    name: "Chinese-2-English Qwen Massive",
+    value: "llm_zhqwen_massive",
+    desc: `
+    Somehow even larger. Recommended to have at least 12GB of GPU VRAM to run it. Forget about running it on a CPU.
     `,
   },
 ];
