@@ -55,7 +55,7 @@ Mango 4 is a tool to machine translate Japanese media such as games and manga to
 - 16 GB disk space
 - 16 GB RAM
 - Semi-modern CPU
-- (Likely) Microsoft Visual C++ Redistributables
+- Visual Studio 2015, 2017, 2019, and 2022 C++ Redistributables (install from [here](https://aka.ms/vs/17/release/vc_redist.x64.exe) or [here](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170))
 
 A Nvidia GPU should **NOT** be required for CPU usage. A Nvidia GPU is only required if you want even faster translations, in which case:
 
