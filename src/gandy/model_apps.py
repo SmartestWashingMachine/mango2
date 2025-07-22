@@ -57,6 +57,7 @@ from gandy.text_detection.none_image_detection import NoneImageDetectionApp
 from gandy.text_detection.union_image_detection import UnionImageDetectionApp
 from gandy.text_detection.dfine_image_detection import DFineImageDetectionApp, DFineLineImageDetectionApp
 from gandy.text_recognition.tr_recognition import TrOCRTextRecognitionApp, MagnusTextRecognitionApp
+from gandy.text_recognition.custom_gguf_ocr import CustomGgufOcrApp
 from gandy.onnx_models.ebr import (
     ListEnergyRerankerONNX,
     DiscriminativeRerankerONNX,
@@ -269,8 +270,26 @@ TEXT_RECOGNITION_APP = SwitchApp(
             }, 
             extra_postprocess=j_ocr_postprocess
         ),
+        CustomGgufOcrApp(
+            model_sub_path="q25",
+            config_sub_path="q25_j",
+            do_resize=False,
+            transform=robust_transform, # Intended for use with a line detection model.
+        ),
+        CustomGgufOcrApp(
+            model_sub_path="q25",
+            config_sub_path="q25_k",
+            do_resize=False,
+            transform=robust_transform, # Intended for use with a line detection model.
+        ),
+        CustomGgufOcrApp(
+            model_sub_path="q25",
+            config_sub_path="q25_zh",
+            do_resize=False,
+            transform=robust_transform, # Intended for use with a line detection model.
+        ),
     ],
-    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr_massive", "trocr_jmassive", "trocr_jmagnus", "trocr_jcomics",],
+    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr_massive", "trocr_jmassive", "trocr_jmagnus", "trocr_jcomics", "q25_j", "q25_k", "q25_zh"],
 )
 
 TRANSLATION_APP = SwitchApp(
@@ -474,7 +493,7 @@ for model in os.listdir("models/custom_translators"):
     if model.endswith(".gguf"):
         model_name = model[:-5] # GGUF attachment automatically added
         if os.path.exists(f"models/custom_translators/{model_name}.mango_config.json"):
-            print(f'Found model: "{model}"')
+            print(f'Found translation model: "{model}"')
 
             if model_name in IGNORE_FILES:
                 continue
@@ -487,6 +506,31 @@ for model in os.listdir("models/custom_translators"):
 
             user_model_name = f"(Custom Translator) {model_name}"
             TRANSLATION_APP.add_app(custom_translation_app, user_model_name)
+        else:
+            print(f'WARNING: No config found for "{model}"')
+
+os.makedirs("models/custom_ocrs", exist_ok=True)
+
+IGNORE_FILES = ['q25']
+
+for model in os.listdir("models/custom_ocrs"):
+    if model.endswith(".gguf"):
+        model_name = model[:-5] # GGUF attachment automatically added
+        if os.path.exists(f"models/custom_ocrs/{model_name}.mango_config.json"):
+            print(f'Found OCR model: "{model}"')
+
+            if model_name in IGNORE_FILES:
+                continue
+
+            custom_ocr_app = CustomGgufOcrApp(
+                model_sub_path=model_name,
+                config_sub_path=model_name,
+                do_resize=False,
+                transform=robust_transform, # Intended for use with a line detection model.
+            )
+
+            user_model_name = f"(Custom OCR) {model_name}"
+            TEXT_RECOGNITION_APP.add_app(custom_ocr_app, user_model_name)
         else:
             print(f'WARNING: No config found for "{model}"')
 
