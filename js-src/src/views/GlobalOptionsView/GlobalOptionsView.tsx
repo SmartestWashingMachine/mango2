@@ -306,6 +306,17 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
       });
   };
 
+  const getCustomOcrOptions = (installedModels: string[]) => {
+    return installedModels
+      .filter((x) => x.startsWith("(Custom OCR) "))
+      .map((x) => {
+        return {
+          name: x,
+          value: x,
+        };
+      });
+  };
+
   return (
     <BaseView>
       <PaginatedTabs
@@ -396,7 +407,14 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 label="Text Recognition Model"
                 helperText="Used when scanning images."
               >
-                {OCR_OPTIONS.map(renderItem)}
+                {[
+                  ...OCR_OPTIONS.map(renderItem),
+                  ...getCustomOcrOptions(installedModels).map((x) => (
+                    <MenuItem value={x.value} dense>
+                      {x.name}
+                    </MenuItem>
+                  )),
+                ]}
               </UpdateListField>
             ),
             "Translation Model": (
