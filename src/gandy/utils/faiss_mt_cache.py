@@ -20,11 +20,10 @@ class FAISSEmbedder:
         can_cuda = self.get_can_cuda()
         logger.info(f"Loading embedding model...")
 
-        if can_cuda and False:
+        if can_cuda:
             llama_cpp_server_path = os.path.join('models', "llamacpp_gpu", "llama-server.exe")
         else:
-            # Else the CUDA binaries are still loaded.
-            llama_cpp_server_path = os.path.join('models', "llamacpp_cpu_embedding", "llama-server.exe")
+            llama_cpp_server_path = os.path.join('models', "llamacpp_cpu", "llama-server.exe")
 
         self.llm = LlamaCppExecutableOpenAIClient(
             model_path=self.get_model_path_for_llmcpp(model_name),
@@ -78,7 +77,7 @@ class FAISSStore:
         self.embedder = FAISSEmbedder(model_name)
         self.index = None
         self.translations = []  # Store only translated_text
-        self.translations_file = db_path + "_machinetranslations.npy"
+        self.translations_file = db_path + "_machinetranslations"
         self.save_interval = save_interval
         self.add_count = 0  # Tracks the number of additions since the last save
         self.save_lock = threading.Lock()  # Lock for thread-safe saving
@@ -113,7 +112,7 @@ class FAISSStore:
                 self.save_timer = None
 
             if start:
-                self.save_timer = threading.Timer(60, self._save_async)  # Set a new timer
+                self.save_timer = threading.Timer(30, self._save_async)  # Set a new timer
                 self.save_timer.start()
 
     def _save_async(self):
@@ -121,8 +120,16 @@ class FAISSStore:
         Save the FAISS index and translations asynchronously.
         """
         with self.save_lock:
-            faiss.write_index(self.index, self.db_path)
-            np.save(self.translations_file, np.array(self.translations, dtype=object))
+            # ... Can't believe we have to worry about atomicity here.
+            temp_db_path = self.db_path + ".tmpclunky"
+            faiss.write_index(self.index, temp_db_path)
+            os.replace(temp_db_path, self.db_path)
+
+            temp_translations_file = self.translations_file + ".tmp"
+            np.save(temp_translations_file, np.array(self.translations, dtype=object))
+
+            # np.save auto adds .npy extension -_-
+            os.replace(temp_translations_file + ".npy", self.translations_file)
             logger.log(f"FAISS index and translations saved to {self.db_path} and {self.translations_file}.")
 
     def _add(self, source_texts: list, translated_texts: list, already_embed = False):
