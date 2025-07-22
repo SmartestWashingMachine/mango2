@@ -2,6 +2,7 @@ from gandy.translation.base_translation import BaseTranslation
 from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClient
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
+from gandy.utils.augment_name_entries_with_ner import NameAdder
 from typing import List
 import os
 
@@ -31,6 +32,8 @@ class LlmCppTranslationApp(BaseTranslation):
         self.lang = lang
 
         self.prepend_model_output = prepend_model_output
+
+        self.name_adder = NameAdder()
 
     def can_load(self):
         return super().can_load(f"models/{self.model_sub_path}" + ".gguf")
@@ -86,6 +89,9 @@ class LlmCppTranslationApp(BaseTranslation):
             self.llm.stop_server()
 
             del self.llm # This should automagically call llm.stop_server() - but juuuuuuust in case we also call it above.
+
+            self.name_adder.unload_model()
+
             logger.info("Unloading translation model...")
         except:
             pass
@@ -200,6 +206,13 @@ class LlmCppTranslationApp(BaseTranslation):
             ctx.log("Postprocessed translations", before=outputs, after=final_outputs)
 
             return final_outputs
+        
+    def get_augmented_name_entries(self, src: str):
+        if not config_state.augment_name_entries:
+            return config_state.name_entries
+
+        # TODO: Un normalize src
+        return config_state.name_entries + self.name_adder.get_names(src)
     
     def process_with_batch(self, texts: List[str]):
         self.translate_string()
@@ -212,17 +225,19 @@ class GoliathTranslationApp(LlmCppTranslationApp):
         
         return f"{baseline} ({name_entry['gender']})"
 
-    def map_name_entries(self):
-        if len(config_state.name_entries) == 0:
+    def map_name_entries(self, inp: str):
+        name_entries = self.get_augmented_name_entries(inp)
+
+        if len(name_entries) == 0:
             return ""
 
-        joined_entries = '\n'.join([self.make_single_name_entry(ne) for ne in config_state.name_entries]).strip()
+        joined_entries = '\n'.join([self.make_single_name_entry(ne) for ne in name_entries]).strip()
 
         # First space needed.
         return f" Use the provided dictionary for named entity and term translations as needed. Pay close attention to gender information for pronoun reference.\nDictionary:\n{joined_entries}\n" # So two \n Total.
 
     def map_prompt(self, inp: str, contexts: List[str]):
-        dictionary_injection = self.map_name_entries()
+        dictionary_injection = self.map_name_entries(inp)
 
         if len(contexts) == 0:
             base_prompt = f"Translate the {self.lang} text to English.{dictionary_injection}\nText to Translate: {inp}"

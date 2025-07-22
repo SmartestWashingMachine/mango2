@@ -45,6 +45,7 @@ class ConfigState:
         self.capture_window = ""
 
         self.name_entries = []
+        self.augment_name_entries = False
 
         self._temp_circuit_broken = False # TODO: Use separate state for this.
 

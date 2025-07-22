@@ -276,6 +276,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     cacheMt,
     captureWindow,
     boxes,
+    augmentNameEntries,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
@@ -576,6 +577,15 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 safeValue={0.5}
                 minValue={0.1}
                 maxValue={150}
+              />
+            ),
+            "Augment Dictionary": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="augmentNameEntries"
+                defaultValue={augmentNameEntries}
+                label="Augment Dictionary"
+                helperText="Uses another model to look for names in texts and match them with a stored dictionary file for use with a Goliath or Massive translation model. This will require more memory and be slightly slower."
               />
             ),
             "Auto Open Detached Box": (

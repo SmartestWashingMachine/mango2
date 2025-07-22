@@ -123,13 +123,17 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             return ""
         return sep.group(1) if sep is not None else ""
     
-    def map_dictionary_template(self, sep):
+    def map_dictionary_template(self, sep, translation_input: str):
         sep = sep.group(1) # Should be another string template in the form of "__FROM__ == __TO__"
-        if sep is None or len(config_state.name_entries) == 0:
+
+        # The model used here (if augmented) will memorize the last input for name entries.
+        # In other words: IF_DICTIONARY_EXISTS followed by MAP_DICTIONARY calls will actually only call the full NER pipeline once.
+        name_entries = self.get_augmented_name_entries(translation_input)
+        if sep is None or len(name_entries) == 0:
             return ""
 
         full_replacement = ""
-        for entry in config_state.name_entries:
+        for entry in name_entries:
             entry_sep = sep
 
             entry_sep = entry_sep.replace("__FROM__", entry["source"])
@@ -144,8 +148,8 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
 
         return full_replacement
     
-    def map_if_dictionary_exists(self, sep):
-        if len(config_state.name_entries) == 0:
+    def map_if_dictionary_exists(self, sep, translation_input):
+        if len(self.get_augmented_name_entries(translation_input)) == 0:
             return ""
         return sep.group(1) if sep is not None else ""
     

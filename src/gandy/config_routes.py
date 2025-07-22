@@ -148,6 +148,7 @@ def change_multiple_models_route():
             sort_text_from_top_left=data["sortTextFromTopLeft"],
             capture_window=data["captureWindow"],
             name_entries=data["nameEntries"],
+            augment_name_entries=data["augmentNameEntries"]
         )
 
         config_state.update_terms(terms=data["terms"])

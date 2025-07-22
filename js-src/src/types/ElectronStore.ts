@@ -53,6 +53,7 @@ export type IStoreClientToServer = {
   memoryEfficientTasks: boolean;
   cacheMt: boolean;
   captureWindow: string;
+  augmentNameEntries: boolean;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;

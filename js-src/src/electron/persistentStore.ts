@@ -50,6 +50,7 @@ const storeDefaults: IStore = {
   cacheMt: false,
   captureWindow: "",
   nameEntries: [],
+  augmentNameEntries: false,
 };
 
 export const initializeStore = () => {
