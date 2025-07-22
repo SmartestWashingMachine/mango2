@@ -157,7 +157,7 @@ class LlamaCppExecutableOpenAIClient:
                 ctypes.windll.kernel32.SetDllDirectoryA(None) # NECESSARY!
 
                 self.server_process = subprocess.Popen(
-                    command, close_fds=True, shell=True, **subprocess_args(True),
+                    command, close_fds=True, shell=True, **subprocess_args(False),
                 )
                 ctx.log("Llama.cpp server process started.")
 
