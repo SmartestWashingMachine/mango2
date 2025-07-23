@@ -125,12 +125,13 @@ class NameAdder():
         return src
 
     def get_names(self, src: str):
-        with logger.begin_event('Augmenting name entries from dictionary file', src=src) as ctx:
-            if not self.loaded:
-                self.load_model()
+        if not self.loaded:
+            self.load_model()
 
-            if src == self.memo['src']:
-                return self.memo['output']
+        if src == self.memo['src']:
+            return self.memo['output']
+
+        with logger.begin_event('Augmenting name entries from dictionary file', src=src) as ctx:
 
             # Currently just for JA.
             output = self.nlp(src)
