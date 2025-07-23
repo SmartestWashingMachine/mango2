@@ -121,7 +121,9 @@ As shown above, there are several operators that can be used for templating purp
 - `{{CONTEXT}}`: This is used to insert the CURRENT source-side context sentence into the message. Should only be used in `create_each_context_message`.
 - `{{SOURCE}}`: This is used to insert the source text into the message.
 - `{{IF_CONTEXT_EXISTS(...)}}`: Only inserts the string if there is context.
-- `{{JOIN_EACH_DICTIONARY_NAME_PAIR(__FROM__ ... __TO__ ... __GENDER__)}}`: Users might specify how names or terms should be translated in the settings tab. You can decide if they should be mapped into the input somehow or not. `__FROM__` is a string consisting of the I-th source term, and `__TO__` is for the I-th target term.
+- `{{JOIN_EACH_DICTIONARY_NAME_PAIR(__FROM__ ... __TO__ ... __GENDER__ ... __IF_GENDER_EXISTS(__GENDER__)__)}}`: Users might specify how names or terms should be translated in the settings tab. You can decide if they should be mapped into the input somehow or not. `__FROM__` is a string consisting of the I-th source term, and `__TO__` is for the I-th target term. Entries without a gender will have `__GENDER__` set to `N/A`.
+- `{{JOIN_EACH_GENDERED_DICTIONARY_NAME_PAIR(__FROM__ ... __TO__ ... __GENDER__)}}`: Similar to `JOIN_EACH_DICTIONARY_NAME_PAIR` but only dictionary entries with a gender specified are used.
+- `{{JOIN_EACH_NON_GENDERED_DICTIONARY_NAME_PAIR(__FROM__ ... __TO__)}}`: Similar to `JOIN_EACH_DICTIONARY_NAME_PAIR` but only dictionary entries without a gender specified are used.
 - `{{IF_DICTIONARY_EXISTS(...)}}`: Only inserts the string if there is at least one entry in the dictionary.
 - `file`: This is used to read the contents of a file in the same directory as the .mango_config.json file, with the same name as the field, but with a .txt extension instead of .mango_config.json.
     All the other templating operators can be used in the file as well. Use this if you want to have new lines in your string without resorting to using "\n".

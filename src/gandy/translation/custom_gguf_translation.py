@@ -45,7 +45,7 @@ import os
 
 - stop_words (string | array of strings | null): Extra words/phrases to stop generation once reached.
 
-As we can see, there are a few "operators" for templating purposes:
+As we can see, there are a few "operators" for templating purposes, like:
 - {{PREFIX_EACH_CONTEXT(...)}}: This is used to prefix each context with a string.
 - {{JOIN_EACH_CONTEXT(...)}}: This is used to join each context with a string (in other words: the first context is not prefixed, but the rest are).
 - {{CONTEXT}}: This is used to insert the CURRENT source-side context sentence into the message. Should only be used in create_each_context_message.
@@ -116,14 +116,14 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
 
         if prefix:
             return sep + sep.join(contexts)
-        return sep.join(contexts)
+        return sep.join(contexts).rstrip()
     
     def map_if_context_exists(self, contexts: List[str], sep):
         if len(contexts) == 0:
             return ""
         return sep.group(1) if sep is not None else ""
     
-    def map_dictionary_template(self, sep, translation_input: str):
+    def map_dictionary_template(self, sep, translation_input: str, filter_entry):
         sep = sep.group(1) # Should be another string template in the form of "__FROM__ == __TO__"
 
         # The model used here (if augmented) will memorize the last input for name entries.
@@ -134,6 +134,9 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
 
         full_replacement = ""
         for entry in name_entries:
+            if not filter_entry(entry):
+                continue
+
             entry_sep = sep
 
             entry_sep = entry_sep.replace("__FROM__", entry["source"])
@@ -142,12 +145,24 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             mapped_gender = entry["gender"]
             if mapped_gender == "":
                 mapped_gender = "N/A"
+
+            entry_sep = re.sub(r"__IF_GENDER_EXISTS\((.*?)\)__", lambda m: m.group(1) if m is not None and mapped_gender != "N/A" else "", entry_sep, flags=re.DOTALL)
             entry_sep = entry_sep.replace("__GENDER__", mapped_gender)
 
             full_replacement += entry_sep
 
-        return full_replacement
+        return full_replacement.rstrip()
     
+    def map_dictionary_template_gender_and_non_gender(self, sep, translation_input: str):
+        # This is to collect ALL dictionary pairs - whether they have a gender specified or not.
+        return self.map_dictionary_template(sep, translation_input, filter_entry=lambda x: True)
+    
+    def map_dictionary_template_only_gendered(self, sep, translation_input: str):
+        return self.map_dictionary_template(sep, translation_input, filter_entry=lambda x: x["gender"] != "")
+
+    def map_dictionary_template_only_non_gendered(self, sep, translation_input: str):
+        return self.map_dictionary_template(sep, translation_input, filter_entry=lambda x: x["gender"] == "")
+
     def map_if_dictionary_exists(self, sep, translation_input):
         if len(self.get_augmented_name_entries(translation_input)) == 0:
             return ""
@@ -158,10 +173,14 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         msg = re.sub(r"\{\{JOIN_EACH_CONTEXT\((.*?)\)\}\}", lambda m: self.map_contexts_template(contexts, m, prefix=False), msg, flags=re.DOTALL)
 
         # Must come before IF_EXISTS - order matters.
-        msg = re.sub(r"\{\{JOIN_EACH_DICTIONARY_NAME_PAIR\((.*?)\)\}\}", lambda m: self.map_dictionary_template(m), msg, flags=re.DOTALL)
+        msg = re.sub(r"\{\{JOIN_EACH_DICTIONARY_NAME_PAIR\((.*?)\)\}\}", lambda m: self.map_dictionary_template_gender_and_non_gender(m, source), msg, flags=re.DOTALL)
+
+        msg = re.sub(r"\{\{JOIN_EACH_GENDERED_DICTIONARY_NAME_PAIR\((.*?)\)\}\}", lambda m: self.map_dictionary_template_only_gendered(m, source), msg, flags=re.DOTALL)
+
+        msg = re.sub(r"\{\{JOIN_EACH_NON_GENDERED_DICTIONARY_NAME_PAIR\((.*?)\)\}\}", lambda m: self.map_dictionary_template_only_non_gendered(m, source), msg, flags=re.DOTALL)
 
         msg = re.sub(r"\{\{IF_CONTEXT_EXISTS\((.*?)\)\}\}", lambda m: self.map_if_context_exists(contexts, m), msg, flags=re.DOTALL)
-        msg = re.sub(r"\{\{IF_DICTIONARY_EXISTS\((.*?)\)\}\}", lambda m: self.map_if_dictionary_exists(m), msg, flags=re.DOTALL)
+        msg = re.sub(r"\{\{IF_DICTIONARY_EXISTS\((.*?)\)\}\}", lambda m: self.map_if_dictionary_exists(m, source), msg, flags=re.DOTALL)
 
         msg = msg.replace("{{SOURCE}}", source)
 
