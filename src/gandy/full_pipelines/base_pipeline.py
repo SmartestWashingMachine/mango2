@@ -167,6 +167,7 @@ class BasePipeline:
         socketio: SocketIO = None,
         with_global_cache=False,
         progress_cb=None,
+        on_cache_hit=None,
     ):
         target_texts: List[str] = []
 
@@ -186,6 +187,10 @@ class BasePipeline:
                     found_in_cache = True
                     translation_output = translation_candidates[0] # Only 1 candidate is returned.
                     all_translation_outputs[idx] = translation_output
+
+                    # For detached text boxes that translate lines individually.
+                    if on_cache_hit is not None:
+                        on_cache_hit(translation_output)
 
                 was_found_in_cache[idx] = found_in_cache # True
 
@@ -521,7 +526,7 @@ class BasePipeline:
                 source_texts = source_texts[0]
 
                 target_texts = self.get_target_texts_from_str(
-                    [source_texts], use_stream=use_stream
+                    [source_texts], use_stream=use_stream, on_cache_hit=lambda cached_output: use_stream.put(cached_output, already_detokenized=True)
                 )
 
                 if use_stream is not None:
