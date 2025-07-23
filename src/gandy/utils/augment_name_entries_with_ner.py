@@ -3,6 +3,9 @@ from optimum.onnxruntime import ORTModelForTokenClassification
 import json
 from gandy.state.config_state import config_state
 from gandy.utils.fancy_logger import logger
+import os
+
+DO_SAVE_MISSING_NAMES = True
 
 def ceil(n):
     return int(-1 * n // 1 * -1)
@@ -12,7 +15,7 @@ def get_matches_from_dict(name: str, data_dict, min_possible_name_fract = 0.5, s
 
     if name in data_dict:
         for target in data_dict[name]:
-            found.append({ "source": name, "target": target, "gender": "", })
+            found.append({ "source": name, "target": target["name"], "gender": target["gender"], })
         return found
 
 
@@ -42,7 +45,7 @@ def get_matches_from_dict(name: str, data_dict, min_possible_name_fract = 0.5, s
         for p in possible_names:
             if p in data_dict:
                 for target in data_dict[p]:
-                    found.append({ "source": p, "target": target, "gender": "", })
+                    found.append({ "source": p, "target": target["name"], "gender": target["gender"], })
 
     return found
 
@@ -92,6 +95,26 @@ class NameAdder():
         self.data_dict = None
         self.loaded = False
 
+    def get_missing_dictionary_path(self):
+        return f"models/ner/missing_dictionary.json"
+
+    def save_missing_dictionary(self, missing_data):
+        missing_path = self.get_missing_dictionary_path()
+
+        if os.path.exists(missing_path):
+            with open(missing_path, encoding='utf-8') as f:
+                existing_missing_data = json.load(f)
+        else:
+            existing_missing_data = {}
+
+        # The user might have already updated some entries in the missing dictionary - we don't want to "reset" those entries.
+        for k in missing_data:
+            if k not in existing_missing_data:
+                existing_missing_data[k] = missing_data[k]
+
+        with open(missing_path, 'w', encoding='utf-8') as f:
+            json.dump(existing_missing_data, f, indent=2, ensure_ascii=False)
+
     def cut_honorifics(self, src: str):
         # TODO: Maybe only cut if a suffix.
         honorifics = { 'はん', '様', 'さま', 'さん', 'ちゃん', 'たん', 'くん', '先生', 'せんせい', '先輩', 'せんぱい', }
@@ -113,6 +136,10 @@ class NameAdder():
             output = self.nlp(src)
             extracted = [entity['word'] for entity in output if entity['entity_group'] == 'PER']
 
+            if DO_SAVE_MISSING_NAMES:
+                missing_names = {}
+                do_resave_missing_dictionary = False
+
             extra_name_entries = []
             for extr in extracted:
                 extr_no_honor = self.cut_honorifics(extr)
@@ -120,6 +147,17 @@ class NameAdder():
                 extra_name_entries.extend(founds)
 
                 ctx.log(f'Found matches', processed_ner_word=extr_no_honor, original_ner_word=extr, found=founds)
+
+                if DO_SAVE_MISSING_NAMES:
+                    if len(founds) == 0:
+                        missing_names[extr_no_honor] = [{ 'name': '', 'gender': '', }]
+
+                        do_resave_missing_dictionary = True
+
+            if do_resave_missing_dictionary:
+                # A missing name was added.
+                ctx.log(f'Saving missing dictionary with potential new names.', missing_names=list(missing_names.keys()))
+                self.save_missing_dictionary(missing_names)
 
             if len(extra_name_entries) > 0:
                 ctx.log('Additional names added!', ner_detected=len(extracted), ner_words=extracted, n_additional=len(extra_name_entries))
