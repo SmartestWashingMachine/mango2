@@ -81,6 +81,12 @@ class LlamaCppExecutableOpenAIClient:
                 ctx.log("Server already exists - reusing server instance.")
                 return
 
+            # Weird escaping because of shell=True (do we even need that?).
+            # Partly vibe coded because let's be real nobody wants to figure out this Python-CMD escaping business.
+            dry_n_breaker = "\\n"
+            dry_colon_breaker = ":"
+            dry_double_quote_breaker = "\\\""
+
             command = [
                 self.llama_cpp_server_path,
                 "-m",
@@ -114,6 +120,10 @@ class LlamaCppExecutableOpenAIClient:
                 # Since we aren't using ik_llama anymore, we can reuse cache-reuse...
                 # ik_llama had an issue with prefilling.
                 "--cache-reuse", "128",
+                "--no-context-shift",
+                f'--dry-sequence-breaker "{dry_n_breaker}"',
+                f'--dry-sequence-breaker "{dry_colon_breaker}"',
+                f'--dry-sequence-breaker "{dry_double_quote_breaker}"', # This will be passed to cmd.exe as "\" hopefully???
             ]
 
             if self.verbose:
