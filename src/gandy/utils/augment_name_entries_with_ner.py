@@ -124,14 +124,16 @@ class NameAdder():
 
         return src
 
-    def get_names(self, src: str):
+    def get_names(self, src: str, entries_to_ignore, add_empty = False, do_memo = True):
         if not self.loaded:
             self.load_model()
 
-        if src == self.memo['src']:
+        if src == self.memo['src'] and do_memo:
             return self.memo['output']
 
-        with logger.begin_event('Augmenting name entries from dictionary file', src=src) as ctx:
+        ents_to_ignore = [x['source'] for x in entries_to_ignore]
+        with logger.begin_event('Augmenting name entries from dictionary file', src=src, ignoring_src_names=ents_to_ignore) as ctx:
+            user_selected_sources = set(ents_to_ignore)
 
             # Currently just for JA.
             output = self.nlp(src)
@@ -145,12 +147,19 @@ class NameAdder():
             for extr in extracted:
                 extr_no_honor = self.cut_honorifics(extr)
                 founds = get_matches_from_dict(extr_no_honor, self.data_dict, min_possible_name_fract=0.5, splitting_strategy="chunk")
+                was_initially_empty = len(founds) == 0
+
+                founds = [f for f in founds if f['source'] not in user_selected_sources]
                 extra_name_entries.extend(founds)
+
+                if was_initially_empty and add_empty:
+                    # For use in Task8.
+                    extra_name_entries.append({ 'source': extr_no_honor, 'target': '???', 'gender': '', })
 
                 ctx.log(f'Found matches', processed_ner_word=extr_no_honor, original_ner_word=extr, found=founds)
 
                 if DO_SAVE_MISSING_NAMES:
-                    if len(founds) == 0:
+                    if was_initially_empty:
                         missing_names[extr_no_honor] = [{ 'name': '', 'gender': '', }]
 
                         do_resave_missing_dictionary = True
@@ -165,10 +174,11 @@ class NameAdder():
             else:
                 ctx.log('No additional names added.', ner_detected=len(extracted), ner_words=extracted)
 
-            self.memo = {
-                'src': src,
-                'output': extra_name_entries,
-            }
+            if do_memo:
+                self.memo = {
+                    'src': src,
+                    'output': extra_name_entries,
+                }
 
         return extra_name_entries
 

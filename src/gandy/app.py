@@ -102,6 +102,7 @@ import gandy.tasks.task4.task4_routes
 import gandy.tasks.task5.task5_routes
 import gandy.tasks.task6.task6_routes
 import gandy.tasks.task7.task7_routes
+import gandy.tasks.task8.task8_routes
 import gandy.web_routes
 import gandy.config_routes
 import gandy.dev_routes

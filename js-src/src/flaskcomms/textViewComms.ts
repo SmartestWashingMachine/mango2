@@ -107,3 +107,40 @@ export const pollGenericTranslateStatus = (
 
   return cleanupFn;
 };
+
+export const translateNames = async (text: string) => {
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask8`;
+
+  const body: any = { text };
+
+  const output = fetch(apiUrl, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
+};
+
+export const pollTranslateNamesStatus = (
+  itemCb: (sourceText: string, targetText: string) => void,
+  doneCb: () => void
+) =>
+  new Promise<void>((resolve) => {
+    const socket = makeSocket();
+
+    socket.on("connect", () => {
+      resolve();
+    });
+
+    socket.on("done_translating_task8", (data) => {
+      if (data && data.text && data.sourceText) {
+        itemCb(data.sourceText, data.text);
+      }
+
+      doneCb();
+
+      socket.disconnect();
+    });
+  });

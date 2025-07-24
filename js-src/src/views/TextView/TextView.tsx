@@ -21,9 +21,12 @@ import {
   pollGenericTranslateStatus,
   pollTranslateTextStatus,
   translateText,
+  pollTranslateNamesStatus,
+  translateNames,
 } from "../../flaskcomms/textViewComms";
 import InputAdornment from "@mui/material/InputAdornment";
 import MonitorIcon from "@mui/icons-material/Monitor";
+import PersonSearch from "@mui/icons-material/PersonSearch";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SettingsIcon from "@mui/icons-material/SettingsOutlined";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
@@ -91,6 +94,12 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
 
   // Just for informative purposes. The actual window capturing logic is in the backend task3 routes file.
   const [captureWindow, setCaptureWindow] = useState("");
+
+  // Task8 stuff.
+  const [mapNames, setMapNames] = useState(false);
+  const [augmentNameEntries, setAugmentNameEntries] = useState(false);
+
+  const handleToggleMapNames = () => setMapNames((b) => !b);
 
   const handleToggleClipboardReading = () =>
     setReadClipboardDelay((d) => (d === null ? 250 : null));
@@ -194,6 +203,20 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     });
   };
 
+  const processOneName = (inp: string) => {
+    return new Promise(async (resolve) => {
+      // Create a websocket to listen to the server for progress and the end result.
+      await pollTranslateNamesStatus(doneTranslatingOne, () => {
+        resolve(null);
+
+        doneTranslatingAll();
+      });
+
+      // Now we actually begin the translation job on the server.
+      await translateNames(inp);
+    });
+  };
+
   // Used for handleProcessTextClick.
   const splitByChar = (textToSplitOn: string, char: any) => {
     return textToSplitOn
@@ -254,7 +277,11 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
       // Create a websocket to listen to the server for progress and the end result.
       // Also process the given inp.
       // Resolve when the text is done.
-      await processOneText(inp);
+      if (mapNames) {
+        await processOneName(inp);
+      } else {
+        await processOneText(inp);
+      }
     }
   };
 
@@ -378,6 +405,8 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
 
       setMaxContextAmount(newCtxValue);
       setCaptureWindow(data.captureWindow);
+
+      setAugmentNameEntries(data.augmentNameEntries);
     };
 
     asyncCb();
@@ -545,6 +574,34 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
             <ContentPasteIcon
               color={readClipboardDelay !== null ? "primary" : undefined}
             />
+          </IconButton>
+        </Paper>
+      </Tooltip>
+      <Tooltip
+        title={
+          <>
+            <Typography color="inherit" sx={{ fontWeight: "bold" }}>
+              {mapNames ? "Stop Finding Names" : "Find Names"}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "hsl(291, 1%, 93%)" }}>
+              Show all names found in the user dictionary and also additional
+              names found in the text by using the NER module. This can be
+              useful for finding new names to manually add to the dictionary.{" "}
+              <i>
+                Requires the NER module to be installed and "Augment Dictionary"
+                to be enabled in the settings.
+              </i>
+            </Typography>
+          </>
+        }
+      >
+        <Paper elevation={2}>
+          <IconButton
+            onClick={handleToggleMapNames}
+            sx={{ borderRadius: 0 }}
+            disabled={!augmentNameEntries}
+          >
+            <PersonSearch color={mapNames ? "primary" : undefined} />
           </IconButton>
         </Paper>
       </Tooltip>

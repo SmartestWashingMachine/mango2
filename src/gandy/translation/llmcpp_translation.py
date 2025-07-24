@@ -212,7 +212,7 @@ class LlmCppTranslationApp(BaseTranslation):
             return config_state.name_entries
 
         # TODO: Un normalize src
-        return config_state.name_entries + self.name_adder.get_names(src)
+        return config_state.name_entries + self.name_adder.get_names(src, config_state.name_entries)
     
     def process_with_batch(self, texts: List[str]):
         self.translate_string()
