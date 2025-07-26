@@ -13,6 +13,9 @@ def ceil(n):
 def get_matches_from_dict(name: str, data_dict, min_possible_name_fract = 0.5, splitting_strategy = "chunk"):
     found = []
 
+    if len(name.strip()) == 0:
+        return []
+
     if name in data_dict:
         for target in data_dict[name]:
             found.append({ "source": name, "target": target["name"], "gender": target["gender"], })
