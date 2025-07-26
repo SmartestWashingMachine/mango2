@@ -112,6 +112,70 @@ class ConditionalLongestMaxSize(A.DualTransform):
     def get_transform_init_args_names(self):
         return ("default_max_size", "fallback_max_sizes", "min_short_side_threshold", "interpolation")
 
+class ResizeToMultipleOf(A.DualTransform):
+    """
+    Resizes the input image and its targets to the smallest dimensions
+    that are a multiple of the given divisors, and are greater than or equal
+    to the original dimensions.
+
+    Args:
+        height_divisor (int): The height will be resized to a multiple of this value.
+        width_divisor (int): The width will be resized to a multiple of this value.
+        interpolation (int): OpenCV interpolation flag. Default is cv2.INTER_LINEAR.
+        p (float): probability of applying the transform. Default: 1.0.
+    """
+    def __init__(
+        self,
+        height_divisor: int = 16,
+        width_divisor: int = 16,
+        interpolation: int = cv2.INTER_LINEAR,
+        always_apply: bool = False,
+        p: float = 1.0,
+    ):
+        super().__init__(always_apply, p)
+        self.height_divisor = height_divisor
+        self.width_divisor = width_divisor
+        self.interpolation = interpolation
+
+    def apply(self, img, **params):
+        h, w = img.shape[:2]
+
+        # Calculate target dimensions
+        target_h = h
+        if h % self.height_divisor != 0:
+            target_h = h + (self.height_divisor - (h % self.height_divisor))
+
+        target_w = w
+        if w % self.width_divisor != 0:
+            target_w = w + (self.width_divisor - (w % self.width_divisor))
+
+        return cv2.resize(img, (target_w, target_h), interpolation=self.interpolation)
+
+    def apply_to_mask(self, mask, **params):
+        h, w = mask.shape[:2]
+
+        # Calculate target dimensions (same as for image)
+        target_h = h
+        if h % self.height_divisor != 0:
+            target_h = h + (self.height_divisor - (h % self.height_divisor))
+
+        target_w = w
+        if w % self.width_divisor != 0:
+            target_w = w + (self.width_divisor - (w % self.width_divisor))
+
+        # Use INTER_NEAREST for masks to preserve discrete values
+        return cv2.resize(mask, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+
+    # If you have bounding boxes or keypoints, you would also need to implement
+    # apply_to_bbox and apply_to_keypoint respectively, scaling their coordinates.
+    # For a simple resize, Albumentations' Resize transform handles this automatically
+    # if you use A.Resize directly and specify bbox_params or keypoint_params in A.Compose.
+    # Since we are doing a custom resize here, you'd need to manually scale them.
+    # However, if your only goal is image and mask, the above is sufficient.
+
+    def get_transform_init_args_names(self):
+        return ("height_divisor", "width_divisor", "interpolation")
+
 robust_transform = A.Compose(
     [
         ConditionalLongestMaxSize(default_max_size=512, fallback_max_sizes=[768, 1024], p=1, min_short_side_threshold=64, interpolation=cv2.INTER_LINEAR),
@@ -126,6 +190,22 @@ robust_transform = A.Compose(
             value=0, # Background color
             p=1 # Always apply
         ),
+        A.ToGray(p=1.0),
+    ]
+)
+
+alt_robust_transform = A.Compose(
+    [
+        ConditionalLongestMaxSize(default_max_size=512, fallback_max_sizes=[768, 1024], p=1, min_short_side_threshold=64, interpolation=cv2.INTER_LINEAR),
+        ResizeToMultipleOf(p=1.0),
+        A.ToGray(p=1.0),
+    ]
+)
+
+alt_robust_transform_custom = A.Compose(
+    [
+        ConditionalLongestMaxSize(default_max_size=512, fallback_max_sizes=[768, 1024], p=1, min_short_side_threshold=64, interpolation=cv2.INTER_LINEAR),
+        ResizeToMultipleOf(32, 32, p=1.0),
         A.ToGray(p=1.0),
     ]
 )

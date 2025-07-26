@@ -49,6 +49,9 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
         return 7700
     
     def get_model_path_for_llmcpp(self):
+        if self.model_sub_path == "config":
+            return os.path.join("models", "custom_ocrs", f"{self.mango_config['model_name']}.gguf")
+
         return os.path.join("models", "custom_ocrs", f"{self.model_sub_path}.gguf")
     
     def get_mmproj_path_for_llmcpp(self):

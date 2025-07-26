@@ -1,17 +1,32 @@
 export const OCR_OPTIONS = [
   {
-    name: "Japanese Massive",
+    name: "(Games) Japanese Massive",
     value: "trocr_jmassive",
     desc: "Incredibly slow but slightly more accurate.",
   },
   {
-    name: "Korean Massive",
+    name: "(Games) Korean Massive",
     value: "k_trocr_massive",
     desc: "Slow but sometimes more accurate.",
   },
   {
-    name: "Chinese Massive",
+    name: "(Games) Chinese Massive",
     value: "zh_trocr_massive",
+    desc: "Slow but sometimes more accurate.",
+  },
+  {
+    name: "(Comics) Japanese Massive",
+    value: "trocr_jmassive_alt",
+    desc: "Incredibly slow but slightly more accurate.",
+  },
+  {
+    name: "(Comics) Korean Massive",
+    value: "k_trocr_massive_alt",
+    desc: "Slow but sometimes more accurate.",
+  },
+  {
+    name: "(Comics) Chinese Massive",
+    value: "zh_trocr_massive_alt",
     desc: "Slow but sometimes more accurate.",
   },
   {

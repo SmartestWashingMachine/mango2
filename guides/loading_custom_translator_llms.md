@@ -18,7 +18,8 @@ Once that's done, paste this inside the config contents:
   "create_assistant_prefix": "",
   "extract_from_output": "",
   "n_context": 1024,
-  "stop_words": null
+  "stop_words": null,
+  "model_name": "<modelname>"
 }
 ```
 

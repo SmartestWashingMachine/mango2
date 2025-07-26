@@ -80,6 +80,9 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         return mango_config
 
     def get_model_path_for_llmcpp(self):
+        if self.model_sub_path == "config":
+            return os.path.join("models", "custom_translators", f"{self.mango_config['model_name']}.gguf")
+
         return os.path.join("models", "custom_translators", f"{self.model_sub_path}.gguf")
 
     def can_load(self):

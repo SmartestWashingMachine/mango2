@@ -80,7 +80,7 @@ from gandy.translation.llmcpp_translation import LlmCppTranslationApp, GoliathTr
 from gandy.translation.custom_gguf_translation import CustomGgufTranslationApp
 from gandy.utils.set_tokenizer_langs import prepend_gem_ja, prepend_gem_ko, prepend_gem_zh
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
-from gandy.utils.robust_text_line_resize import robust_transform
+from gandy.utils.robust_text_line_resize import robust_transform, alt_robust_transform, alt_robust_transform_custom
 from gandy.spell_correction.llmcpp_refinement import LlmCppRefinementApp
 import os
 
@@ -288,8 +288,38 @@ TEXT_RECOGNITION_APP = SwitchApp(
             do_resize=False,
             transform=robust_transform, # Intended for use with a line detection model.
         ),
+        TrOCRTextRecognitionApp(
+            model_sub_path="_komassive/",
+            do_resize=False,
+            join_lines_with=" ",
+            gen_kwargs={
+                "num_beams": 5,
+                "no_repeat_ngram_size": 20,
+            },
+            transform=alt_robust_transform, # Intended for use with a line detection model.
+        ),
+        TrOCRTextRecognitionApp(
+            model_sub_path="_zhmassive/",
+            do_resize=False,
+            gen_kwargs={
+                "num_beams": 5,
+                "no_repeat_ngram_size": 20,
+            },
+            extra_postprocess=j_ocr_postprocess,
+            transform=alt_robust_transform,
+        ),
+        TrOCRTextRecognitionApp(
+            model_sub_path="_jmassive/",
+            do_resize=False,
+            gen_kwargs={
+                "num_beams": 3, # Could also be 3.
+                "no_repeat_ngram_size": 99,
+            },
+            extra_postprocess=j_ocr_postprocess,
+            transform=alt_robust_transform, # Intended for use with a line detection model.
+        ),
     ],
-    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr_massive", "trocr_jmassive", "trocr_jmagnus", "trocr_jcomics", "q25_j", "q25_k", "q25_zh"],
+    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr_massive", "trocr_jmassive", "trocr_jmagnus", "trocr_jcomics", "q25_j", "q25_k", "q25_zh", "k_trocr_massive_alt", "zh_trocr_massive_alt", "trocr_jmassive_alt"],
 )
 
 TRANSLATION_APP = SwitchApp(
@@ -487,21 +517,24 @@ TEXT_LINE_MODEL_APP = SwitchApp(
 
 os.makedirs("models/custom_translators", exist_ok=True)
 
-IGNORE_FILES = ['qwenmoderate', 'qwenmassive'] # These are my models.
+IGNORE_FILES = ['qwenmassive_j', 'qwenmassive_k', 'qwenmassive_zh'] # These are my models.
+
+custom_model_suffix = ".mango_config.json"
 
 for model in os.listdir("models/custom_translators"):
-    if model.endswith(".gguf"):
-        model_name = model[:-5] # GGUF attachment automatically added
+    if model.endswith(custom_model_suffix):
+        model_name = model[:-len(custom_model_suffix)] # GGUF attachment automatically added
         if os.path.exists(f"models/custom_translators/{model_name}.mango_config.json"):
-            print(f'Found translation model: "{model}"')
-
             if model_name in IGNORE_FILES:
                 continue
 
+            print(f'Found translation model: "{model}"')
+
             custom_translation_app = CustomGgufTranslationApp(
-                model_sub_path=model_name,
+                model_sub_path="config",
                 prepend_fn=lambda s: s,
                 lang="Generic",
+                config_sub_path=model_name,
             )
 
             user_model_name = f"(Custom Translator) {model_name}"
@@ -511,22 +544,22 @@ for model in os.listdir("models/custom_translators"):
 
 os.makedirs("models/custom_ocrs", exist_ok=True)
 
-IGNORE_FILES = ['q25']
+IGNORE_FILES = ['q25_j', 'q25_k', 'q25_zh']
 
 for model in os.listdir("models/custom_ocrs"):
-    if model.endswith(".gguf"):
-        model_name = model[:-5] # GGUF attachment automatically added
+    if model.endswith(custom_model_suffix):
+        model_name = model[:-len(custom_model_suffix)] # GGUF attachment automatically added
         if os.path.exists(f"models/custom_ocrs/{model_name}.mango_config.json"):
-            print(f'Found OCR model: "{model}"')
-
             if model_name in IGNORE_FILES:
                 continue
 
+            print(f'Found OCR model: "{model}"')
+
             custom_ocr_app = CustomGgufOcrApp(
-                model_sub_path=model_name,
+                model_sub_path="config",
                 config_sub_path=model_name,
                 do_resize=False,
-                transform=robust_transform, # Intended for use with a line detection model.
+                transform=alt_robust_transform_custom, # Intended for use with a line detection model.
             )
 
             user_model_name = f"(Custom OCR) {model_name}"
