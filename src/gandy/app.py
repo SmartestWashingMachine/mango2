@@ -43,9 +43,12 @@ web_app = Flask(__name__, template_folder=os.getcwd() + '/templates', static_fol
 socketio = socketio_pkg.Client()
 
 def try_socket_conn():
-    while True:
+    while not socketio.connected:
         try:
-            print(f'Connecting to {remote_router.socketio_address}...')
+            log_msg = f"Connecting to {remote_router.socketio_address}..."
+            print(log_msg)
+            logger.info(log_msg)
+
             # By default SocketIO client does not reconnect on the initial connection attempt...
             socketio.connect(f'ws://{remote_router.socketio_address}:5100', transports=['websocket'])
             break
@@ -66,6 +69,23 @@ legacy_logger.addHandler(console)
 legacy_logger.addHandler(EliotHandler())
 
 legacy_logger.info("Running app.")
+
+def patched_emit(event, data, *args, **kwargs):
+    while True:
+        try_socket_conn() # Returns right away if already connected.
+
+        try:
+            socketio.emit(event, data, *args, **kwargs)
+            return None
+        except Exception as e:
+            print("--- SOCKET ERROR:")
+            print(e)
+            logger.error(e)
+
+            # Just in case...
+            if socketio.connected:
+                logger.error("SocketIO is 'connected' yet the error was still raised! This should NEVER happen.")
+                sleep(10)
 
 socketio.patched_emit = socketio.emit
 socketio.sleep = lambda *args, **kwargs: None
