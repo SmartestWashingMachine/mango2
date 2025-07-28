@@ -155,7 +155,14 @@ def change_multiple_models_route():
 
         context_state.reset_list()
 
-        ctx.log("Received config data", **data)
+        try:
+            print('DATA:')
+            print(data)
+            print('-----------------')
+            ctx.log("Received config data", **data)
+        except:
+            ctx.log("Failed to log config data...")
+
         translate_pipeline.log_app_usage(ctx)
 
     return {}, 200
