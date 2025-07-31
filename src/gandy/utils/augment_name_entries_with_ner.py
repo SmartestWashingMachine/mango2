@@ -124,6 +124,15 @@ class NameAdder():
         with open(missing_path, 'w', encoding='utf-8') as f:
             json.dump(existing_missing_data, f, indent=2, ensure_ascii=False)
 
+    def cut_honorifics(self, src: str):
+        # TODO: Maybe only cut if a suffix.
+        honorifics = { 'はん', '様', 'さま', 'さん', 'ちゃん', 'たん', 'くん', '先生', 'せんせい', '先輩', 'せんぱい', }
+
+        for h in honorifics:
+            src = src.replace(h, '').strip()
+
+        return src
+
     def get_names(self, src: str, entries_to_ignore, add_empty = False, do_memo = True):
         if not self.loaded:
             try:
