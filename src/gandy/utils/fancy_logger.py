@@ -69,6 +69,12 @@ class FancyLogger:
     def begin_event(self, event_name: str, **fields):
         with start_action(action_type=event_name, **fields) as ctx:
             try:
+                if self.do_print:
+                    print(f'>>>> {event_name}')
+                    for f in fields.items():
+                        print(f'^^ {f[0]}:')
+                        print(f[1])
+
                 old_log = ctx.log
 
                 @functools.wraps(old_log)

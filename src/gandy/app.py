@@ -55,6 +55,8 @@ def try_socket_conn():
         except Exception as e:
             print(e)
             print('Gonna retry connection.')
+            logger.info('Failed connecting to Socket server - retrying soon...')
+
             sleep(1)
             continue
 
@@ -87,7 +89,7 @@ def patched_emit(event, data, *args, **kwargs):
                 logger.error("SocketIO is 'connected' yet the error was still raised! This should NEVER happen.")
                 sleep(10)
 
-socketio.patched_emit = socketio.emit
+socketio.patched_emit = patched_emit
 socketio.sleep = lambda *args, **kwargs: None
 socketio.start_background_task = lambda fn, *args: fn(*args)
 

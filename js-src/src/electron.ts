@@ -92,6 +92,19 @@ const createWindow = () => {
 
 const subprocess = isDev ? null : loadPython(openShellArg);
 
+const killApp = () => {
+  if (process.platform !== "darwin") {
+    try {
+      if (!isDev) closePython(subprocess);
+    } catch (err) {
+      console.log("ERROR KILLING PYTHON PROCESS (This should NEVER happen):");
+      console.error(err);
+    }
+
+    app.quit();
+  }
+};
+
 app.whenReady().then(async () => {
   const splashWindow = new BrowserWindow({
     webPreferences: {
@@ -113,6 +126,17 @@ app.whenReady().then(async () => {
 
   splashWindow.once("ready-to-show", () => {
     splashWindow.show();
+  });
+
+  let mainWindowReady = false;
+
+  splashWindow.on("closed", () => {
+    if (!mainWindowReady) {
+      console.log("Splash window closed prematurely - killing app.");
+      killApp();
+    } else {
+      console.log("Splash window closed normally.");
+    }
   });
 
   await createEssentialFolders();
@@ -205,14 +229,12 @@ app.whenReady().then(async () => {
 
   mainWindow.loadFile(path.join(__dirname, "./index.html"));
 
+  mainWindowReady = true;
   splashWindow.destroy();
 
   mainWindow.setSkipTaskbar(false);
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    if (!isDev) closePython(subprocess);
-    app.quit();
-  }
+  killApp();
 });
