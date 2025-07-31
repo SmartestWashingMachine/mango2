@@ -54,6 +54,7 @@ export type IStoreClientToServer = {
   cacheMt: boolean;
   captureWindow: string;
   augmentNameEntries: boolean;
+  detectSpeakerName: boolean;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;

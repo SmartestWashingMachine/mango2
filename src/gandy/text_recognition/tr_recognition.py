@@ -14,12 +14,15 @@ from uuid import uuid4
 import os
 import cv2
 import regex as re
+from gandy.utils.is_string_only_name import name_checker
 
 try:
     import torch
 except:
     pass
 
+def convert_line_text_to_speaker_line_text(line_text: str):
+    return f'[{line_text}]: '
 
 class TrOCRTextRecognitionApp(BaseTextRecognition):
     def __init__(
@@ -310,9 +313,22 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
 
                             line_texts.append(outp)
 
-                if self.join_lines_with is not None and len(line_texts) > 1:
-                    for lt_idx in range(len(line_texts[:-1])):
-                        line_texts[lt_idx] = str(line_texts[lt_idx]) + self.join_lines_with
+                with logger.begin_event("Postprocessing lines.", detect_speaker_name=config_state.detect_speaker_name) as ctx:
+                    if self.join_lines_with is not None and len(line_texts) > 1:
+                        for lt_idx in range(len(line_texts[:-1])):
+                            line_texts[lt_idx] = str(line_texts[lt_idx]) + self.join_lines_with
+
+                    if config_state.detect_speaker_name and len(line_texts) > 1:
+                        detected_name_data = name_checker.is_string_only_name(line_texts[0])
+
+                        if detected_name_data["is_name"]:
+                            line_texts[0] = convert_line_text_to_speaker_line_text(detected_name_data["cleaned"])
+
+                        ctx.log(
+                            "Done checking if line was a speaker name.",
+                            is_name=detected_name_data["is_name"],
+                            cleaned_if_was_name=detected_name_data["cleaned"],
+                        )
 
                 text = "".join(line_texts)
             else:

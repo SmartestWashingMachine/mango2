@@ -51,6 +51,7 @@ const storeDefaults: IStore = {
   captureWindow: "",
   nameEntries: [],
   augmentNameEntries: false,
+  detectSpeakerName: false,
 };
 
 export const initializeStore = () => {

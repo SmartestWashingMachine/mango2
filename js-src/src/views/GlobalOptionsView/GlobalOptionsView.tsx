@@ -277,6 +277,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     captureWindow,
     boxes,
     augmentNameEntries,
+    detectSpeakerName,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
@@ -586,6 +587,15 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 defaultValue={augmentNameEntries}
                 label="Augment Dictionary"
                 helperText="Uses another model to look for names in texts and match them with a stored dictionary file for use with a Goliath or Massive translation model. This will require more memory and be slightly slower."
+              />
+            ),
+            "Detect Speaker Name": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="detectSpeakerName"
+                defaultValue={detectSpeakerName}
+                label="Detect Speaker Name"
+                helperText="Uses rules along with the text line model to automatically format the line containing the 'name' of the person speaking, if there is such a line."
               />
             ),
             "Auto Open Detached Box": (

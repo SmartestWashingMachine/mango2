@@ -80,8 +80,14 @@ class NameAdder():
         self.model = ORTModelForTokenClassification.from_pretrained(self.onnx_path, provider=self.get_provider(self.can_cuda))
         self.nlp = pipeline("token-classification", model=self.model, tokenizer=tokenizer, aggregation_strategy="simple", device=self.get_device(self.can_cuda))
 
-        with open(self.get_dictionary_path(), encoding='utf-8') as f:
-            self.data_dict = json.load(f)
+        try:
+            with open(self.get_dictionary_path(), encoding='utf-8') as f:
+                self.data_dict = json.load(f)
+            logger.info("Loaded dictionary.")
+        except Exception as e:
+            logger.info("Could not load dictionary - maybe it does not exist?")
+            logger.error(e)
+            self.data_dict = {}
 
         self.loaded = True
 
@@ -118,18 +124,13 @@ class NameAdder():
         with open(missing_path, 'w', encoding='utf-8') as f:
             json.dump(existing_missing_data, f, indent=2, ensure_ascii=False)
 
-    def cut_honorifics(self, src: str):
-        # TODO: Maybe only cut if a suffix.
-        honorifics = { 'はん', '様', 'さま', 'さん', 'ちゃん', 'たん', 'くん', '先生', 'せんせい', '先輩', 'せんぱい', }
-
-        for h in honorifics:
-            src = src.replace(h, '').strip()
-
-        return src
-
     def get_names(self, src: str, entries_to_ignore, add_empty = False, do_memo = True):
         if not self.loaded:
-            self.load_model()
+            try:
+                self.load_model()
+            except Exception as e:
+                logger.error(e)
+                return []
 
         if src == self.memo['src'] and do_memo:
             return self.memo['output']
