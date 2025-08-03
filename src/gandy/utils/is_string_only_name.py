@@ -25,9 +25,10 @@ class NameChecker():
                 pos_sub1 = word.feature[1] if len(word.feature) > 1 else ''
 
                 ctx.log(f"Token: {word.surface:<10} POS1: {pos_main:<10} POS2: {pos_sub1:<10}")
+                print(f"Token: {word.surface:<10} POS1: {pos_main:<10} POS2: {pos_sub1:<10}")
 
                 # If there's a verb, it's probably not a name.
-                if pos_main == '動詞':
+                if pos_main == '動詞' or pos_main == '助動詞':
                     return {
                         'is_name': False,
                         'cleaned': s,
