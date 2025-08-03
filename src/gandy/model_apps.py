@@ -270,24 +270,6 @@ TEXT_RECOGNITION_APP = SwitchApp(
             }, 
             extra_postprocess=j_ocr_postprocess
         ),
-        CustomGgufOcrApp(
-            model_sub_path="q25",
-            config_sub_path="q25_j",
-            do_resize=False,
-            transform=robust_transform, # Intended for use with a line detection model.
-        ),
-        CustomGgufOcrApp(
-            model_sub_path="q25",
-            config_sub_path="q25_k",
-            do_resize=False,
-            transform=robust_transform, # Intended for use with a line detection model.
-        ),
-        CustomGgufOcrApp(
-            model_sub_path="q25",
-            config_sub_path="q25_zh",
-            do_resize=False,
-            transform=robust_transform, # Intended for use with a line detection model.
-        ),
         TrOCRTextRecognitionApp(
             model_sub_path="_komassive/",
             do_resize=False,
@@ -319,7 +301,7 @@ TEXT_RECOGNITION_APP = SwitchApp(
             transform=alt_robust_transform, # Intended for use with a line detection model.
         ),
     ],
-    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr_massive", "trocr_jmassive", "trocr_jmagnus", "trocr_jcomics", "q25_j", "q25_k", "q25_zh", "k_trocr_massive_alt", "zh_trocr_massive_alt", "trocr_jmassive_alt"],
+    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr_massive", "trocr_jmassive", "trocr_jmagnus", "trocr_jcomics", "k_trocr_massive_alt", "zh_trocr_massive_alt", "trocr_jmassive_alt"],
 )
 
 TRANSLATION_APP = SwitchApp(
@@ -544,7 +526,8 @@ for model in os.listdir("models/custom_translators"):
 
 os.makedirs("models/custom_ocrs", exist_ok=True)
 
-IGNORE_FILES = ['q25_j', 'q25_k', 'q25_zh']
+# IGNORE_FILES = ['q25_j', 'q25_k', 'q25_zh']
+IGNORE_FILES = []
 
 for model in os.listdir("models/custom_ocrs"):
     if model.endswith(custom_model_suffix):
