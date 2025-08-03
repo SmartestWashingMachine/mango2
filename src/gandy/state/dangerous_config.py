@@ -11,6 +11,7 @@ class DangerousConfig():
                 self.socketio_address = dangerous_config['remoteAddress']
                 self.enable_web_ui = dangerous_config['enableWebUi']
                 self.debug = dangerous_config['debug']
+                self.do_print = dangerous_config.get('doPrint', False)
         except Exception as e: # Can happen due to race conditions.
             print('Failed to read dangerous config:')
             print(traceback.format_exc())
@@ -19,3 +20,4 @@ class DangerousConfig():
             self.socketio_address = '127.0.0.1'
             self.enable_web_ui = False
             self.debug = False
+            self.do_print = False

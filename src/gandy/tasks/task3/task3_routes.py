@@ -111,35 +111,41 @@ def translate_task3_background_job(
 
 @app.route('/remote/translate_task3_background_job', methods=['POST'])
 def translate_task3_background_job_remotely():
-    if not request.is_json:
-        return {"error": "Request must be JSON"}, 400
+    with logger.begin_event("Processing Task3 request from remote client."):
+        if not request.is_json:
+            return {"error": "Request must be JSON"}, 400
 
-    data = request.get_json()
+        with logger.begin_event("Getting JSON"):
+            data = request.get_json()
 
-    # Extract parameters from the JSON payload with default values
-    images = data.get('images')
-    if images is None:
-        return {"error": "Missing 'images' in JSON payload"}, 400
+        with logger.begin_event("Getting images from JSON"):
+            # Extract parameters from the JSON payload with default values
+            images = data.get('images')
+            if images is None:
+                return {"error": "Missing 'images' in JSON payload"}, 400
 
-    # Convert images from b64 to PIL
-    pil_images = remote_router.base64_to_pil(images)
+        with logger.begin_event("Converting images to PIL"):
+            # Convert images from b64 to PIL
+            pil_images = remote_router.base64_to_pil(images)
 
-    box_id = data.get('box_id')
-    with_text_detect = data.get('with_text_detect', True)
-    use_stream = data.get('use_stream')
-    translate_lines_individually = data.get('translate_lines_individually', 0)
+        with logger.begin_event("Getting misc vars"):
+            box_id = data.get('box_id')
+            with_text_detect = data.get('with_text_detect', True)
+            use_stream = data.get('use_stream')
+            translate_lines_individually = data.get('translate_lines_individually', 0)
 
-    if use_stream == True:
-        use_stream = SocketStreamer(box_id=box_id)
+        with logger.begin_event("Creating stream"):
+            if use_stream == True:
+                use_stream = SocketStreamer(box_id=box_id)
 
-    translate_task3_background_job(
-        images=pil_images,
-        box_id=box_id,
-        with_text_detect=with_text_detect,
-        use_stream=use_stream,
-        already_loaded=True, # RemoteRouter loads images via base64_to_pil
-        translate_lines_individually=translate_lines_individually
-    )
+        translate_task3_background_job(
+            images=pil_images,
+            box_id=box_id,
+            with_text_detect=with_text_detect,
+            use_stream=use_stream,
+            already_loaded=True, # RemoteRouter loads images via base64_to_pil
+            translate_lines_individually=translate_lines_individually
+        )
 
     return {}, 200
 
@@ -186,30 +192,33 @@ def process_task3_faster(data):
     if len(config_state.capture_window) > 0:
         xyxy = [coords[0], coords[1], coords[0] + coords[2], coords[1] + coords[3]]
 
-        with logger.begin_event('Capturing specific window image.', capture_window=config_state.capture_window):
+        with logger.begin_event("Capturing specific window image.", capture_window=config_state.capture_window):
             # The client already scales the coordinates with the screen scale factor OOPS. TODO: Remove redundant code in front and backend.
             images = [capture_window_image_from_box(config_state.capture_window, xyxy, do_scale=False)]
     else:
-        # From: https://python-mss.readthedocs.io/examples.html#pil
-        with mss() as sct:
-            monitor = {"top": coords[1], "left": coords[0], "width": coords[2], "height": coords[3]}
-            sct_img = sct.grab(monitor)
+        with logger.begin_event("Capturing window from coordinates."):
+            # From: https://python-mss.readthedocs.io/examples.html#pil
+            with mss() as sct:
+                monitor = {"top": coords[1], "left": coords[0], "width": coords[2], "height": coords[3]}
+                sct_img = sct.grab(monitor)
 
-            img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-            images = [img]
+                img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+                images = [img]
 
     # Used by remember box activations (server_side_box_key_capture) & process_task3new_route.
     if remote_router.is_remote():
-        data_to_send = {
-            'images': remote_router.pil_to_base64(images),
-            'box_id': data['box_id'],
-            'with_text_detect': data['with_text_detect'],
-            'use_stream': bool(data['use_stream']), # Can't send use_stream object here as it's over the network. So we set it to "True" and recreate it in the background job function.
-            'already_loaded': False, # Doesn't matter. Remote route always loads it anyways.
-            'translate_lines_individually': data['translate_lines_individually'],
-        }
+        with logger.begin_event("Creating data for remote server.", coords=coords, n_images=len(images)):
+            data_to_send = {
+                'images': remote_router.pil_to_base64(images),
+                'box_id': data['box_id'],
+                'with_text_detect': data['with_text_detect'],
+                'use_stream': bool(data['use_stream']), # Can't send use_stream object here as it's over the network. So we set it to "True" and recreate it in the background job function.
+                'already_loaded': False, # Doesn't matter. Remote route always loads it anyways.
+                'translate_lines_individually': data['translate_lines_individually'],
+            }
 
-        remote_router.post('/remote/translate_task3_background_job', data=data_to_send)
+        with logger.begin_event("Sending to remote server."):
+            remote_router.post('/remote/translate_task3_background_job', data=data_to_send)
     else:
         if data['use_stream']:
             use_stream = SocketStreamer(box_id=data['box_id'])
@@ -226,31 +235,33 @@ def process_task3_faster(data):
 
 @app.route("/processtask3new", methods=["POST"])
 def process_task3new_route():
-    data = request.form.to_dict(flat=False)
-    box_id = data["boxId"] if "boxId" in data else None
-    text_detect = data["textDetect"] if "textDetect" in data else "off"
+    with logger.begin_event("Processing task3new route") as ctx:
+        with logger.begin_event("Getting vars"):
+            data = request.form.to_dict(flat=False)
+            box_id = data["boxId"] if "boxId" in data else None
+            text_detect = data["textDetect"] if "textDetect" in data else "off"
 
-    use_stream = data["useStream"] if "useStream" in data else "off"
+            use_stream = data["useStream"] if "useStream" in data else "off"
 
-    use_stream = True if use_stream[0] == "on" else None
+            use_stream = True if use_stream[0] == "on" else None
 
-    translate_lines_individually = int(data['translateLinesIndividually'][0])
+            translate_lines_individually = int(data['translateLinesIndividually'][0])
 
-    # It's an array? Huh? TODO
-    with_text_detect = text_detect[0] == "on"
-    if box_id is not None and len(box_id) > 0:
-        box_id = box_id[0]
+            # It's an array? Huh? TODO
+            with_text_detect = text_detect[0] == "on"
+            if box_id is not None and len(box_id) > 0:
+                box_id = box_id[0]
 
-    process_task3_faster({
-        'x1': data['x1'],
-        'y1': data['y1'],
-        'width': data['width'],
-        'height': data['height'],
-        'box_id': box_id,
-        'with_text_detect': with_text_detect,
-        'use_stream': use_stream,
-        'translate_lines_individually': translate_lines_individually,
-    })
+        process_task3_faster({
+            'x1': data['x1'],
+            'y1': data['y1'],
+            'width': data['width'],
+            'height': data['height'],
+            'box_id': box_id,
+            'with_text_detect': with_text_detect,
+            'use_stream': use_stream,
+            'translate_lines_individually': translate_lines_individually,
+        })
 
     return {"processing": True}, 202
 

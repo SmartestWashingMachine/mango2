@@ -19,6 +19,7 @@ export const readDangerousConfig = async () => {
     remoteAddress: "127.0.0.1",
     enableWebUi: false,
     debug: false,
+    doPrint: false,
   });
 
   return parsed;

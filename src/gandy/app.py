@@ -27,7 +27,7 @@ from gandy.state.dangerous_config import DangerousConfig
 from gandy.state.debug_state import debug_state
 
 dangerous_config = DangerousConfig()
-logger.do_print = dangerous_config.debug
+logger.do_print = dangerous_config.do_print or dangerous_config.debug
 
 remote_router = RemoteRouter(dangerous_config.socketio_address)
 
