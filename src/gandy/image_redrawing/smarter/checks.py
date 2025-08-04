@@ -87,6 +87,23 @@ def _box_b_is_left_or_right(box_a: TextBox, box_b: TextBox):
     else:
         return "none"
     
+def _box_b_is_left_or_right_robust(box_a: TextBox, box_b: TextBox):
+    """
+    Returns "left" if box_b is to the left of box_a. Returns "right" if box_b is to the right of box_a. Returns "none" otherwise.
+
+    Unlike the naive function above which uses midpoints, this one considers box_a to be "left" if its starting X (x1) is less than box_b's starting X.
+    """
+
+    x_a = box_a.x1
+    x_b = box_b.x1
+
+    if x_b < x_a:
+        return "left"
+    elif x_b > x_a:
+        return "right"
+    else:
+        return "none"
+    
 def _box_b_is_up_or_down(box_a: TextBox, box_b: TextBox):
     y_center_a = _midp_y(box_a)
     y_center_b = _midp_y(box_b)
@@ -110,7 +127,7 @@ def text_intersects_on_direction(cand1: TextBox, others: List[TextBox], image: I
     for idx in overlapping_indices:
         other = others[idx]
 
-        other_is_to_the = _box_b_is_left_or_right(box_a=cand1, box_b=other)
+        other_is_to_the = _box_b_is_left_or_right_robust(box_a=cand1, box_b=other)
 
         if other_is_to_the == "left" and "l" in direction_to_check:
             if only_check:

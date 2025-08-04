@@ -49,7 +49,7 @@ general_adjustments_large: List[MoveAction] = [
 
 ACTIONS: List[MoveAction] = [
     # Stackables.
-    ExpandAspectAction(stackable=True),
+    #ExpandAspectAction(stackable=True),
     *general_adjustments,
     # Last measures.
     ShrinkAction(shrink_factor=0.975, min_font_val=10, max_iterations=3, stackable=True, only_on_failure=True),
@@ -59,7 +59,7 @@ ACTIONS: List[MoveAction] = [
     ShrinkAction(shrink_factor=0.95, min_font_val=10, max_iterations=3, stackable=True, only_on_failure=True),
     *general_adjustments_large,
     # Stackables.
-    ExpandAspectAction(stackable=True),
+    #ExpandAspectAction(stackable=True),
     # A true final ditch measure!
     MergeTextAction(shrink_factor=0.9, min_font_val=2, max_iterations=5),
 ]

@@ -238,6 +238,40 @@ class ImageRedrawGlobalSmarter(BaseImageRedraw):
         draw = ImageDraw.Draw(text_canvas)
         draw.fontmode = "L"
 
+        # Expand aspect ratio of boxes that are too thin yet cover a decent area.
+        new_bboxes = []
+        img_area = text_canvas.width * text_canvas.height
+        coverage_threshold = 0.035
+        max_coverage_threshold = 0.08
+        aspect_threshold = 0.45
+        increase_pct = 0.01 # +1% of image width (each side so 2% total) each time
+        step = image.width * increase_pct
+        for bb, targ in zip(bboxes, target_texts):
+            bb_width = (bb[2] - bb[0])
+            bb_height = (bb[3] - bb[1])
+            bb_area = bb_width * bb_height
+            area_coverage = bb_area / img_area
+            iters_left = 10
+
+            while iters_left > 0 and area_coverage < max_coverage_threshold and area_coverage > coverage_threshold and (bb_width / bb_height) < aspect_threshold:
+                print_spam(f'Expanding width (aspect ratio) for box "{targ[:5]}" (AreaCovered={area_coverage} ItersLeft={iters_left})')
+
+                bb[0] -= step
+                bb[2] += step
+
+                bb_width = (bb[2] - bb[0])
+                bb_height = (bb[3] - bb[1])
+                bb_area = bb_width * bb_height
+                area_coverage = bb_area / img_area
+
+                iters_left -= 1
+
+            print_spam(f'Done expanding width (aspect ratio) for box "{targ[:5]}" (AreaCovered={area_coverage} Aspect={(bb_width / bb_height)} ItersLeft={iters_left})')
+
+            new_bboxes.append(bb)
+
+        bboxes = new_bboxes
+
         def _make_metadata(bb: SpeechBubble, t: str):
             return {
                 'bb': bb,
