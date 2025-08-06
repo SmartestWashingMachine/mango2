@@ -227,6 +227,7 @@ const OcrBoxPane = ({
       <Fade
         in={visible || isHovering}
         timeout={{ enter: 300, appear: 300, exit: 600 }}
+        unmountOnExit
       >
         <Box className="boxApp" sx={extraBoxStyles}>
           <div className="boxAppHandleTopLeft" />
