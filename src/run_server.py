@@ -4,11 +4,13 @@ os.environ['CUDA_MODULE_LOADING'] = "LAZY"
 
 os.environ["EVENTLET_NO_GREENDNS"] = 'yes'
 
-import eventlet
-eventlet.monkey_patch(socket=True, select=True)
-
-import os
-os.environ["EVENTLET_NO_GREENDNS"] = 'yes'
+from gevent import monkey
+# monkey.patch_all(os=True, socket=True, ssl=True, thread=True, threading=True)
+#monkey.patch_os()
+#monkey.patch_socket()
+#monkey.patch_ssl()
+# monkey.patch_thread()
+# monkey.patch_queue()
 
 import tqdm
 from time import strftime

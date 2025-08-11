@@ -11,10 +11,7 @@ a = Analysis(
     binaries=[],
     datas=[('.venv/Lib/site-packages/unidic_lite', 'unidic_lite')],
     hiddenimports=[
-        'engineio.async_drivers.eventlet',
-        'eventlet.hubs.epolls',
-        'eventlet.hubs.kqueue',
-        'eventlet.hubs.selects',
+        'gevent',
         'dns', 
         'dns.dnssec',
         'dns.e164',

@@ -1,7 +1,7 @@
 __version__ = "2.0.0"
 
 import threading
-from waitress import serve
+from gevent.pywsgi import WSGIServer
 from time import strftime
 import logging
 from flask import Flask, request
@@ -19,12 +19,12 @@ from gandy.model_apps import (
 import os
 from eliot.stdlib import EliotHandler
 from gandy.utils.fancy_logger import logger
-import socketio as socketio_pkg
 from time import sleep
 import json
 from gandy.utils.reroute_remote_backend import RemoteRouter
 from gandy.state.dangerous_config import DangerousConfig
 from gandy.state.debug_state import debug_state
+from gandy.socket_process import SocketProcess, SocketWrapper
 
 dangerous_config = DangerousConfig()
 logger.do_print = dangerous_config.do_print or dangerous_config.debug
@@ -40,27 +40,8 @@ web_app = Flask(__name__, template_folder=os.getcwd() + '/templates', static_fol
 # Of course, a long ping timeout is not ideal either.
 # socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True, ping_timeout=100000)
 
-socketio = socketio_pkg.Client()
-
-def try_socket_conn():
-    while not socketio.connected:
-        try:
-            log_msg = f"Connecting to {remote_router.socketio_address}..."
-            print(log_msg)
-            logger.info(log_msg)
-
-            # By default SocketIO client does not reconnect on the initial connection attempt...
-            socketio.connect(f'ws://{remote_router.socketio_address}:5100', transports=['websocket'])
-            break
-        except Exception as e:
-            print(e)
-            print('Gonna retry connection.')
-            logger.info('Failed connecting to Socket server - retrying soon...')
-
-            sleep(1)
-            continue
-
-try_socket_conn()
+# Just adds future emits to a message queue. Another thread will handle the actual emitting.
+socketio = SocketWrapper()
 
 legacy_logger = logging.getLogger("Gandy")
 legacy_logger.setLevel(logging.DEBUG)
@@ -71,27 +52,6 @@ legacy_logger.addHandler(console)
 legacy_logger.addHandler(EliotHandler())
 
 legacy_logger.info("Running app.")
-
-def patched_emit(event, data, *args, **kwargs):
-    while True:
-        try_socket_conn() # Returns right away if already connected.
-
-        try:
-            socketio.emit(event, data, *args, **kwargs)
-            return None
-        except Exception as e:
-            print("--- SOCKET ERROR:")
-            print(e)
-            logger.error(e)
-
-            # Just in case...
-            if socketio.connected:
-                logger.error("SocketIO is 'connected' yet the error was still raised! This should NEVER happen.")
-                sleep(10)
-
-socketio.patched_emit = patched_emit
-socketio.sleep = lambda *args, **kwargs: None
-socketio.start_background_task = lambda fn, *args: fn(*args)
 
 if dangerous_config.enable_web_ui or remote_router.is_remote():
 
@@ -104,14 +64,18 @@ if dangerous_config.enable_web_ui or remote_router.is_remote():
 
 
 def run_server():
+    socketio_thread = SocketProcess(remote_router.socketio_address, logger)
+    socketio_thread.start()
+
     if dangerous_config.enable_web_ui:
-        logic_thread = threading.Thread(target=lambda: serve(app, host='0.0.0.0', port=5000, threads=1))
-        web_thread = threading.Thread(target=lambda: serve(web_app, host='0.0.0.0', port=5200))
+        logic_thread = threading.Thread(target=lambda: WSGIServer(('0.0.0.0', 5000), app).serve_forever())
+        web_thread = threading.Thread(target=lambda: WSGIServer(('0.0.0.0', 5200), app).serve_forever())
 
         logic_thread.start()
         web_thread.start()
     else:
-        serve(app, host='0.0.0.0', port=5000, threads=1)
+        # serve(app, host='0.0.0.0', port=5000, threads=1)
+        WSGIServer(('0.0.0.0', 5000), app).serve_forever()
     # app.run(host="0.0.0.0", debug=False)
 
 
