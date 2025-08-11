@@ -186,7 +186,8 @@ export const scanImageGiveText = async (
 export const triggerEnterNodeFetch = async () => {
   console.log("Requesting ENTER key press from Python backend.");
 
-  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/triggerenter`;
+  // This always goes to local host only. The game will typically be on the client machine.
+  const apiUrl = `http://localhost:5000/triggerenter`;
 
   await nodeFetch(apiUrl, {
     method: "GET",

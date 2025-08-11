@@ -77,7 +77,8 @@ export const listenTask3Updates = (
 };
 
 export const triggerEnter = async () => {
-  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/triggerenter`;
+  // This always goes to local host only. The game will typically be on the client machine.
+  const apiUrl = `http://localhost:5000/triggerenter`;
 
   await fetch(apiUrl, {
     method: "GET",
