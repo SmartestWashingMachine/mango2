@@ -90,18 +90,19 @@ def translate_task3_background_job(
                         use_stream=use_stream,
                     )
 
-                last_source = get_last_sentence(source_text)
-                push_to_state(last_source, new_texts, box_id)
+                if new_texts is not None: # image_to_single_text sometimes returns None when no text found (with_text_detect=False)
+                    last_source = get_last_sentence(source_text)
+                    push_to_state(last_source, new_texts, box_id)
 
-                output = {
-                    "text": new_texts,
-                    "boxId": box_id,
-                    "sourceText": [last_source],
-                }
-                socketio.patched_emit(
-                    "item_task3",
-                    output,
-                )
+                    output = {
+                        "text": new_texts,
+                        "boxId": box_id,
+                        "sourceText": [last_source],
+                    }
+                    socketio.patched_emit(
+                        "item_task3",
+                        output,
+                    )
 
             socketio.patched_emit("done_translating_task3", {})
         except Exception:
@@ -112,27 +113,21 @@ def translate_task3_background_job(
 @app.route('/remote/translate_task3_background_job', methods=['POST'])
 def translate_task3_background_job_remotely():
     with logger.begin_event("Processing Task3 request from remote client."):
-        if not request.is_json:
-            return {"error": "Request must be JSON"}, 400
-
-        with logger.begin_event("Getting JSON"):
-            data = request.get_json()
-
-        with logger.begin_event("Getting images from JSON"):
-            # Extract parameters from the JSON payload with default values
-            images = data.get('images')
-            if images is None:
-                return {"error": "Missing 'images' in JSON payload"}, 400
-
         with logger.begin_event("Converting images to PIL"):
-            # Convert images from b64 to PIL
-            pil_images = remote_router.base64_to_pil(images)
+            # Convert images from to PIL
+
+            image_data = request.files.get('images')
+            image_stream = BytesIO(image_data.read())
+            im = Image.open(image_stream)
+            im.load()
+            pil_images = [im.convert("RGB") if im.mode != "RGB" else im]
 
         with logger.begin_event("Getting misc vars"):
-            box_id = data.get('box_id')
-            with_text_detect = data.get('with_text_detect', True)
-            use_stream = data.get('use_stream')
-            translate_lines_individually = data.get('translate_lines_individually', 0)
+            box_id = request.form.get('box_id')
+            with_text_detect = (request.form.get('with_text_detect', 'True') == 'True')
+            use_stream = request.form.get('use_stream') == 'True'
+            # already_loaded = (request.form.get('already_loaded') == 'True')
+            translate_lines_individually = int(request.form.get('translate_lines_individually', '0'))
 
         with logger.begin_event("Creating stream"):
             if use_stream == True:
@@ -209,16 +204,24 @@ def process_task3_faster(data):
     if remote_router.is_remote():
         with logger.begin_event("Creating data for remote server.", coords=coords, n_images=len(images)):
             data_to_send = {
-                'images': remote_router.pil_to_base64(images),
                 'box_id': data['box_id'],
-                'with_text_detect': data['with_text_detect'],
-                'use_stream': bool(data['use_stream']), # Can't send use_stream object here as it's over the network. So we set it to "True" and recreate it in the background job function.
-                'already_loaded': False, # Doesn't matter. Remote route always loads it anyways.
-                'translate_lines_individually': data['translate_lines_individually'],
+                'with_text_detect': str(data['with_text_detect']),
+                'use_stream': str(bool(data['use_stream'])), # Can't send use_stream object here as it's over the network. So we set it to "True" and recreate it in the background job function.
+                'already_loaded': str('False'), # Doesn't matter. Remote route always loads it anyways.
+                'translate_lines_individually': str(data['translate_lines_individually']),
+            }
+
+            image_stream = BytesIO()
+            images[0].save(image_stream, format="PNG")
+            image_stream.seek(0)
+
+            # Images is always of length 1 here.
+            files_to_send = {
+                'images': ('image.png', image_stream.getvalue(), 'image/png'),
             }
 
         with logger.begin_event("Sending to remote server."):
-            remote_router.post('/remote/translate_task3_background_job', data=data_to_send)
+            remote_router.form_post('/remote/translate_task3_background_job', data=data_to_send, files=files_to_send)
     else:
         if data['use_stream']:
             use_stream = SocketStreamer(box_id=data['box_id'])

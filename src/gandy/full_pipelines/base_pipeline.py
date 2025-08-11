@@ -486,7 +486,7 @@ class BasePipeline:
             source_texts = self.image_to_untranslated_texts(image, with_text_detect)
 
             if len(source_texts) == 0:
-                return []
+                return [None, None]
             # Task3 assumes that there is only one detected text item to translate, but sometimes there are multiple text items to translate. (Such as the case with DETR-VN).
             # How do we handle this? Simple! After text recognition, combine all of the recognized text into one unit and translate it all together.
             source_texts = merge_texts(source_texts, context_input)
