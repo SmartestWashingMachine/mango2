@@ -235,6 +235,22 @@ app.whenReady().then(async () => {
   mainWindow.setSkipTaskbar(false);
 });
 
+app.on("before-quit", () => {
+  console.log(
+    "App is quitting. Forcibly destroying all windows (that means you - detached text boxes!)"
+  );
+
+  BrowserWindow.getAllWindows().forEach((win) => {
+    if (!win.isDestroyed()) {
+      try {
+        win.destroy();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  });
+});
+
 app.on("window-all-closed", () => {
   killApp();
 });

@@ -2,9 +2,6 @@ import os
 
 os.environ['CUDA_MODULE_LOADING'] = "LAZY"
 
-os.environ["EVENTLET_NO_GREENDNS"] = 'yes'
-
-from gevent import monkey
 # monkey.patch_all(os=True, socket=True, ssl=True, thread=True, threading=True)
 #monkey.patch_os()
 #monkey.patch_socket()
