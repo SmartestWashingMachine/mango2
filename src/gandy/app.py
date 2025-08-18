@@ -29,7 +29,7 @@ from gandy.socket_process import SocketProcess, SocketWrapper
 dangerous_config = DangerousConfig()
 logger.do_print = dangerous_config.do_print or dangerous_config.debug
 
-remote_router = RemoteRouter(dangerous_config.socketio_address)
+remote_router = RemoteRouter(dangerous_config.socketio_address, dangerous_config.compress_jpeg)
 
 debug_state.debug = dangerous_config.debug
 

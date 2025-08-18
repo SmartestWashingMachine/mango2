@@ -7,8 +7,10 @@ import requests
 from time import sleep
 
 class RemoteRouter():
-    def __init__(self, socketio_address: str):
+    def __init__(self, socketio_address: str, compress_jpeg: bool):
         self.socketio_address = socketio_address
+
+        self.compress_jpeg = compress_jpeg
 
         self.session = requests.Session()
 
@@ -36,17 +38,19 @@ class RemoteRouter():
         return images
     
     def form_post(self, addr: str, data, files = None):
+        old_addr = addr
         addr = 'http://' + self.socketio_address + ':5000' + addr
 
         try:
             response = self.session.post(addr, data=data, files=files)
             response.raise_for_status()
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.session = requests.Session()
             print('Session error. Retrying session:')
             print(e)
-            sleep(3)
+            sleep(1)
 
-            self.form_post(addr, data, files)
+            self.form_post(old_addr, data, files)
         except Exception as e:
             print('Error FORM POSTING to remote router:')
             print(e)

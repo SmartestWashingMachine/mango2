@@ -212,7 +212,12 @@ def process_task3_faster(data):
             }
 
             image_stream = BytesIO()
-            images[0].save(image_stream, format="PNG")
+
+            if remote_router.compress_jpeg:
+                images[0].save(image_stream, format="JPEG", quality=95)
+            else:
+                images[0].save(image_stream, format="PNG")
+
             image_stream.seek(0)
 
             # Images is always of length 1 here.

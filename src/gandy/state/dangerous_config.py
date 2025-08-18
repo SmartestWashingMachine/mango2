@@ -12,6 +12,7 @@ class DangerousConfig():
                 self.enable_web_ui = dangerous_config['enableWebUi']
                 self.debug = dangerous_config['debug']
                 self.do_print = dangerous_config.get('doPrint', False)
+                self.compress_jpeg = dangerous_config.get('compressJpeg', False)
         except Exception as e: # Can happen due to race conditions.
             print('Failed to read dangerous config:')
             print(traceback.format_exc())
@@ -21,3 +22,4 @@ class DangerousConfig():
             self.enable_web_ui = False
             self.debug = False
             self.do_print = False
+            self.compress_jpeg = False

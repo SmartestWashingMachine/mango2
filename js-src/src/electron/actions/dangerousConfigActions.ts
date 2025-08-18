@@ -20,6 +20,7 @@ export const readDangerousConfig = async () => {
     enableWebUi: false,
     debug: false,
     doPrint: false,
+    compressJpeg: false,
   });
 
   return parsed;
