@@ -36,6 +36,8 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
                 mango_config = json.load(f)
                 ctx.log('Loaded Mango config', mango_config=mango_config)
 
+                self.join_lines_with = mango_config.get("join_lines_with", "")
+
         return mango_config
 
     def get_can_cuda(self):
@@ -59,14 +61,6 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
     
     def get_mango_config_path(self):
         return f"models/custom_ocrs/{self.config_sub_path}" + ".mango_config.json"
-
-    def load_mango_config(self):
-        with logger.begin_event("Loading Mango config") as ctx:
-            with open(self.get_mango_config_path(), 'r', encoding='utf-8') as f:
-                mango_config = json.load(f)
-                ctx.log('Loaded Mango config', mango_config=mango_config)
-
-        return mango_config
     
     def can_load(self):
         return os.path.exists(self.get_mango_config_path())
