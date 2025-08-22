@@ -130,6 +130,7 @@ As shown above, there are several operators that can be used for templating purp
     All the other templating operators can be used in the file as well. Use this if you want to have new lines in your string without resorting to using "\n".
     This does not work in `extract_from_output`, as it is not a message template, but rather a regex pattern.
 - `file_no_strip`: Similar to `file`, but does not strip any whitespace from the beginning and end of the file contents. This should almost never be used.
+- `{{JOIN_EACH_RAG_ENTRY(__SRC__ ... __TGT__)}}`: A RAG module will be used to append several similar source texts and their translations. This can be very helpful for large models as a form of in-context learning. This RAG module requires a source-target dataset - your own dataset! [See here for more info.](custom_dataset_rag.md)
 
 ## Extra examples
 

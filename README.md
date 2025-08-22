@@ -75,6 +75,10 @@ A Nvidia GPU should **NOT** be required for CPU usage. A Nvidia GPU is only requ
 
 [Adding custom translator models](guides/loading_custom_translator_llms.md)
 
+[Using your own dataset to augment a custom translator's general knowledge (RAG)](guides/custom_dataset_rag.md)
+
+[Using your own dictionary to augment a translator with name knowledge](guides/custom_dictionary.md)
+
 # Model packs
 
 Mango 4 comes preinstalled with the necessary models. There are additional model packs here which may enhance the experience (not to be confused with other custom models).
