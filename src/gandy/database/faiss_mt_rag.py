@@ -15,9 +15,9 @@ class TranslationRAG():
         with logger.begin_event('Creating RAG data and index files') as ctx:
             # Each item should be a tuple of (source STR, target STR).
             for idx, (st, tt) in enumerate(items):
-                self.mt_rag.add_translation(source_text=st, translated_text=(st, tt))
+                self.mt_rag.add_translation(source_text=st, translated_text=(st, tt), do_log=False)
 
-                if idx % 100 == 0:
+                if idx % 1000 == 0:
                     ctx.log(f'Processing...', last_finished_idx=idx, total_len=len(items))
 
         with logger.begin_event('Saving RAG data and index files'):

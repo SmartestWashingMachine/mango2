@@ -134,7 +134,7 @@ class FAISSStore:
             os.replace(temp_translations_file + ".npy", self.translations_file)
             logger.log(f"FAISS index and translations saved to {self.db_path} and {self.translations_file}.")
 
-    def _add(self, source_texts: list, translated_texts: list, already_embed = False):
+    def _add(self, source_texts: list, translated_texts: list, already_embed = False, do_log = True):
         """
         Add source texts and their corresponding translations to the FAISS index.
 
@@ -147,7 +147,9 @@ class FAISSStore:
 
         self.index.add(embeddings)
         self.translations.extend(translated_texts)
-        logger.log(f"Added {len(translated_texts)} translations to the index.")
+
+        if do_log:
+            logger.log(f"Added {len(translated_texts)} translations to the index.")
         self.add_count += len(translated_texts)
 
         save_right_now = self.add_count >= self.save_interval and self.can_auto_save
@@ -182,14 +184,14 @@ class FAISSStore:
 
         return results, dists, query_embedding
 
-    def add_translation(self, source_text: str, translated_text: str):
+    def add_translation(self, source_text: str, translated_text: str, do_log = True):
         """
         Add a single translation to the FAISS index.
 
         :param source_text: Source sentence.
         :param translated_text: Translated sentence.
         """
-        self._add([source_text], [translated_text])
+        self._add([source_text], [translated_text], do_log=do_log)
 
     def add_translation_from_embed(self, source_embed, translated_text: str):
         """
