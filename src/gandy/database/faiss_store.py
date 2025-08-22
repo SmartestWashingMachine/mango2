@@ -63,26 +63,28 @@ class FAISSEmbedder:
         return embed
 
 class FAISSStore:
-    def __init__(self, db_path: str, model_name: str, hnsw_m: int = 32, save_interval: int = 50):
+    def __init__(self, db_path: str, model_name: str, hnsw_m: int = 32, save_interval: int = 50, db_name = '_index', data_name = '_machinetranslations'):
         """
         Initialize the FAISSStore.
 
         :param db_path: Path to the local FAISS database file.
         :param model_name: Name of the multilingual model for embedding.
         :param hnsw_m: Number of neighbors for HNSW graph construction (default: 32).
-        :param save_interval: Number of additions after which the database is saved (default: 50).
+        :param save_interval: Number of additions after which the database is saved (default: 50). Set to -1 to disable.
         """
-        self.db_path = db_path + '_index'
+        self.db_path = db_path + db_name
         self.hnsw_m = hnsw_m
         self.embedder = FAISSEmbedder(model_name)
         self.index = None
         self.translations = []  # Store only translated_text
-        self.translations_file = db_path + "_machinetranslations"
+        self.translations_file = db_path + data_name
         self.save_interval = save_interval
         self.add_count = 0  # Tracks the number of additions since the last save
         self.save_lock = threading.Lock()  # Lock for thread-safe saving
         self.save_timer = None  # Timer for periodic saving
         self.timer_lock = threading.Lock()  # Lock for thread-safe timer management
+
+        self.can_auto_save = self.save_interval != -1
 
         # Load existing index or create a new one
         self._load_or_initialize_index()
@@ -111,7 +113,7 @@ class FAISSStore:
                 self.save_timer.cancel()  # Cancel the existing timer
                 self.save_timer = None
 
-            if start:
+            if start and self.can_auto_save:
                 self.save_timer = threading.Timer(30, self._save_async)  # Set a new timer
                 self.save_timer.start()
 
@@ -142,12 +144,13 @@ class FAISSStore:
         """
         embeddings = source_texts if already_embed else self.embedder.embed(source_texts)
         embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)  # Normalize for cosine similarity
+
         self.index.add(embeddings)
         self.translations.extend(translated_texts)
         logger.log(f"Added {len(translated_texts)} translations to the index.")
         self.add_count += len(translated_texts)
 
-        save_right_now = self.add_count >= self.save_interval
+        save_right_now = self.add_count >= self.save_interval and self.can_auto_save
         if save_right_now:
             self.add_count = 0
             threading.Thread(target=self._save_async).start()  # Save asynchronously
@@ -169,12 +172,13 @@ class FAISSStore:
             query_embedding = query_embedding / np.linalg.norm(query_embedding, axis=1, keepdims=True)  # Normalize
             distances, indices = self.index.search(query_embedding, top_k)
             results, dists = [], []
+
             for dist, idx in zip(distances[0], indices[0]):
                 if idx != -1 and dist >= similarity_threshold:  # Cosine similarity is higher for closer matches
                     results.append(self.translations[idx])
                     dists.append(dist)
                 if idx != -1:
-                    ctx.log(f'Found neighbor with similarity score', cosine_similarity=dist)
+                    ctx.log(f'Found neighbor with similarity score', cosine_similarity=dist, neighbor=self.translations[idx])
 
         return results, dists, query_embedding
 
@@ -203,37 +207,3 @@ class FAISSStore:
         with self.timer_lock:
             if self.save_timer:
                 self.save_timer.cancel()
-
-class MTCache():
-    def __init__(self):
-        self.mt_cache = None
-
-    def load_mt_cache(self):
-        self.mt_cache = FAISSStore(db_path='models/database/cache', model_name='nite')
-
-    def embed_text(self, inp: str):
-        if self.mt_cache is None:
-            self.load_mt_cache()
-        return self.mt_cache.embed_text(inp)
-
-    def look_for_translation(self, inp: str):
-        with logger.begin_event('Checking vector cache') as ctx:
-            # Cut any context. TODO: Sure about this?
-            inp = inp.split('<TSOS>')[-1].strip()
-
-            if self.mt_cache is None:
-                self.load_mt_cache()
-
-            found_translations, sim, embed_inp = self.mt_cache.retrieve(inp, top_k=1, similarity_threshold=0.975)
-            if len(found_translations) > 0:
-                ctx.log(f'Translation already found in cache', cosine_sim=sim[0])
-
-                return [found_translations[0]], embed_inp
-            else:
-                ctx.log('Translation is new!')
-
-        return None, embed_inp
-
-    def add_translation(self, embed_inp, prediction: str):
-        with logger.begin_event('Adding to vector cache') as ctx:
-            self.mt_cache.add_translation_from_embed(embed_inp, prediction)

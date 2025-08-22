@@ -5,6 +5,7 @@ from typing import List
 import json
 import regex as re
 import os
+from gandy.database.faiss_mt_rag import TranslationRAG
 
 """
 
@@ -67,6 +68,8 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         self.config_sub_path = config_sub_path or model_sub_path
 
         self.file_field_values = {}
+
+        self.rag = TranslationRAG() # Only used by certain models.
 
     def get_mango_config_path(self):
         return f"models/custom_translators/{self.config_sub_path}" + ".mango_config.json"
@@ -171,6 +174,21 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             return ""
         return sep.group(1) if sep is not None else ""
     
+    def map_rag_entries(self, sep: str, source: str):
+        sep = sep.group(1) # Should be another string template in the form of "__SRC__ == __TGT__"
+
+        similar_results = self.rag.get_entries(source)
+
+        full_replacement = ''
+        for r in similar_results:
+            entry_sep = sep
+            entry_sep = entry_sep.replace('__SRC__', r[0])
+            entry_sep = entry_sep.replace('__TGT__', r[1])
+
+            full_replacement += entry_sep
+
+        return full_replacement.rstrip()
+    
     def populate_template_str(self, msg: str, contexts: List[str], source: str):
         msg = re.sub(r"\{\{PREFIX_EACH_CONTEXT\((.*?)\)\}\}", lambda m: self.map_contexts_template(contexts, m), msg, flags=re.DOTALL)
         msg = re.sub(r"\{\{JOIN_EACH_CONTEXT\((.*?)\)\}\}", lambda m: self.map_contexts_template(contexts, m, prefix=False), msg, flags=re.DOTALL)
@@ -181,6 +199,8 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         msg = re.sub(r"\{\{JOIN_EACH_GENDERED_DICTIONARY_NAME_PAIR\((.*?)\)\}\}", lambda m: self.map_dictionary_template_only_gendered(m, source), msg, flags=re.DOTALL)
 
         msg = re.sub(r"\{\{JOIN_EACH_NON_GENDERED_DICTIONARY_NAME_PAIR\((.*?)\)\}\}", lambda m: self.map_dictionary_template_only_non_gendered(m, source), msg, flags=re.DOTALL)
+
+        msg = re.sub(r"\{\{JOIN_EACH_RAG_ENTRY\((.*?)\)\}\}", lambda m: self.map_rag_entries(m, source), msg, flags=re.DOTALL)
 
         msg = re.sub(r"\{\{IF_CONTEXT_EXISTS\((.*?)\)\}\}", lambda m: self.map_if_context_exists(contexts, m), msg, flags=re.DOTALL)
         msg = re.sub(r"\{\{IF_DICTIONARY_EXISTS\((.*?)\)\}\}", lambda m: self.map_if_dictionary_exists(m, source), msg, flags=re.DOTALL)

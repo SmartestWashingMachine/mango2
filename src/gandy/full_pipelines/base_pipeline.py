@@ -24,7 +24,7 @@ from math import floor
 from uuid import uuid4
 import os
 import json
-from gandy.utils.faiss_mt_cache import MTCache
+from gandy.database.faiss_mt_cache import MTCache
 
 try:
     import torch
