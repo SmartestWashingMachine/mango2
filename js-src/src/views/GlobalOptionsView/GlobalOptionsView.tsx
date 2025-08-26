@@ -595,7 +595,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 keyName="detectSpeakerName"
                 defaultValue={detectSpeakerName}
                 label="Detect Speaker Name"
-                helperText="Uses rules along with the text line model to automatically format the line containing the 'name' of the person speaking, if there is such a line."
+                helperText="Uses rules along with the text line model to automatically format the line containing the 'name' of the person speaking, if there is such a line. This can be very helpful for RPG Maker games."
               />
             ),
             "Auto Open Detached Box": (
@@ -648,7 +648,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 changeValue={setStoreValue}
                 keyName="sortTextFromTopLeft"
                 defaultValue={sortTextFromTopLeft}
-                helperText="When scanning images, texts are assumed to be read from left-to-right instead of right-to-left. This is used to decide how context is added."
+                helperText="When scanning images, vertical texts are assumed to be read from left-to-right instead of right-to-left. This is used to decide how context is added. This should usually be enabled when translating Korean images."
                 label="Sort Texts Left-to-Right"
               />
             ),
