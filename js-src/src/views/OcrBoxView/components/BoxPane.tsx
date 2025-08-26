@@ -106,7 +106,7 @@ const OcrBoxPane = ({
   }, [backgroundColor, backgroundOpacity]);
 
   useEffect(() => {
-    // When text changes, briefly show the faded box if fade is enabled.
+    // When text or loading state changes, briefly show the faded box if fade is enabled.
     if (fadeAwayTime > 0) {
       if (timer.current) clearTimeout(timer.current);
 
@@ -120,7 +120,7 @@ const OcrBoxPane = ({
         if (timer.current) clearTimeout(timer.current);
       };
     }
-  }, [text]);
+  }, [text, loading]);
 
   const getTextContent = useCallback(
     (t: string) => {
@@ -225,7 +225,7 @@ const OcrBoxPane = ({
       onDoubleClick={onDoubleClick}
     >
       <Fade
-        in={visible || isHovering}
+        in={visible || isHovering || loading}
         timeout={{ enter: 300, appear: 300, exit: 600 }}
         unmountOnExit
       >
