@@ -93,11 +93,11 @@ Unzipping a model pack will reveal a `models` folder. Drag this `models` folder 
 
 # API usage
 
-While Mango 4 is open, you can also translate strings by making a `GET` call to `localhost:5000/translate` with the string to translate being the query parameter `text`. 
+While Mango 4 is open, you can also translate strings by making a `GET` call to `http://127.0.0.1:5000/translate` with the string to translate being the query parameter `text`. 
 
 For example:
 
-`http://localhost:5000/translate?text=こんにちは` would translate `こんにちは`, returning a string (body) with response code `200`.
+`http://127.0.0.1:5000/translate?text=こんにちは` would translate `こんにちは`, returning a string (body) with response code `200`.
 
 Errors return the string `ERROR (search logs for "Task7 Error")` with response code `201`.
 
