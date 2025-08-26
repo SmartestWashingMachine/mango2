@@ -41,15 +41,9 @@ const changeSearchParams = (selFolder: string | null, curIdx: number = 0) => {
 
 const API_URL = "";
 
-// Yes it's not very secure, you can just see it in the source code.. But if you can see this comment then you're probably not him...
-const PASS_CODE = "not4u";
-
 const HomeVideoPage = () => {
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const [didLogin, setDidLogin] = useState(false);
-  const [passcode, setPasscode] = useState("");
 
   const [search, setSearch] = useState("");
 
@@ -84,37 +78,35 @@ const HomeVideoPage = () => {
 
   // Called once on page load. For listing all data.
   useEffect(() => {
-    if (didLogin) {
-      let canceled = false;
+    let canceled = false;
 
-      const asyncCb = async () => {
-        const output = await fetch(`${API_URL}/webui/videolist`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        });
-        if (output.status !== 200) throw Error("Invalid status code.");
+    const asyncCb = async () => {
+      const output = await fetch(`${API_URL}/webui/videolist`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+      if (output.status !== 200) throw Error("Invalid status code.");
 
-        const data = await output.json();
-        if (!data || !data.folderMap) throw Error("Invalid data.");
-        if (canceled) return;
-        setFolderMap(data.folderMap);
-        setFolderDates(data.folderDates);
-      };
+      const data = await output.json();
+      if (!data || !data.folderMap) throw Error("Invalid data.");
+      if (canceled) return;
+      setFolderMap(data.folderMap);
+      setFolderDates(data.folderDates);
+    };
 
-      asyncCb();
+    asyncCb();
 
-      return () => {
-        canceled = true;
-      };
-    }
-  }, [didLogin]);
+    return () => {
+      canceled = true;
+    };
+  }, []);
 
   // Called once on page load. For new tabs.
   useEffect(() => {
-    if (didLogin && Object.keys(folderMap).length > 0) {
+    if (Object.keys(folderMap).length > 0) {
       let canceled = false;
 
       const params = new URLSearchParams(window.location.search);
@@ -131,7 +123,7 @@ const HomeVideoPage = () => {
         canceled = true;
       };
     }
-  }, [didLogin, folderMap]);
+  }, [folderMap]);
 
   const selectFolder = (f: string) => {
     flipCurIdx(0, false, maxCurIdx);
@@ -141,18 +133,6 @@ const HomeVideoPage = () => {
     changeSearchParams(f);
   };
 
-  const authenticate = () => {
-    if (passcode === PASS_CODE) {
-      setDidLogin(true);
-      localStorage.setItem("passcode", passcode);
-    }
-  };
-
-  useEffect(() => {
-    const stored = localStorage.getItem("passcode");
-    if (stored === PASS_CODE) setDidLogin(true);
-  }, []);
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [visListPage]);
@@ -160,25 +140,6 @@ const HomeVideoPage = () => {
   const NUM_COLS = matchDownMd ? 2 : 4;
   const ROW_HEIGHT = matchDownMd ? 150 : 300;
   const ROW_GAP = matchDownMd ? 32 : 64;
-
-  if (!didLogin) {
-    return (
-      <Stack
-        spacing={2}
-        sx={{ padding: 4, height: "100vh", justifyContent: "center" }}
-      >
-        <TextField
-          onChange={(e: any) => setPasscode(e.currentTarget.value)}
-          value={passcode}
-          variant="filled"
-          label="Passcode"
-        />
-        <Button color="primary" onClick={authenticate}>
-          Login
-        </Button>
-      </Stack>
-    );
-  }
 
   if (!selFolder) {
     const folKeys = Object.keys(folderMap);
@@ -201,7 +162,7 @@ const HomeVideoPage = () => {
             href="?media=images"
             variant="text"
             color="info"
-            sx={{ marginRight: 16, }}
+            sx={{ marginRight: 16 }}
           >
             Images
           </Button>
