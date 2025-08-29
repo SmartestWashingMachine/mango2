@@ -109,16 +109,7 @@ def change_multiple_models_route():
 
         max_length_a = float(data["maxLengthA"])
 
-        # Might lead to unnecessary loading but oh well
-        translate_pipeline.text_recognition_app.unload_all(do_collect=False)
-        translate_pipeline.text_detection_app.unload_all(do_collect=False)
-        translate_pipeline.reranking_app.unload_all(do_collect=False)
-        translate_pipeline.translation_app.unload_all(do_collect=False)
-        translate_pipeline.text_line_app.unload_all(do_collect=False)
-        translate_pipeline.spell_correction_app.unload_all(do_collect=False)
-        collect()
-
-        config_state.set_decoding_params(
+        requires_reload = config_state.set_decoding_params(
             top_p=float(data["topP"]),
             top_k=data["topK"],
             length_penalty=float(data["lengthPenalty"]),
@@ -155,6 +146,19 @@ def change_multiple_models_route():
         config_state.update_terms(terms=data["terms"])
 
         context_state.reset_list()
+
+        # Might lead to unnecessary loading but oh well
+        if requires_reload:
+            ctx.log("Reloading all models...")
+            translate_pipeline.text_recognition_app.unload_all(do_collect=False)
+            translate_pipeline.text_detection_app.unload_all(do_collect=False)
+            translate_pipeline.reranking_app.unload_all(do_collect=False)
+            translate_pipeline.translation_app.unload_all(do_collect=False)
+            translate_pipeline.text_line_app.unload_all(do_collect=False)
+            translate_pipeline.spell_correction_app.unload_all(do_collect=False)
+            collect()
+        else:
+            ctx.log("NOT reloading all models!")
 
         try:
             print('DATA:')

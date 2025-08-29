@@ -24,7 +24,7 @@ import json
 from gandy.utils.reroute_remote_backend import RemoteRouter
 from gandy.state.dangerous_config import DangerousConfig
 from gandy.state.debug_state import debug_state
-from gandy.socket_process import SocketProcess, SocketWrapper
+from gandy.socket_process import SocketProcess, SocketWrapper, socketio
 
 dangerous_config = DangerousConfig()
 logger.do_print = dangerous_config.do_print or dangerous_config.debug
@@ -39,9 +39,6 @@ web_app = Flask(__name__, template_folder=os.getcwd() + '/templates', static_fol
 # ONNX seems to be funky with asynchronous logick magick. With the default ping timeout (5000ms), it's likely that the client will drop the connection midway through the process.
 # Of course, a long ping timeout is not ideal either.
 # socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True, ping_timeout=100000)
-
-# Just adds future emits to a message queue. Another thread will handle the actual emitting.
-socketio = SocketWrapper()
 
 legacy_logger = logging.getLogger("Gandy")
 legacy_logger.setLevel(logging.DEBUG)

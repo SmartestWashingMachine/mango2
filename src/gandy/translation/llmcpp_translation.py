@@ -3,6 +3,7 @@ from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClien
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
 from gandy.utils.augment_name_entries_with_ner import NameAdder
+from gandy.socket_process import socketio # TODO: Messy import.
 from typing import List
 import os
 
@@ -212,7 +213,7 @@ class LlmCppTranslationApp(BaseTranslation):
             return config_state.name_entries
 
         # TODO: Un normalize src
-        return config_state.name_entries + self.name_adder.get_names(src, config_state.name_entries)
+        return config_state.name_entries + self.name_adder.get_names(src, config_state.name_entries, socketio=socketio)
     
     def process_with_batch(self, texts: List[str]):
         self.translate_string()

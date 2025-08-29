@@ -73,5 +73,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   newNameEntry: () => ipcRenderer.invoke('new-name-entry'),
   updateNameEntry: (uuid, key, value) => ipcRenderer.invoke('update-name-entry', uuid, key, value),
   deleteNameEntry: (uuid) => ipcRenderer.invoke('delete-name-entry', uuid),
+  defineDictionaryName: (source, target, gender) => ipcRenderer.invoke('define-dictionary-name', source, target, gender),
+  addNameToTextHistory: (source, target, gender) => ipcRenderer.invoke('add-name-to-text-history', source, target, gender),
   bridgeOn: (evName, cb) => initializeListener(`bridge_${evName}`, cb),
 });

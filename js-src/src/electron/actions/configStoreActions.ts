@@ -208,6 +208,34 @@ const retrieveImageModeOptions: GatewayAction = {
   },
 };
 
+const defineDictionaryName: GatewayAction = {
+  command: ElectronCommands.DEFINE_DICTIONARY_NAME,
+  commandType: "handle",
+  fn: async (
+    e,
+    w,
+    s,
+    store,
+    source: string,
+    target: string,
+    gender: string
+  ) => {
+    const existingNameEntries = store
+      .get("nameEntries")
+      .filter((x) => x.source !== source); // Replace existing entry ("pushing" it to end of list actually) if found.
+
+    const entry = {
+      source,
+      target,
+      gender,
+      uuid: uuidv4(),
+    };
+    store.set("nameEntries", [...existingNameEntries, entry]);
+
+    await resendDataChange.fn(e, w, s, store);
+  },
+};
+
 export default [
   getStoreData,
   setStoreValue,
@@ -221,4 +249,5 @@ export default [
   createNameEntry,
   deleteNameEntry,
   updateNameEntry,
+  defineDictionaryName,
 ];

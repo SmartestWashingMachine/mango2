@@ -52,8 +52,18 @@ class ConfigState:
         self._temp_circuit_broken = False # TODO: Use separate state for this.
 
     def set_decoding_params(self, **kwargs):
+        requires_reload = False
+
         for k, v in kwargs.items():
+            old_v = getattr(self, k)
+            # List fields (terms, name entries) do NOT require a model reload currently.
+            if v != old_v and not isinstance(old_v, list):
+                print(f'Reload required as {v} !== {old_v} for key "{k}"')
+                requires_reload = True
+
             setattr(self, k, v)
+
+        return requires_reload
 
     # on_side == "source" || "target"
     def find_terms(self, terms, on_side: str):

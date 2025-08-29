@@ -123,6 +123,25 @@ export const translateNames = async (text: string) => {
   });
 };
 
+export const defineDictionaryName = async (
+  source: string,
+  target: string,
+  gender: string
+) => {
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/definedictionaryname`;
+
+  const body: any = { source, target, gender };
+
+  const output = fetch(apiUrl, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
+};
+
 export const pollTranslateNamesStatus = (
   itemCb: (sourceText: string, targetText: string) => void,
   doneCb: () => void
@@ -144,3 +163,30 @@ export const pollTranslateNamesStatus = (
       socket.disconnect();
     });
   });
+
+// Always listening while TextView is showing.
+export const pollDetectedNameItem = (
+  itemCb: (source: string, target: string, gender: string) => void
+) => {
+  const socket = makeSocket();
+
+  const cleanupFn = () => {
+    try {
+      socket.disconnect();
+    } catch {
+      console.log("Failed to disconnect detected name socket.");
+    }
+  };
+
+  socket.on("detected_missing_name", (data) => {
+    const { source, target, gender } = data;
+    console.log("Found missing name!");
+    console.log(source);
+    console.log(target);
+    console.log(gender);
+
+    itemCb(source, target, gender);
+  });
+
+  return cleanupFn;
+};

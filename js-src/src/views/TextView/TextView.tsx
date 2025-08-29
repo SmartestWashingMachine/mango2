@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import ArrowCircleRightIcon from "@mui/icons-material/ArrowRight";
 import HistoryPane from "./components/HistoryPane";
-import IHistoryText from "../../types/HistoryText";
+import IHistoryText, { INameItem } from "../../types/HistoryText";
 import { v4 as uuidv4 } from "uuid";
 import DownloadIcon from "@mui/icons-material/Download";
 import {
@@ -23,6 +23,8 @@ import {
   translateText,
   pollTranslateNamesStatus,
   translateNames,
+  defineDictionaryName,
+  pollDetectedNameItem,
 } from "../../flaskcomms/textViewComms";
 import InputAdornment from "@mui/material/InputAdornment";
 import MonitorIcon from "@mui/icons-material/Monitor";
@@ -39,6 +41,8 @@ import { MainGateway } from "../../utils/mainGateway";
 import { useAlerts } from "../../components/AlertProvider";
 import { useInterval } from "../..//utils/useInterval";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
+import CreateNameFromItemDialog from "./components/CreateNameFromItemDialog";
+import { Source } from "@mui/icons-material";
 
 const SPLIT_AND_QUEUES = [/(?=「)/, "　"];
 
@@ -60,7 +64,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   // Side view mode is more user-friendly for big text, or users who don't care for the backlog.
   const [isSideView, setIsSideView] = useState(false);
 
-  const [texts, setTexts] = useState<IHistoryText[]>([]);
+  const [texts, setTexts] = useState<(IHistoryText | INameItem)[]>([]);
 
   const { loading, setLoading, disabled, setDisabled } = useLoader();
 
@@ -127,7 +131,9 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     const w = window as any;
     if (texts.length === 0) return;
 
-    const csvRows = texts.map((t) => [t.sourceText, t.targetText]);
+    const csvRows = texts
+      .filter((t) => !("source" in t)) // Filter out NameItem.
+      .map((t) => [t.sourceText, t.targetText]);
     await w.electronAPI.saveCsvFile(csvRows, ["SourceText", "TargetText"]);
 
     pushAlert("Saved in documents.");
@@ -150,8 +156,8 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   const transformInput = useCallback(
     (curSourceText: string) => {
       const contextSourceTexts = texts
-        .filter((t) => contextIds.indexOf(t.uuid) > -1)
-        .map((t) => t.sourceText);
+        .filter((t) => contextIds.indexOf(t.uuid) > -1 && !("source" in t))
+        .map((t) => t.sourceText) as string[];
 
       const joined = pTransformerJoin([...contextSourceTexts, curSourceText]);
       return joined;
@@ -310,13 +316,20 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   /**
    * Filter texts such that only texts matching the search criteria are shown.
    */
-  const filterTexts = (t: IHistoryText[]) =>
-    t.filter(
-      (t) =>
-        search.length === 0 ||
-        t.sourceText.indexOf(search) > -1 ||
-        t.targetText[0].toLowerCase().indexOf(search.toLowerCase()) > -1 // I can't remember why but targetTexts is an array of length 1 rather than a string.
-    );
+  const filterTexts = (te: (IHistoryText | INameItem)[]) => {
+    if (search.length > 0) {
+      // Only filter for history items.
+      return te.filter(
+        (t) =>
+          !("source" in t) && // This first condition verifies that we're dealing with a history item - not a name item.
+          (search.length === 0 ||
+            t.sourceText.indexOf(search) > -1 ||
+            t.targetText[0].toLowerCase().indexOf(search.toLowerCase()) > -1) // I can't remember why but targetTexts is an array of length 1 rather than a string.
+      );
+    }
+
+    return te;
+  };
 
   /**
    * Clear the backlog.
@@ -351,14 +364,49 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
     };
   }, []);
 
-  const addContext = (uuid: string) => {
-    if (contextIds.indexOf(uuid) > -1) {
-      setContextIds((s) => s.filter((x) => x !== uuid));
+  const [nameSource, setNameSource] = useState("");
+  const [nameTarget, setNameTarget] = useState("");
+  const [nameGender, setNameGender] = useState("");
+  const [nameTranslationModalId, setNameTranslationModalId] = useState("");
+
+  const askUserForNameTranslation = (item: INameItem) => {
+    const { source, target, gender, uuid } = item;
+
+    setNameSource(source);
+    setNameTarget(target);
+    setNameGender(gender);
+    setNameTranslationModalId(uuid);
+  };
+
+  const handleNameModalDone = async () => {
+    // Rather than making an API call...
+    // defineDictionaryName(nameSource, nameTarget, nameGender);
+    // Let's just set the state instead. Then the callback in the Electron Actions API should automagically call the API.
+    const w = window as any;
+    w.electronAPI.defineDictionaryName(nameSource, nameTarget, nameGender);
+
+    // Close the modal.
+    setNameTranslationModalId("");
+  };
+
+  const selectItem = (uuid: string) => {
+    const curItem = texts.find((t) => t.uuid === uuid); // TODO: Optimize
+    if (!curItem) return;
+
+    if ("source" in curItem) {
+      // we're dealing with a name item - so prompt the user for a dictionary instead of adding it as context.
+      askUserForNameTranslation(curItem);
     } else {
-      if (contextIds.length > maxContextAmount) {
-        setContextIds((s) => [...s.slice(1), uuid]);
+      // We're dealing with a history item.
+
+      if (contextIds.indexOf(uuid) > -1) {
+        setContextIds((s) => s.filter((x) => x !== uuid));
       } else {
-        setContextIds((s) => [...s, uuid]);
+        if (contextIds.length > maxContextAmount) {
+          setContextIds((s) => [...s.slice(1), uuid]);
+        } else {
+          setContextIds((s) => [...s, uuid]);
+        }
       }
     }
   };
@@ -460,6 +508,18 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
       document.removeEventListener("keydown", cb);
     };
   }, [pushAlert]);
+
+  // Name detection - logs name items in the text history when seen.
+  useEffect(() => {
+    const cleanup = pollDetectedNameItem((source, target, gender) => {
+      const w = window as any;
+      w.electronAPI.addNameToTextHistory(source, target, gender);
+    });
+
+    return () => {
+      cleanup();
+    };
+  }, [doneTranslatingOne]);
 
   // Subcomponents
   const controlsPane = (
@@ -659,6 +719,16 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   } else
     return (
       <BaseView>
+        <CreateNameFromItemDialog
+          onDone={handleNameModalDone}
+          open={!!nameTranslationModalId}
+          onClose={() => setNameTranslationModalId("")}
+          source={nameSource}
+          target={nameTarget}
+          gender={nameGender}
+          setTarget={setNameTarget}
+          setGender={setNameGender}
+        />
         <Stack spacing={2} alignContent="space-between" sx={{ width: "100%" }}>
           <Paper className="fullWidth" elevation={2}>
             <TextField
@@ -669,12 +739,15 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
             />
           </Paper>
           <HistoryPane
-            texts={filterTexts(texts).map((t) => ({
-              ...t,
-              sourceText: t.sourceText.replace("<TSOS>", "").trim(),
-            }))}
+            texts={filterTexts(texts).map(
+              (t) =>
+                ({
+                  ...t,
+                  sourceText: t.sourceText?.replace("<TSOS>", "").trim(),
+                } as any) // TODO: Ugly type-casting. Do we even need to cut out <TSOS> anymore? That was for legacy OPUS models.
+            )}
             selectedIds={contextIds}
-            onSelectItem={addContext}
+            onSelectItem={selectItem}
             isBrief={briefHistory}
           />
           {showingControls && (

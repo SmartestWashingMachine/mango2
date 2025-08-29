@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Paper, Typography } from "@mui/material";
-import IHistoryText from "../../../types/HistoryText";
+import IHistoryText, { INameItem } from "../../../types/HistoryText";
 import HistoryItem from "./HistoryItem";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import HistoryContextMenu from "./HistoryContextMenu";
 import { Virtuoso } from "react-virtuoso";
+import NameItem from "./NameItem";
 
 type HistoryPaneProps = {
-  texts: IHistoryText[];
+  texts: (IHistoryText | INameItem)[];
   selectedIds: string[];
   onSelectItem: (uuid: string) => void;
   initialItemCount?: number;
@@ -57,19 +58,41 @@ const HistoryPane = ({
   // ref is for auto scrolling.
   const ref = useRef<any | null>(null);
 
-  const textItemsData = texts.map((t, index) => ({
-    sourceText: t.sourceText,
-    targetText: t.targetText,
-    isLast: index === texts.length - 1,
-    isSelected: selectedIds.indexOf(t.uuid) > -1,
-    onClick: () => onSelectItem(t.uuid),
-    onContextMenu: handleContextMenu,
-    key: t.uuid,
-    sourceTokens: t.sourceTokens,
-    targetTokens: t.targetTokens,
-    attentions: t.attentions,
-    otherTargetTexts: t.otherTargetTexts,
-  }));
+  const renderItemContent = (index: number) => {
+    const t = texts[index];
+
+    const commonProps = {
+      isLast: index === texts.length - 1,
+      isSelected: selectedIds.indexOf(t.uuid) > -1,
+      key: t.uuid,
+    };
+
+    if ("source" in t) {
+      const data = {
+        ...commonProps,
+        sourceName: t.source,
+        suggestedTranslation: t.target,
+        gender: t.gender,
+        onSelect: () => onSelectItem(t.uuid),
+      };
+
+      return <NameItem {...data} isBrief={isBrief} />;
+    } else {
+      const data = {
+        ...commonProps,
+        sourceText: t.sourceText,
+        targetText: t.targetText,
+        onClick: () => onSelectItem(t.uuid),
+        onContextMenu: handleContextMenu,
+        sourceTokens: t.sourceTokens,
+        targetTokens: t.targetTokens,
+        attentions: t.attentions,
+        otherTargetTexts: t.otherTargetTexts,
+      };
+
+      return <HistoryItem {...data} isBrief={isBrief} />;
+    }
+  };
 
   return (
     <Paper square elevation={2} className="historyList">
@@ -98,10 +121,8 @@ const HistoryPane = ({
         ) : initialItemCount ? (
           <Virtuoso
             style={{ height: "100%" }}
-            totalCount={textItemsData.length}
-            itemContent={(index) => (
-              <HistoryItem {...textItemsData[index]} isBrief={isBrief} />
-            )}
+            totalCount={texts.length}
+            itemContent={renderItemContent}
             ref={ref}
             initialItemCount={initialItemCount || undefined}
             followOutput={() => true}
@@ -109,10 +130,8 @@ const HistoryPane = ({
         ) : (
           <Virtuoso
             style={{ height: "100%" }}
-            totalCount={textItemsData.length}
-            itemContent={(index) => (
-              <HistoryItem {...textItemsData[index]} isBrief={isBrief} />
-            )}
+            totalCount={texts.length}
+            itemContent={renderItemContent}
             ref={ref}
             followOutput={() => "smooth"}
           />

@@ -4,6 +4,21 @@ import json
 from gandy.state.config_state import config_state
 from gandy.utils.fancy_logger import logger
 import os
+from pykakasi import kakasi
+
+kak = kakasi()
+def suggest_translation_for_name(ja_name: str):
+    try:
+        conv = kak.convert(ja_name)
+        if len(conv) != 1:
+            raise RuntimeError(f'{len(conv)} items found - NOT 1.')
+        
+        return conv[0]['hepburn'].strip().capitalize()
+    except Exception as e:
+        logger.error(f'Error transliterating name ({ja_name})')
+        logger.error(e)
+
+        return "???"
 
 DO_SAVE_MISSING_NAMES = True
 
@@ -133,11 +148,12 @@ class NameAdder():
 
         return src
 
-    def get_names(self, src: str, entries_to_ignore, add_empty = False, do_memo = True):
+    def get_names(self, src: str, entries_to_ignore, add_empty = False, do_memo = True, socketio = None):
         if not self.loaded:
             try:
                 self.load_model()
             except Exception as e:
+                logger.error('ERROR LOADING NER MODEL FOR NAME DETECTION:')
                 logger.error(e)
                 return []
 
@@ -168,6 +184,14 @@ class NameAdder():
                 if was_initially_empty and add_empty:
                     # For use in Task8.
                     extra_name_entries.append({ 'source': extr_no_honor, 'target': '???', 'gender': '', })
+
+                if was_initially_empty and socketio is not None and extr_no_honor not in user_selected_sources:
+                    ctx.log(f'Emitting missing detected name via websocket', source=extr_no_honor)
+                    # For use in Task3 (emitting missing names to user in TextView for completion).
+                    socketio.patched_emit('detected_missing_name', { 'source': extr_no_honor, 'target': suggest_translation_for_name(extr_no_honor), 'gender': '', })
+                    socketio.sleep()
+                else:
+                    ctx.log(f'Will NOT emit detected name through websocket', was_initially_empty=was_initially_empty, already_exists_in_user_dictionary=extr_no_honor in user_selected_sources)
 
                 ctx.log(f'Found matches', processed_ner_word=extr_no_honor, original_ner_word=extr, found=founds)
 

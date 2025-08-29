@@ -92,3 +92,6 @@ class SocketWrapper():
 
     def start_background_task(self, fn, *args):
         fn(*args) # For legacy compatibility.
+
+# Just adds future emits to a message queue. Another thread will handle the actual emitting.
+socketio = SocketWrapper()

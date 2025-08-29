@@ -11,6 +11,7 @@ enum ElectronCommands {
   RETRIEVE_TEXT_HISTORY = "retrieve-text-history",
   ADD_TO_TEXT_HISTORY = "add-to-text-history",
   CLEAR_TEXT_HISTORY = "clear-text-history",
+  ADD_NAME_TO_TEXT_HISTORY = "add-name-to-text-history",
   CLOSE_APP = "close-app",
   EXPAND_APP = "expand-app",
   HIDE_APP = "hide-app",
@@ -41,6 +42,7 @@ enum ElectronCommands {
   NEW_NAME_ENTRY = "new-name-entry",
   UPDATE_NAME_ENTRY = "update-name-entry",
   DELETE_NAME_ENTRY = "delete-name-entry",
+  DEFINE_DICTIONARY_NAME = "define-dictionary-name",
 }
 
 export default ElectronCommands;

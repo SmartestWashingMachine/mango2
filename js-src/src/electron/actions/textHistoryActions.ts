@@ -74,6 +74,19 @@ const addToTextHistory: GatewayAction = {
   },
 };
 
+const addNameToTextHistory: GatewayAction = {
+  command: ElectronCommands.ADD_NAME_TO_TEXT_HISTORY,
+  commandType: "handle",
+  fn: (e, win, state, store, source, target, gender) => {
+    state.texts.push({
+      source,
+      target,
+      gender,
+      uuid: uuidv4(),
+    });
+  },
+};
+
 const clearTextHistory: GatewayAction = {
   command: ElectronCommands.CLEAR_TEXT_HISTORY,
   commandType: "handle",
@@ -82,4 +95,9 @@ const clearTextHistory: GatewayAction = {
   },
 };
 
-export default [retrieveTextHistory, addToTextHistory, clearTextHistory];
+export default [
+  retrieveTextHistory,
+  addToTextHistory,
+  clearTextHistory,
+  addNameToTextHistory,
+];
