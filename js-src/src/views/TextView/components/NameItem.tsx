@@ -48,7 +48,7 @@ const NameItem = ({
           primary={<>Found Name: {sourceName}</>}
           secondary={
             <>
-              This name was automatically detected. Click it to specify how it
+              This name was automatically detected. Click to specify how it
               should be translated.
             </>
           }

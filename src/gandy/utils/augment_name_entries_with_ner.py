@@ -10,10 +10,11 @@ kak = kakasi()
 def suggest_translation_for_name(ja_name: str):
     try:
         conv = kak.convert(ja_name)
-        if len(conv) != 1:
-            raise RuntimeError(f'{len(conv)} items found - NOT 1.')
-        
-        return conv[0]['hepburn'].strip().capitalize()
+        if len(conv) == 0:
+            raise RuntimeError(f'{len(conv)} items found - Must be at least 1.')
+
+        names = [c['hepburn'].strip().capitalize() for c in conv]
+        return ' '.join(names).strip()
     except Exception as e:
         logger.error(f'Error transliterating name ({ja_name})')
         logger.error(e)
