@@ -1,11 +1,21 @@
 # Mango 4
 
-Mango 4 is a tool to machine translate Japanese media such as games and manga to English in real-time.
+Mango 4 is an all-batteries-included tool to machine translate Japanese media such as games and manga to English in real-time.
 
-**All these models are installed locally** - no need to worry about rate limits! These models are also amoral... if you know you know.
+**All these models are installed locally** - no need to worry about rate limits! My models are also amoral... if you know you know.
 
+Some other features:
+- Automatically stores past texts as context for future texts to translate (potentially better pronoun resolution.)
+- Caches translations in case they need to be translated again quickly (such as for user interfaces in games.)
+- OCR texts across a variety of domains (still locally!)
+- Allows the user to specify how certain character names should be translated (with my big translation model!)
+- Supports most custom GGUF translation models, and they can be configured to use RAG and retrieve similar translations as examples (in-context learning!)
+- Supports Chinese/Korean OCR'ing and translation to English with my other models (installed separately.)
+- Supports multiple open OCR windows (for games where text can appear in multiple locations.)
 
-# Features & Examples
+<sub>Most of these features can be enabled in the options menu!</sub>
+
+# Examples
 
 ### Translating manga
 
@@ -87,8 +97,7 @@ Unzipping a model pack will reveal a `models` folder. Drag this `models` folder 
 
 - [Stronger MT model](https://drive.google.com/file/d/15gvST4_UgWgaIBZ_J4cugr23ahQ2Zzom/view?usp=sharing) [Supports Japanese/Korean/Chinese to English and is just generally better albeit slower]
 - [Korean + Chinese OCR models](https://drive.google.com/file/d/1Cg1haoMSqEqQRqkbWn8qsZ_rJruKkIvU/view?usp=sharing) [Self-explanatory]
-- [Post editing model](https://drive.google.com/file/d/1bClqgpoBPYms8ZCja8UymQrx2kJOqY1G/view?usp=sharing) [Refines translations for even better quality but is slow as [REDACTED]]
-- Caching model [Allows translation caching for creating and using shared translation cache files] [COMING SOON]
+- [Post editing model](https://drive.google.com/file/d/1bClqgpoBPYms8ZCja8UymQrx2kJOqY1G/view?usp=sharing) [Refines translations for even better quality but is slow as [REDACTED]] (NOTE: I do NOT recommend using this model due to mixed performance.)
 - 2X Stronger MT model [Supports CJK to English and may be even better albeit EVEN slower] [MAYBE COMING SOON]
 
 # API usage
@@ -109,7 +118,7 @@ There's a few issues we need to address first.
 
 **Issue 1:** What metrics do we use? Professional human evaluations are expensive, so that leaves us with automated metrics: BLEU is a lame metric. chrF++ is a bit better but still pretty poor. That leaves us with deep metrics like COMET, BERTScore, etc... (COMET seems good enough).
 
-Unfortunately from personal experiments, COMET (and other deep metrics) wasn't highly sensitive to minor pronoun changes - like changing "He said I should go eat broccoli in peace." to "She said I should go eat broccoli in peace." - This is unfortunate since (in my opinion) zero pronoun resolution is one of the biggest issues in MTLing CJK to English. COMET also has issues with extremely long sentences on occasion. COMET also doesn't seem to be super sensitive to typos in named entities which is a bummer (this translation model needs work regarding named entity translation). All that said, COMET is still way better than BLEU.
+Unfortunately from personal experiments, COMET (and other deep metrics) wasn't highly sensitive to minor pronoun changes - like changing "He said I should go eat broccoli in peace." to "She said I should go eat broccoli in peace." - This is unfortunate since (in my opinion) zero pronoun resolution is one of the biggest issues in MTLing CJK to English. COMET also has issues with extremely long sentences on occasion. COMET also doesn't seem to be super sensitive to typos in named entities which is a bummer (this translation model needs work regarding named entity translation). All that said, COMET is still way better than BLEU. NOTE: As of 2025, LLM-as-Judges seems to really have taken off in this area (e.g: MT-Prometheus) - they still seem to have less human correlation, but they can use a strict "rubric" or set of rules to determine which quality category a translation falls into - could be interesting for future experiments.
 
 **Issue 2:** Fairness. What are we really gauging with these benchmarks? Whether one model is better than the other? But can we really say that model A is better than model B - even if it scores higher on a benchmark? How do we know that model A wasn't trained on data in the benchmark? Large MT models tend to be extremely effective at domain adaptation after all. It's also extremely easy to "beat" a benchmark when it comes to unconstrained MT - just train on more data (or make the model bigger)! More data and more scale is king.
 

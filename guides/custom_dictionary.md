@@ -1,10 +1,12 @@
 # Using our own dictionary to augment a translator with name knowledge.
 
-**This requires a Goliath or custom translator model to be used.**
+**All of these methods require a Goliath or custom translator model to be used.**
 
 It's well known that translation models suffer when it comes to translating names. We can "patch" that up by using our own dictionary dataset, teaching the model on how certain names should be translated. 
 
-Mango supports two approaches for dictionary augmentation:
+Mango supports two (technically three) general approaches for dictionary augmentation.
+
+[Looking for a quick and easy approach?](#collecting-names-into-the-dictionary-at-runtime)
 
 ## 1. Consistent dictionary augmentation
 
@@ -82,3 +84,23 @@ Once that's done, open Mango. Then, go to the Settings tab and enable "Augment D
 Both approaches can be used together! 
 
 We can have a consistent dictionary that should always be used (such as for names that Mango can not auto detect in the source text), and then that dictionary would be augmented conditionally when other names are detected.
+
+## 3. Collecting names into the dictionary at runtime
+
+Don't want to bother with all that? There's an even easier way to create our own dictionary!
+
+If "Augment Dictionary" is enabled in the Settings tab, Mango will automatically detect new names from any translation request in the Text tab.
+
+<p float="left">
+    <img src="../examples/tutorials/misc/eset2.jpg" width="500" />
+    </br>
+<sub><i>(A weak translation model is used here for demonstration purposes.)</i></sub>
+</p>
+
+</br>
+
+We can then click on these detected names to specify how they should be translated in the future - each entry will be stored in the dictionary for future translations!
+
+<p float="left">
+    <img src="../examples/tutorials/misc/eset3.jpg" width="500" />
+</p>
