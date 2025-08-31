@@ -10,6 +10,8 @@ class ConfigState:
         self.num_beams = 5
         self.num_gpu_layers_mt = 22
         self.force_translation_cpu = False
+        self.force_embeddings_cpu = False
+        self.force_ner_cpu = False
         self.force_spelling_correction_cpu = False
         self.force_ocr_cpu = False
         self.force_td_cpu = False

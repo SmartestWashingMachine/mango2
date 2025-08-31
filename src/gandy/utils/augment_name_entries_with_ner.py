@@ -81,14 +81,15 @@ class NameAdder():
         self.loaded = False
         self.onnx_path = onnx_path
 
-        # Shares similar conditions to the translation module.
-        self.can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+        self.can_cuda = False
 
         self.memo = { 'src': None, 'output': None, }
 
     def load_model(self):
         if self.loaded:
             return
+        
+        self.can_cuda = config_state.use_cuda and not config_state.force_ner_cpu
 
         # Need to use_fast=False - there's a version compatibility issue (see: https://github.com/huggingface/transformers/issues/31789)
         tokenizer = AutoTokenizer.from_pretrained(self.onnx_path, use_fast=False)
@@ -99,7 +100,7 @@ class NameAdder():
         try:
             with open(self.get_dictionary_path(), encoding='utf-8') as f:
                 self.data_dict = json.load(f)
-            logger.info("Loaded dictionary.")
+            logger.info(f"Loaded dictionary (CUDA={self.can_cuda}) (CUDAEnabled={config_state.use_cuda}) (ForcedOnCPU={config_state.force_ner_cpu}).")
         except Exception as e:
             logger.info("Could not load dictionary - maybe it does not exist?")
             logger.error(e)

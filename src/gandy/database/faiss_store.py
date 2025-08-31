@@ -45,7 +45,7 @@ class FAISSEmbedder:
         return 7998
     
     def get_can_cuda(self):
-        can_cuda = config_state.use_cuda and not config_state.force_translation_cpu
+        can_cuda = config_state.use_cuda and not config_state.force_embeddings_cpu
         return can_cuda
     
     def get_model_path_for_llmcpp(self, model_sub_path: str):

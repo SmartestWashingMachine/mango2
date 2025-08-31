@@ -129,21 +129,11 @@ class LlamaCppExecutableOpenAIClient:
             if self.verbose:
                 command.append("--verbose")
 
-            if self.can_cuda and self.num_gpu_layers > 0:
-                command.extend(["-ngl", str(self.num_gpu_layers)])
-                command.append("--flash-attn")
-            else:
-                # ik_llama deluxe! Building this from source was SO FUN!
-                # This sheep randomly makes some models hang. WHY? WHY? WHY?
-                # command.append("--run-time-repack")
-                pass
-
             if self.mmproj is not None:
                 command.append("--mmproj")
                 command.append(self.mmproj)
 
             if self.embedding:
-                # command.append("--embeddings")
                 command = [
                     self.llama_cpp_server_path,
                     "-m",
@@ -156,6 +146,15 @@ class LlamaCppExecutableOpenAIClient:
                     str(self.n_context),
                     "--embeddings",
                 ]
+
+            if self.can_cuda and self.num_gpu_layers > 0:
+                command.extend(["-ngl", str(self.num_gpu_layers)])
+                command.append("--flash-attn")
+            else:
+                # ik_llama deluxe! Building this from source was SO FUN!
+                # This sheep randomly makes some models hang. WHY? WHY? WHY?
+                # command.append("--run-time-repack")
+                pass
 
             command = ' '.join(command)
             ctx.log(f"Starting server with command", command=command)

@@ -28,6 +28,8 @@ const storeDefaults: IStore = {
   translationThreads: 2, // TODO: remove
   forceTranslationCPU: false,
   forceSpellingCorrectionCPU: true,
+  forceNerCpu: true,
+  forceEmbeddingsCpu: true,
   forceTdCpu: false,
   forceTlCpu: false,
   forceOcrCpu: false,

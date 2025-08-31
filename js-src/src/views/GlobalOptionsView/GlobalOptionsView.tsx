@@ -248,6 +248,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     spellCorrectionModelName,
     enableCuda,
     forceTranslationCPU,
+    forceNerCpu,
+    forceEmbeddingsCpu,
     forceSpellingCorrectionCPU,
     forceTdCpu,
     forceTlCpu,
@@ -530,6 +532,26 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 tooltip="Has no effect if CUDA is disabled."
                 label="Force MT on CPU"
                 helperText="The translation model will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
+              />
+            ),
+            "Force Caching & RAG on CPU": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="forceEmbeddingsCpu"
+                defaultValue={forceEmbeddingsCpu}
+                tooltip="Has no effect if CUDA is disabled. This only takes effect on translation caching and RAG usage."
+                label="Force Caching & RAG on CPU"
+                helperText="The embedding model will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
+              />
+            ),
+            "Force Dictionary Augmentation on CPU": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="forceNerCpu"
+                defaultValue={forceNerCpu}
+                tooltip="Has no effect if CUDA is disabled or 'Augment Dictionary' is disabled."
+                label="Force Dictionary Augmentation on CPU"
+                helperText="The name augmentation model will ALWAYS be on the CPU rather than the GPU. Can decrease memory usage at the cost of speed."
               />
             ),
             "Force Editing on CPU": (

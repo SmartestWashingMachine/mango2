@@ -37,6 +37,8 @@ export type IStoreClientToServer = {
   translationThreads: number;
   forceTranslationCPU: boolean;
   forceSpellingCorrectionCPU: boolean;
+  forceEmbeddingsCpu: boolean;
+  forceNerCpu: boolean;
   forceTdCpu: boolean;
   forceTlCpu: boolean;
   forceOcrCpu: boolean;
