@@ -1,4 +1,4 @@
-import { app, clipboard } from "electron";
+import { app, clipboard, BrowserWindow } from "electron";
 import ElectronCommands from "../../types/ElectronCommands";
 import { GatewayAction } from "../../types/GatewayAction";
 import { createHelpWindow } from "../createHelpWindow";
@@ -7,6 +7,8 @@ const closeWindow: GatewayAction = {
   command: ElectronCommands.CLOSE_APP,
   commandType: "handle",
   fn: (_e, _w, state, store) => {
+    console.log("Closing app normally...");
+
     try {
       for (const manager of state.managers) {
         if (manager.ocrWindow !== null) {
@@ -17,7 +19,21 @@ const closeWindow: GatewayAction = {
       console.log(exc);
     }
 
-    app.quit();
+    BrowserWindow.getAllWindows().forEach((win) => {
+      if (!win.isDestroyed()) {
+        try {
+          win.destroy();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    });
+
+    try {
+      app.quit();
+    } catch (error) {
+      console.error(error);
+    }
   },
 };
 
