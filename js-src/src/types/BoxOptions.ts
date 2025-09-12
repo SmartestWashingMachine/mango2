@@ -18,6 +18,7 @@ export type BoxOptionsFrontend = {
   append: boolean;
   pipeOutput: string;
   useStream: boolean;
+  fullyDraggable: boolean;
 };
 
 export type BoxOptionsBackend = {
