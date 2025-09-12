@@ -9,8 +9,10 @@ if __name__ == '__main__':
     sp_libs = glob('.\\.venv\\Lib\\site-packages\\sentencepiece*\\')
     tokenizer_libs = glob('.\\.venv\\Lib\\site-packages\\tokenizers*\\')
 
+    pyk_libs = glob('.\\.venv\\Lib\\site-packages\\pykakasi*\\')
+
     # all_libs = faiss_libs + ort_libs + sp_libs
-    all_libs = ort_libs + sp_libs + tokenizer_libs
+    all_libs = ort_libs + sp_libs + tokenizer_libs + pyk_libs
 
     print('Adding libraries:')
     print(all_libs)

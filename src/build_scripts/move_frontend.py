@@ -17,7 +17,7 @@ if __name__ == '__main__':
         print(e)
         print('--- No web ui built. Ignoring.')
 
-    os.makedirs(".\\..\js-src\\dist\\win-unpacked\\models")
+    os.makedirs(".\\..\js-src\\dist\\win-unpacked\\models", exist_ok=True)
 
     shutil.move('.\\dist\\run_server', '.\\..\js-src\\dist\\win-unpacked\\resources\\backend')
 
