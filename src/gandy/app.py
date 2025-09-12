@@ -29,9 +29,15 @@ from gandy.socket_process import SocketProcess, SocketWrapper, socketio
 dangerous_config = DangerousConfig()
 logger.do_print = dangerous_config.do_print or dangerous_config.debug
 
+if logger.do_print:
+    print("do_print is ENABLED.")
+
 remote_router = RemoteRouter(dangerous_config.socketio_address, dangerous_config.compress_jpeg)
 
 debug_state.debug = dangerous_config.debug
+
+print("CWD:")
+print(os.getcwd())
 
 app = Flask(__name__)
 web_app = Flask(__name__, template_folder=os.getcwd() + '/templates', static_folder=os.getcwd() + '/static')
@@ -63,10 +69,11 @@ if dangerous_config.enable_web_ui or remote_router.is_remote():
 def run_server():
     socketio_thread = SocketProcess(remote_router.socketio_address, logger)
     socketio_thread.start()
+    print("Running...")
 
     if dangerous_config.enable_web_ui:
         logic_thread = threading.Thread(target=lambda: WSGIServer(('0.0.0.0', 5000), app).serve_forever())
-        web_thread = threading.Thread(target=lambda: WSGIServer(('0.0.0.0', 5200), app).serve_forever())
+        web_thread = threading.Thread(target=lambda: WSGIServer(('0.0.0.0', 5200), web_app).serve_forever())
 
         logic_thread.start()
         web_thread.start()

@@ -16,6 +16,13 @@ class FancyTimeMetric:
     begin_time: datetime
     end_time: datetime
 
+# Thank you PyInstaller. I love print statements that do not work across machines.
+def try_print(msg: str):
+    try:
+        print(msg)
+    except Exception as e:
+        print("Failed to print...")
+
 class FancyLogger:
     def __init__(self) -> None:
         self.do_print = False # Set to True by app.py when the config is loaded if DEBUG is enabled.
@@ -70,22 +77,26 @@ class FancyLogger:
         with start_action(action_type=event_name, **fields) as ctx:
             try:
                 if self.do_print:
-                    print(f'>>>> {event_name}')
+                    try_print(f'>>>> {event_name}')
                     for f in fields.items():
-                        print(f'^^ {f[0]}:')
-                        print(f[1])
+                        try_print(f'^^ {f[0]}:')
+                        try_print(f[1])
 
                 old_log = ctx.log
 
                 @functools.wraps(old_log)
                 def wrapped_log(message_type, do_print = self.do_print, **fields):
                     if do_print:
-                        print(f'>>>>>> {message_type}')
+                        try_print(f'>>>>>> {message_type}')
                         for f in fields.items():
-                            print(f'^^^ {f[0]}:')
-                            print(f[1])
+                            try_print(f'^^^ {f[0]}:')
+                            try_print(f[1])
 
-                    return old_log(message_type, **fields)
+                    try:
+                        return old_log(message_type, **fields)
+                    except Exception as e:
+                        try_print('ERROR LOGGING:')
+                        try_print(e)
 
                 ctx.log = wrapped_log
 
@@ -95,14 +106,21 @@ class FancyLogger:
                 raise
     
     def log_message(self, msg: str, **fields):
-        return log_message(msg, **fields)
+        try:
+            return log_message(msg, **fields)
+        except Exception as e: # Thanks Eliot. What an absolutely miserable logging library you are. A logging library that doesn't work with unicode. wtf?
+            try_print('ERROR LOGGING MESSAGE:')
+            try_print(msg)
+            for f in fields.items():
+                try_print(f'^^ {f[0]}:')
+                try_print(f[1])
     
     def debug_message(self, msg: str, **fields):
         return log_message(f'DEBUG: {msg}', debug=True, **fields)
 
     def event_exception(self, ctx):
-        print('An error has occurred:')
-        print(traceback.format_exc())
+        try_print('An error has occurred:')
+        try_print(traceback.format_exc())
         if ctx is not None:
             return ctx.log(traceback.format_exc())
         else:

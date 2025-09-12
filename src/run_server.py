@@ -2,6 +2,10 @@ import os
 
 os.environ['CUDA_MODULE_LOADING'] = "LAZY"
 
+# Pyinstaller compiled apps go haywire when print() statements are called with certain unicode characters.
+# See: https://groups.google.com/g/pyinstaller/c/e60IKzBqDqY
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
 # monkey.patch_all(os=True, socket=True, ssl=True, thread=True, threading=True)
 #monkey.patch_os()
 #monkey.patch_socket()

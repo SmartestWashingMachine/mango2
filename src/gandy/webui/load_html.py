@@ -10,7 +10,7 @@ from PIL import Image
 from io import BytesIO
 
 if dangerous_config.enable_web_ui:
-    print('CWD:')
+    print('CWD for WEBUI:')
     print(os.getcwd())
 
     def list_files(folder_name, file_extension):
@@ -81,6 +81,8 @@ if dangerous_config.enable_web_ui:
 
     @web_app.route("/webui", methods=["GET"])
     def webui_route():
+        print("Rendering index.html from WEB UI route.")
+
         return render_template("index.html")
     
     ### IMAGES
@@ -105,7 +107,7 @@ if dangerous_config.enable_web_ui:
     @web_app.route("/webui/videoresources/<folder_name>/<file_name>", methods=["GET"])
     def get_video_file_route(folder_name: str, file_name: str):
         return get_file("videos", user_folder_name=None, file_name=file_name, mimetype="video/mp4")
-    
+
     # Note that this route uses the main app - not the web app.
     @app.route("/webui/processziptask1", methods=["POST"])
     def process_zipped_images():
