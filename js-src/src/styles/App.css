@@ -147,6 +147,18 @@ body,
   border-radius: 3px;
 }
 
+.boxAppFullyDraggable {
+  background-color: #212121;
+  padding: 0;
+  display: grid;
+  padding: 8px;
+  row-gap: 24px;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 3px;
+  -webkit-app-region: drag;
+}
+
 .fullBoxApp {
   padding: 0;
   display: grid;

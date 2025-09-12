@@ -35,6 +35,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   scanAfterEnter: 0,
   serverSideActivationKey: false,
   translateLinesIndividually: 0,
+  fullyDraggable: false,
 };
 
 export const makeBaseBox = (boxId: string) => {

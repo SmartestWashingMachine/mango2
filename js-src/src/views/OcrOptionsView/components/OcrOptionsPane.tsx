@@ -288,6 +288,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               helperText="If greater than 0, then after being translated, the box will fade out in that many seconds. Hovering the mouse over the box shows it again."
             />
           ),
+          "Fully Draggable": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.fullyDraggable}
+              keyName="fullyDraggable"
+              helperText="The box can be dragged around by clicking anywhere in it rather than just the edges."
+              label="Fully Draggable"
+            />
+          ),
         },
         Actions: {
           "Activation Key OR Translation OR Translate Key":

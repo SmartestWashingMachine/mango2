@@ -59,6 +59,7 @@ const OcrBoxPane = ({
   boxId,
   hideHandle,
   clickThrough,
+  fullyDraggable,
 }: OcrBoxPaneProps) => {
   const [visible, setVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
@@ -229,7 +230,10 @@ const OcrBoxPane = ({
         timeout={{ enter: 300, appear: 300, exit: 600 }}
         unmountOnExit
       >
-        <Box className="boxApp" sx={extraBoxStyles}>
+        <Box
+          className={fullyDraggable ? "boxAppFullyDraggable" : "boxApp"}
+          sx={extraBoxStyles}
+        >
           <div className="boxAppHandleTopLeft" />
           <Stack spacing={1} className="boxText">
             {prevTexts.map((x, ind) => (
