@@ -1,5 +1,6 @@
 import { makeSocket } from "./makeSocket";
 import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
+import { getInstalledModels } from "./getInstalledModels";
 
 export const translateImages = async (
   files: any,
@@ -40,13 +41,19 @@ export const translateImages = async (
 
   formData.append("task_id", taskId);
 
-  // We don't actually await here. We don't care about the output as the data is transmitted via websockets.
-  const output = fetch(apiUrl, {
-    method: "POST",
-    body: formData,
-    headers: {
-      Accept: "application/json",
-    },
+  // This acts a sort of health-check :3
+  // By default, FetchJS in Chromium (what Electron uses) seems to time out requests after about 5 minutes.
+  // This means long-running image processing tasks tend to be dropped rather than properly queued.
+  // But by using a retry-queue in getInstalledModels we can use it as a "health-check".
+  getInstalledModels().then(() => {
+    // We don't actually await here. We don't care about the output as the data is transmitted via websockets.
+    const output = fetch(apiUrl, {
+      method: "POST",
+      body: formData,
+      headers: {
+        Accept: "application/json",
+      },
+    });
   });
 
   return sortedFiles.map((f: any, idx: number) => `File ${idx + 1}`) || [];
