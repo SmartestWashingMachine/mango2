@@ -149,7 +149,7 @@ class LlamaCppExecutableOpenAIClient:
 
             if self.can_cuda and self.num_gpu_layers > 0:
                 command.extend(["-ngl", str(self.num_gpu_layers)])
-                command.append("--flash-attn")
+                command.extend(["--flash-attn", "on"])
             else:
                 # ik_llama deluxe! Building this from source was SO FUN!
                 # This sheep randomly makes some models hang. WHY? WHY? WHY?
