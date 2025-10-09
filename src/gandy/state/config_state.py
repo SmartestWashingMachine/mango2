@@ -1,3 +1,5 @@
+from gandy.utils.try_print import try_print
+
 class ConfigState:
     def __init__(self) -> None:
         self.decoding_mode = "beam"
@@ -60,7 +62,7 @@ class ConfigState:
             old_v = getattr(self, k)
             # List fields (terms, name entries) do NOT require a model reload currently.
             if v != old_v and not isinstance(old_v, list):
-                print(f'Reload required as {v} !== {old_v} for key "{k}"')
+                try_print(f'Reload required as {v} !== {old_v} for key "{k}"')
                 requires_reload = True
 
             setattr(self, k, v)

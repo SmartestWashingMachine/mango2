@@ -1,4 +1,5 @@
 from onnxruntime import RunOptions, InferenceSession
+from gandy.utils.try_print import try_print
 
 def decorated_run(method):
     def new_run(self, *args, **kwargs):
@@ -510,7 +511,7 @@ for model in os.listdir("models/custom_translators"):
             if model_name in IGNORE_FILES:
                 continue
 
-            print(f'Found translation model: "{model}"')
+            try_print(f'Found translation model: "{model}"')
 
             custom_translation_app = CustomGgufTranslationApp(
                 model_sub_path="config",
@@ -522,7 +523,7 @@ for model in os.listdir("models/custom_translators"):
             user_model_name = f"(Custom Translator) {model_name}"
             TRANSLATION_APP.add_app(custom_translation_app, user_model_name)
         else:
-            print(f'WARNING: No config found for "{model}"')
+            try_print(f'WARNING: No config found for "{model}"')
 
 os.makedirs("models/custom_ocrs", exist_ok=True)
 
@@ -536,7 +537,7 @@ for model in os.listdir("models/custom_ocrs"):
             if model_name in IGNORE_FILES:
                 continue
 
-            print(f'Found OCR model: "{model}"')
+            try_print(f'Found OCR model: "{model}"')
 
             custom_ocr_app = CustomGgufOcrApp(
                 model_sub_path="config",
@@ -548,7 +549,7 @@ for model in os.listdir("models/custom_ocrs"):
             user_model_name = f"(Custom OCR) {model_name}"
             TEXT_RECOGNITION_APP.add_app(custom_ocr_app, user_model_name)
         else:
-            print(f'WARNING: No config found for "{model}"')
+            try_print(f'WARNING: No config found for "{model}"')
 
 # disable for debug
 translate_pipeline = AdvancedPipeline(

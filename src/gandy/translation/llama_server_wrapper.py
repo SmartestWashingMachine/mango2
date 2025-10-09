@@ -7,7 +7,7 @@ import sys
 from openai import AsyncOpenAI, NOT_GIVEN # Import the OpenAI client
 import requests
 import atexit
-
+from gandy.utils.try_print import try_print
 import win32api
 import win32con
 import win32job
@@ -159,8 +159,8 @@ class LlamaCppExecutableOpenAIClient:
             command = ' '.join(command)
             ctx.log(f"Starting server with command", command=command)
             if self.verbose:
-                print(f'COMMAND:')
-                print(command)
+                try_print(f'COMMAND:')
+                try_print(command)
 
             try:
                 ctypes.windll.kernel32.SetDllDirectoryA(None) # NECESSARY!
@@ -178,7 +178,7 @@ class LlamaCppExecutableOpenAIClient:
                 extended_info = win32job.QueryInformationJobObject(self.hJob, win32job.JobObjectExtendedLimitInformation)
                 extended_info['BasicLimitInformation']['LimitFlags'] |= win32job.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE # Use |= to preserve other flags
                 win32job.SetInformationJobObject(self.hJob, win32job.JobObjectExtendedLimitInformation, extended_info)
-                print(f"Job Object {self.hJob} created and configured to kill on close.")
+                try_print(f"Job Object {self.hJob} created and configured to kill on close.")
 
                 # 3. Get a handle to the server process
                 # PROCESS_TERMINATE is essential for Job Object to terminate it
@@ -189,7 +189,7 @@ class LlamaCppExecutableOpenAIClient:
 
                 # 4. Assign the server process to the Job Object
                 win32job.AssignProcessToJobObject(self.hJob, hProcess)
-                print(f"Server process {self.server_process.pid} assigned to Job Object {self.hJob}.")
+                try_print(f"Server process {self.server_process.pid} assigned to Job Object {self.hJob}.")
 
                 # 5. Close the process handle (Job Object now manages the reference)
                 win32api.CloseHandle(hProcess)
@@ -241,7 +241,7 @@ class LlamaCppExecutableOpenAIClient:
                 ctx.log("Server is not running - doing nothing.")
 
             if self.hJob:
-                print(f"Closing Job Object handle {self.hJob}.")
+                try_print(f"Closing Job Object handle {self.hJob}.")
                 win32api.CloseHandle(self.hJob)
                 self.hJob = None
 

@@ -8,10 +8,11 @@ import zipfile
 from uuid import uuid4
 from PIL import Image
 from io import BytesIO
+from gandy.utils.try_print import try_print
 
 if dangerous_config.enable_web_ui:
     print('CWD for WEBUI:')
-    print(os.getcwd())
+    try_print(os.getcwd())
 
     def list_files(folder_name, file_extension):
         # Sort folders by date in UI.

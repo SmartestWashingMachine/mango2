@@ -9,6 +9,7 @@ import threading
 import queue
 from time import sleep
 from typing import Any
+from gandy.utils.try_print import try_print
 
 @dataclass
 class ProcessItem():
@@ -35,12 +36,12 @@ class RemoteRouterProcess(threading.Thread):
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
                 self.session = requests.Session()
                 print('Session error. Retrying session:')
-                print(e)
+                try_print(e)
 
                 sleep(1) 
             except Exception as e:
                 print('Error FORM POSTING to remote router:')
-                print(e)
+                try_print(e)
                 raise
 
     def run(self):

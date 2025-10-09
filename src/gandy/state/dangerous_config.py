@@ -1,6 +1,7 @@
 import os
 import json
 import traceback
+from gandy.utils.try_print import try_print
 
 class DangerousConfig():
     def __init__(self):
@@ -15,7 +16,7 @@ class DangerousConfig():
                 self.compress_jpeg = dangerous_config.get('compressJpeg', False)
         except Exception as e: # Can happen due to race conditions.
             print('Failed to read dangerous config:')
-            print(traceback.format_exc())
+            try_print(traceback.format_exc())
 
             # Actual config file created in ElectronJS see 'readDangerousConfig()'
             self.socketio_address = '127.0.0.1'

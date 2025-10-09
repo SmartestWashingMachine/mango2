@@ -3,6 +3,8 @@
 # LIKE REALLY - I REGRET USING ELECTRONJS. ALMOST ALL OF THE FUNCTIONALITY I NEED IS INSTEAD DONE IN PYTHON.
 # So in this util we define a way to capture keybinds on the server, then call task3 directly.
 
+from gandy.utils.try_print import try_print
+
 from flask import request
 from gandy.app import app
 from gandy.tasks.task3.task3_routes import process_task3_faster
@@ -40,6 +42,6 @@ def forget_box_route():
         box_states[box_id] = None
     except Exception as e:
         print('ERROR FORGETTING BOX:')
-        print(e)
+        try_print(e)
 
     return {"processing": True}, 200

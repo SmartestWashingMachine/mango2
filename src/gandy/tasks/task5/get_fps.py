@@ -1,14 +1,14 @@
 import ffmpeg
 from math import floor
-
+from gandy.utils.try_print import try_print
 
 def get_fps(video_file_path: str, return_duration_in_seconds=False):
     # https://github.com/kkroening/ffmpeg-python/issues/165
     try:
         probed = ffmpeg.probe(video_file_path)
     except ffmpeg.Error as e:
-        print("STDOUT:", e.stdout.decode("utf8"))
-        print("STDERR:", e.stderr.decode("utf8"))
+        try_print("STDOUT:", e.stdout.decode("utf8"))
+        try_print("STDERR:", e.stderr.decode("utf8"))
         raise e
 
     data = probed["streams"]
@@ -30,5 +30,5 @@ def get_fps(video_file_path: str, return_duration_in_seconds=False):
         except:
             pass
 
-    print(f"Bad data for FFProbe get_fps:")
-    print(data)
+    try_print(f"Bad data for FFProbe get_fps:")
+    try_print(data)

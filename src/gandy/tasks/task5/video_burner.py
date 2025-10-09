@@ -1,5 +1,6 @@
 import ffmpeg
 from gandy.tasks.task5.progress_ffmpeg import ProgressFfmpeg
+from gandy.utils.try_print import try_print
 
 def burn_subs(
     srt_file_path: str,
@@ -29,8 +30,8 @@ def burn_subs(
                 # ffmpeg.run(out, capture_stderr=True, capture_stdout=True)
                 ffmpeg.run(out)
             except ffmpeg.Error as e:
-                print("STDOUT:", e.stdout.decode("utf8"))
-                print("STDERR:", e.stderr.decode("utf8"))
+                try_print("STDOUT:", e.stdout.decode("utf8"))
+                try_print("STDERR:", e.stderr.decode("utf8"))
                 raise e
     else:
         out = ffmpeg.output(concat, out_path).overwrite_output()
@@ -38,7 +39,7 @@ def burn_subs(
         try:
             ffmpeg.run(out, capture_stderr=False, capture_stdout=False)
         except ffmpeg.Error as e:
-            print("STDERR:", e.stderr.decode("utf8"))
-            print("STDOUT:", e.stdout.decode("utf8"))
+            try_print("STDERR:", e.stderr.decode("utf8"))
+            try_print("STDOUT:", e.stdout.decode("utf8"))
 
             raise e
