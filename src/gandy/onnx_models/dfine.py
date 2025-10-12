@@ -41,7 +41,7 @@ class DFineONNX(BaseONNXModel):
 
         output = self.ort_sess.run(
             output_names=None,
-            input_feed={"images": im_data.numpy(), "orig_target_sizes": orig_size}
+            input_feed={"images": im_data, "orig_target_sizes": orig_size.astype(np.int64)}
         )
 
         # bboxes_data mapped to be like YOLOONNX - [1, 5, 8400] where the 2nd axis (5 elements) represents the coordinates and the confidence score.
