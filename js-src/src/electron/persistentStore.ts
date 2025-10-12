@@ -6,7 +6,7 @@ const storeDefaults: IStore = {
   textLineModelName: "dfine_line_emassive",
   translationModelName: "llm_jgem",
   textDetectionModelName: "dfine_l_denoise",
-  textRecognitionModelName: "trocr_jmassive",
+  textRecognitionModelName: "j_ocr_small",
   spellCorrectionModelName: "default",
   rerankingModelName: "none",
   contextAmount: "zero",

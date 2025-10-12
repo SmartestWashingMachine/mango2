@@ -20,7 +20,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       "This preset is good for translating Japanese manga panels or games.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["trocr_jmassive", "trocr_jbig"],
+      textRecognitionModelName: ["j_ocr_small"],
       translationModelName: [
         "llm_jgem_goliath",
         "llm_jgem",
@@ -43,7 +43,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       "This preset is good for translating Japanese manga panels or games. It uses an additional text line detection model to improve the OCR quality.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["trocr_jmassive", "trocr_jbig"],
+      textRecognitionModelName: ["j_ocr_small"],
       translationModelName: [
         "llm_jgem_goliath",
         "llm_jgem",
@@ -66,7 +66,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       "This preset is good for translating Japanese videos with text drawn on the screen.",
     opts: {
       textDetectionModelName: ["none"],
-      textRecognitionModelName: ["trocr_jmassive"],
+      textRecognitionModelName: ["j_ocr_small"],
       translationModelName: [
         "llm_jgem_goliath",
         "llm_jgem",
@@ -88,7 +88,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     description: "This preset is good for translating Korean webtoon images.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["k_trocr_massive"],
+      textRecognitionModelName: ["ko_ocr_small"],
       translationModelName: [
         "llm_jgem_goliath",
         "llm_kgem",
@@ -109,7 +109,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     description: "This preset is good for translating certain Chinese comics.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["zh_trocr_massive"],
+      textRecognitionModelName: ["zh_ocr_small"],
       translationModelName: ["llm_zhgem_goliath", "llm_zhgem"],
       textLineModelName: ["dfine_line_emassive", "none"],
       numBeams: 3,

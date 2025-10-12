@@ -1,57 +1,17 @@
 export const OCR_OPTIONS = [
   {
-    name: "(Games) Japanese Massive",
-    value: "trocr_jmassive",
-    desc: "Incredibly slow but slightly more accurate.",
+    name: "Japanese Moderate",
+    value: "j_ocr_small",
+    desc: "A baseline OCR model for Japanese.",
   },
   {
-    name: "(Games) Korean Massive",
-    value: "k_trocr_massive",
-    desc: "Slow but sometimes more accurate.",
+    name: "Korean Moderate",
+    value: "ko_ocr_small",
+    desc: "A baseline OCR model for Korean.",
   },
   {
-    name: "(Games) Chinese Massive",
-    value: "zh_trocr_massive",
-    desc: "Slow but sometimes more accurate.",
-  },
-  {
-    name: "(Comics) Japanese Massive",
-    value: "trocr_jmassive_alt",
-    desc: "Incredibly slow but slightly more accurate.",
-  },
-  {
-    name: "(Comics) Korean Massive",
-    value: "k_trocr_massive_alt",
-    desc: "Slow but sometimes more accurate.",
-  },
-  {
-    name: "(Comics) Chinese Massive",
-    value: "zh_trocr_massive_alt",
-    desc: "Slow but sometimes more accurate.",
-  },
-  {
-    name: "(Legacy) Korean Small",
-    value: "k_trocr",
-    desc: "Moderately fast.",
-  },
-  {
-    name: "(Legacy) Japanese Small",
-    value: "trocr",
-    desc: "Fast but inaccurate.",
-  },
-  {
-    name: "(Legacy) Japanese Big",
-    value: "trocr_jbig",
-    desc: "Moderately fast and more accurate.",
-  },
-  {
-    name: "(Legacy) Japanese Comics",
-    value: "trocr_jcomics",
-    desc: "Slow but mainly tuned for comic panels.",
-  },
-  {
-    name: "(Legacy) Japanese Magnus",
-    value: "trocr_jmagnus",
-    desc: "Even slower but can be more accurate for longer lines of text... sometimes.",
+    name: "Chinese Moderate",
+    value: "zh_ocr_small",
+    desc: "A baseline OCR model for Chinese.",
   },
 ];
