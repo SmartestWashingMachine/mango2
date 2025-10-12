@@ -3,12 +3,8 @@ import numpy as np
 from gandy.text_detection.line_mixin import LineMixin, ExpandedLineMixin
 from gandy.state.config_state import config_state
 
-try:
-    import torch
-except:
-    pass
-
-# From ultralytics
+# From UL. The code may not even work properly... but I don't think anyone will be using these old busted models anymore.
+# D-Fine > (Ultralytics) DETR anyday everyday!
 def xywh2xyxy(x):
     """
     Convert bounding box coordinates from (x, y, width, height) format to (x1, y1, x2, y2) format where (x1, y1) is the
@@ -24,7 +20,7 @@ def xywh2xyxy(x):
         x.shape[-1] == 4
     ), f"input shape last dimension expected 4 but input shape is {x.shape}"
     y = (
-        torch.empty_like(x) if isinstance(x, torch.Tensor) else np.empty_like(x)
+        np.empty_like(x)
     )  # faster than clone/copy
     dw = x[..., 2] / 2  # half-width
     dh = x[..., 3] / 2  # half-height
