@@ -11,6 +11,7 @@ class ConfigState:
         self.epsilon_cutoff = 0.0
         self.num_beams = 5
         self.num_gpu_layers_mt = 22
+        self.num_gpu_layers_ocr = 0
         self.force_translation_cpu = False
         self.force_embeddings_cpu = False
         self.force_ner_cpu = False

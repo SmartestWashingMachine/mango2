@@ -34,6 +34,7 @@ export type IStoreClientToServer = {
   decodingMode: string;
   numBeams: number;
   numGpuLayersMt: number;
+  numGpuLayersOcr: number;
   translationThreads: number;
   forceTranslationCPU: boolean;
   forceSpellingCorrectionCPU: boolean;

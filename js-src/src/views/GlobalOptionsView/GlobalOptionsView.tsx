@@ -260,6 +260,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     decodingMode,
     numBeams,
     numGpuLayersMt,
+    numGpuLayersOcr,
     topK,
     topP,
     epsilonCutoff,
@@ -472,15 +473,28 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 helperText="Will improve speed IF using a good GPU that supports CUDA. The entire process can be run on 4 GB VRAM. You can also force parts of the process to run on the CPU instead with the options below."
               />
             ),
-            "Number of GPU Layers to Offload": (
+            "(Translation) Number of GPU Layers to Offload": (
               <UpdateNumberField
-                label="Number of GPU Layers to Offload"
+                label="(Translation) Number of GPU Layers to Offload"
                 changeValue={setStoreValue}
                 keyName="numGpuLayersMt"
                 defaultValue={numGpuLayersMt}
                 helperText="The number of layers to offload to the GPU if CUDA is enabled. This is used to reduce the memory usage of the translation model. This can safely be set to 22 if you have 4 GB VRAM. Set to 99 to offload all layers."
                 valueType="int"
                 safeValue={22}
+                minValue={-1}
+                maxValue={99}
+              />
+            ),
+            "(OCR) Number of GPU Layers to Offload": (
+              <UpdateNumberField
+                label="(OCR) Number of GPU Layers to Offload"
+                changeValue={setStoreValue}
+                keyName="numGpuLayersOcr"
+                defaultValue={numGpuLayersOcr}
+                helperText="The number of layers to offload to the GPU if CUDA is enabled. This is used to reduce the memory usage of the OCR model. This can safely be set to 0 if you have 4 GB VRAM. Set to 99 to offload all layers."
+                valueType="int"
+                safeValue={0}
                 minValue={-1}
                 maxValue={99}
               />

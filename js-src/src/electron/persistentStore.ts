@@ -25,6 +25,7 @@ const storeDefaults: IStore = {
   presets: [],
   numBeams: 3,
   numGpuLayersMt: 22,
+  numGpuLayersOcr: 0,
   translationThreads: 2, // TODO: remove
   forceTranslationCPU: false,
   forceSpellingCorrectionCPU: true,

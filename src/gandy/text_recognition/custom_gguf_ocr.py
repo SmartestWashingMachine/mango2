@@ -72,7 +72,7 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
         self.mango_config = self.load_mango_config()
 
         can_cuda = self.get_can_cuda()
-        logger.info(f"Loading custom OCR model ({self.model_sub_path})... CanCuda={can_cuda} NGpuLayers=99")
+        logger.info(f"Loading custom OCR model ({self.model_sub_path})... CanCuda={can_cuda} NGpuLayers={config_state.num_gpu_layers_ocr}")
 
         if can_cuda:
             llama_cpp_server_path = os.path.join('models', "llamacpp_gpu", "llama-server.exe")
@@ -82,8 +82,7 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
 
         self.llm = LlamaCppExecutableOpenAIClient(
             model_path=self.get_model_path_for_llmcpp(),
-            # All or nothing baby.
-            num_gpu_layers=(99 if can_cuda else 0),
+            num_gpu_layers=(config_state.num_gpu_layers_ocr if can_cuda else 0),
             can_cuda=can_cuda,
             llama_cpp_server_path=llama_cpp_server_path,
             prepend_phrase=None,
