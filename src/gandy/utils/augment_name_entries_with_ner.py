@@ -1,10 +1,11 @@
-from transformers import AutoTokenizer, pipeline
-from optimum.onnxruntime import ORTModelForTokenClassification
+from tokenizers import Tokenizer
 import json
 from gandy.state.config_state import config_state
 from gandy.utils.fancy_logger import logger
 import os
 from pykakasi import kakasi
+from onnxruntime import RunOptions, InferenceSession
+import numpy as np
 
 kak = kakasi()
 def suggest_translation_for_name(ja_name: str):
@@ -92,10 +93,14 @@ class NameAdder():
         self.can_cuda = config_state.use_cuda and not config_state.force_ner_cpu
 
         # Need to use_fast=False - there's a version compatibility issue (see: https://github.com/huggingface/transformers/issues/31789)
-        tokenizer = AutoTokenizer.from_pretrained(self.onnx_path, use_fast=False)
+        self.tokenizer = Tokenizer.from_file(self.onnx_path + "/tokenizer.json")
+        self.tokenizer.enable_truncation(max_length=512)
+        self.tokenizer.enable_padding(
+            direction="right"
+        )
 
-        self.model = ORTModelForTokenClassification.from_pretrained(self.onnx_path, provider=self.get_provider(self.can_cuda))
-        self.nlp = pipeline("token-classification", model=self.model, tokenizer=tokenizer, aggregation_strategy="simple", device=self.get_device(self.can_cuda))
+        self.model = InferenceSession(self.onnx_path + "/model.onnx", providers=[self.get_provider(self.can_cuda)])
+        self.model.disable_fallback()
 
         try:
             with open(self.get_dictionary_path(), encoding='utf-8') as f:
@@ -110,13 +115,11 @@ class NameAdder():
 
     def unload_model(self):
         try:
-            del self.nlp
             del self.model
             del self.data_dict
         except:
             pass
 
-        self.nlp = None
         self.model = None
         self.data_dict = None
         self.loaded = False
@@ -149,6 +152,86 @@ class NameAdder():
             src = src.replace(h, '').strip()
 
         return src
+    
+    def nlp(self, src: str):
+        encoding = self.tokenizer.encode(src)
+        ort_inputs = {
+            'input_ids': np.array([encoding.ids], dtype=np.int64),
+            'attention_mask': np.array([encoding.attention_mask], dtype=np.int64),
+        }
+
+        ort_out = self.model.run(None, ort_inputs)
+
+        logits = ort_out[0][0] # Not sure about this 100%.
+        predicted_label_indices = np.argmax(logits, axis=1)
+
+        # Vibe coding below:
+
+        id_to_label = {
+            "0": "O",
+            "1": "PER",
+            "2": "ORG",
+            "3": "ORG-P",
+            "4": "ORG-O",
+            "5": "LOC",
+            "6": "INS",
+            "7": "PRD",
+            "8": "EVT"
+        }
+
+        predicted_labels = [id_to_label[str(idx)] for idx in predicted_label_indices]
+        
+        entities = []
+        current_entity = None
+        
+        # 1. Align predictions and get labels (excluding [CLS], [SEP])
+        # Assuming [CLS] is at index 0 and [SEP] is at the end.
+        start_index = 1
+        end_index = len(predicted_label_indices) - 1 # or adjust based on your model's special tokens
+
+        # Iterate over only the actual sequence tokens
+        for i in range(start_index, end_index):
+            label_index = predicted_label_indices[i]
+            entity_type = id_to_label[str(label_index)]
+            
+            # Get the character span for the current token
+            # offsets returns a tuple: (start_char_index, end_char_index)
+            token_span = encoding.offsets[i]
+            
+            # Case 1: Start of a NEW entity
+            if entity_type != 'O' and (current_entity is None or entity_type != current_entity['entity_group']):
+                # Finalize the previous entity if it existed
+                if current_entity is not None:
+                    # Extract the final word based on the aggregated span
+                    current_entity['word'] = src[current_entity['start']:current_entity['end']]
+                    entities.append(current_entity)
+
+                # Start a new entity, tracking the overall character span
+                current_entity = {
+                    'entity_group': entity_type,
+                    'score': 1.0, # Placeholder, as before
+                    'start': token_span[0], # Start of the entity is the start of the first token
+                    'end': token_span[1]      # End of the entity is the end of the first token
+                }
+
+            # Case 2: Continuation of the CURRENT entity
+            elif entity_type != 'O' and current_entity is not None and entity_type == current_entity['entity_group']:
+                # Only update the 'end' character index
+                current_entity['end'] = token_span[1]
+
+            # Case 3: Transition to 'O'
+            elif entity_type == 'O' and current_entity is not None:
+                # Finalize the previous entity
+                current_entity['word'] = src[current_entity['start']:current_entity['end']]
+                entities.append(current_entity)
+                current_entity = None
+
+        # After the loop, check if the last entity needs to be added
+        if current_entity is not None:
+            current_entity['word'] = src[current_entity['start']:current_entity['end']]
+            entities.append(current_entity)
+
+        return entities
 
     def get_names(self, src: str, entries_to_ignore, add_empty = False, do_memo = True, socketio = None):
         if not self.loaded:
@@ -168,6 +251,7 @@ class NameAdder():
 
             # Currently just for JA.
             output = self.nlp(src)
+
             extracted = [entity['word'] for entity in output if entity['entity_group'] == 'PER']
 
             if DO_SAVE_MISSING_NAMES:
@@ -178,6 +262,7 @@ class NameAdder():
             for extr in extracted:
                 extr_no_honor = self.cut_honorifics(extr)
                 founds = get_matches_from_dict(extr_no_honor, self.data_dict, min_possible_name_fract=0.5, splitting_strategy="chunk")
+
                 was_initially_empty = len(founds) == 0
 
                 founds = [f for f in founds if f['source'] not in user_selected_sources]
