@@ -415,7 +415,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 {[
                   ...OCR_OPTIONS.map(renderItem),
                   ...getCustomOcrOptions(installedModels).map((x) => (
-                    <MenuItem value={x.value} dense>
+                    <MenuItem value={x.value} dense key={x.name}>
                       {x.name}
                     </MenuItem>
                   )),
@@ -432,7 +432,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 {[
                   ...TRANSLATION_OPTIONS.map(renderItem),
                   ...getCustomTranslationOptions(installedModels).map((x) => (
-                    <MenuItem value={x.value} dense>
+                    <MenuItem value={x.value} dense key={x.name}>
                       {x.name}
                     </MenuItem>
                   )),
