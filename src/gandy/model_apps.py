@@ -57,14 +57,7 @@ from gandy.text_detection.rtdetr_image_detection import (
 from gandy.text_detection.none_image_detection import NoneImageDetectionApp
 from gandy.text_detection.union_image_detection import UnionImageDetectionApp
 from gandy.text_detection.dfine_image_detection import DFineImageDetectionApp, DFineLineImageDetectionApp
-from gandy.text_recognition.tr_recognition import TrOCRTextRecognitionApp, MagnusTextRecognitionApp
 from gandy.text_recognition.custom_gguf_ocr import CustomGgufOcrApp
-from gandy.onnx_models.ebr import (
-    ListEnergyRerankerONNX,
-    DiscriminativeRerankerONNX,
-    HumanRerankerONNX,
-    QualityRerankerONNX,
-)
 from gandy.reranking.generic_reranker import GenericRerankerApp, BaseRerankingApp
 from gandy.utils.set_tokenizer_langs import (
     set_lang_as_j,
@@ -202,106 +195,26 @@ TEXT_DETECTION_APP = SwitchApp(
     ],
 )
 
-j_ocr_postprocess = lambda s: s.replace(" ", "")
-
 TEXT_RECOGNITION_APP = SwitchApp(
     apps=[
-        TrOCRTextRecognitionApp(model_sub_path="_j/", extra_postprocess=j_ocr_postprocess),
-        TrOCRTextRecognitionApp(
-            model_sub_path="_jbig/",
-            gen_kwargs={
-                "num_beams": 5,
-                "no_repeat_ngram_size": 7,  # Use to be None
-            }, 
-            extra_postprocess=j_ocr_postprocess
+        CustomGgufOcrApp(
+            model_sub_path="config",
+            config_sub_path="j_ocr_small",
+            transform=alt_robust_transform_custom, # Intended for use with a line detection model.
         ),
-        TrOCRTextRecognitionApp(
-          model_sub_path="_ko/",
-            gen_kwargs={
-                "num_beams": 5,
-            },
+        CustomGgufOcrApp(
+            model_sub_path="config",
+            config_sub_path="ko_ocr_small",
+            transform=alt_robust_transform_custom, # Intended for use with a line detection model.
+            join_lines_with=" "
         ),
-        TrOCRTextRecognitionApp(
-            model_sub_path="_komassive/",
-            do_resize=False,
-            join_lines_with=" ",
-            gen_kwargs={
-                "num_beams": 5,
-                "no_repeat_ngram_size": 20,
-            },
-            transform=robust_transform, # Intended for use with a line detection model.
-        ),
-        TrOCRTextRecognitionApp(
-            model_sub_path="_zhmassive/",
-            do_resize=False,
-            gen_kwargs={
-                "num_beams": 5,
-                "no_repeat_ngram_size": 20,
-            },
-            extra_postprocess=j_ocr_postprocess,
-            transform=robust_transform,
-        ),
-        TrOCRTextRecognitionApp(
-            model_sub_path="_jmassive/",
-            do_resize=False,
-            gen_kwargs={
-                "num_beams": 3, # Could also be 3.
-                "no_repeat_ngram_size": 99,
-            },
-            extra_postprocess=j_ocr_postprocess,
-            transform=robust_transform, # Intended for use with a line detection model.
-        ),
-        MagnusTextRecognitionApp(
-            model_sub_path="_jmagnus/",
-            do_resize=False,
-            gen_kwargs={
-                "num_beams": 5,
-                "no_repeat_ngram_size": 7,
-            },
-            extra_postprocess=j_ocr_postprocess,
-        ),
-        TrOCRTextRecognitionApp(
-            model_sub_path="_jcomics/",
-            do_resize=False,
-            do_stretch=True,
-            gen_kwargs={
-                "num_beams": 5,
-                "no_repeat_ngram_size": 7,
-            }, 
-            extra_postprocess=j_ocr_postprocess
-        ),
-        TrOCRTextRecognitionApp(
-            model_sub_path="_komassive/",
-            do_resize=False,
-            join_lines_with=" ",
-            gen_kwargs={
-                "num_beams": 5,
-                "no_repeat_ngram_size": 20,
-            },
-            transform=alt_robust_transform, # Intended for use with a line detection model.
-        ),
-        TrOCRTextRecognitionApp(
-            model_sub_path="_zhmassive/",
-            do_resize=False,
-            gen_kwargs={
-                "num_beams": 5,
-                "no_repeat_ngram_size": 20,
-            },
-            extra_postprocess=j_ocr_postprocess,
-            transform=alt_robust_transform,
-        ),
-        TrOCRTextRecognitionApp(
-            model_sub_path="_jmassive/",
-            do_resize=False,
-            gen_kwargs={
-                "num_beams": 3, # Could also be 3.
-                "no_repeat_ngram_size": 99,
-            },
-            extra_postprocess=j_ocr_postprocess,
-            transform=alt_robust_transform, # Intended for use with a line detection model.
+        CustomGgufOcrApp(
+            model_sub_path="config",
+            config_sub_path="zh_ocr_small",
+            transform=alt_robust_transform_custom, # Intended for use with a line detection model.
         ),
     ],
-    app_names=["trocr", "trocr_jbig", "k_trocr", "k_trocr_massive", "zh_trocr_massive", "trocr_jmassive", "trocr_jmagnus", "trocr_jcomics", "k_trocr_massive_alt", "zh_trocr_massive_alt", "trocr_jmassive_alt"],
+    app_names=["j_ocr_small", "ko_ocr_small", "zh_ocr_small"],
 )
 
 TRANSLATION_APP = SwitchApp(
@@ -466,19 +379,12 @@ IMAGE_REDRAWING_APP = SwitchApp(
 RERANKING_MODEL_APP = SwitchApp(
     apps=[
         BaseRerankingApp(),
-        GenericRerankerApp("listenergy_nocontext", ListEnergyRerankerONNX),
-        GenericRerankerApp("doctor", DiscriminativeRerankerONNX),
-        GenericRerankerApp("human", HumanRerankerONNX),
-        GenericRerankerApp(
-            "quality", QualityRerankerONNX, tokenizer_name="quality_tokenizer"
-        ),
     ],
     app_names=[
         "none",
-        "listenergy_nocontext",
-        "doctor",
-        "human",
-        "quality",
+        # All the other rerankers still require Pytorch and they kinda suck.
+        # They were a product of their time, you see.
+        # Nowadays LLMs seem to be better at reranking, so that might be a potential addition in the future. (See MT Hunyuan Chimera)
     ],
 )
 
@@ -541,7 +447,6 @@ for model in os.listdir("models/custom_ocrs"):
             custom_ocr_app = CustomGgufOcrApp(
                 model_sub_path="config",
                 config_sub_path=model_name,
-                do_resize=False,
                 transform=alt_robust_transform_custom, # Intended for use with a line detection model.
             )
 

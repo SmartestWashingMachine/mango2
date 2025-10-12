@@ -25,8 +25,8 @@ def image_to_base64(new_image, format="PNG"):
     return f"data:image/{format.lower()};base64,{new_image_base64}"
 
 class CustomGgufOcrApp(TrOCRTextRecognitionApp):
-    def __init__(self, model_sub_path="/", config_sub_path="/", do_resize=True, do_stretch=False, extra_postprocess=None, join_lines_with="", transform=None):
-        super().__init__(model_sub_path, gen_kwargs=None, feature_extractor_cls=None, do_resize=do_resize, do_stretch=do_stretch, extra_postprocess=extra_postprocess, join_lines_with=join_lines_with, transform=transform)
+    def __init__(self, model_sub_path="/", config_sub_path="/", join_lines_with="", transform=None):
+        super().__init__(model_sub_path, join_lines_with=join_lines_with, transform=transform)
 
         self.config_sub_path = config_sub_path
 
