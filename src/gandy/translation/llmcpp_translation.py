@@ -7,11 +7,6 @@ from gandy.socket_process import socketio # TODO: Messy import.
 from typing import List
 import os
 
-try:
-    import torch
-except:
-    pass
-
 # Some caveats:
 # Does not support batch translations. Translations are always done sequentially. (moderate priority)
 # Does not support embed_text for video tasks. (very low priority)

@@ -16,11 +16,6 @@ import cv2
 import regex as re
 from gandy.utils.is_string_only_name import name_checker
 
-try:
-    import torch
-except:
-    pass
-
 def convert_line_text_to_speaker_line_text(line_text: str):
     return f'[{line_text}]: '
 

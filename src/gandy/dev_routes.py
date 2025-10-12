@@ -3,11 +3,6 @@ from gandy.app import app
 import numpy as np
 import random
 
-try:
-    import torch
-except:
-    pass
-
 from gandy.state.config_state import config_state
 from gandy.utils.fancy_logger import logger
 import time
@@ -22,11 +17,6 @@ def set_seed_route():
 
         random.seed(new_seed)
         np.random.seed(new_seed)
-
-        try:
-            torch.manual_seed(new_seed)
-        except:
-            pass
 
         ctx.log(f"Seed set", new_seed=new_seed)
 

@@ -26,11 +26,6 @@ import os
 import json
 from gandy.database.faiss_mt_cache import MTCache
 
-try:
-    import torch
-except:
-    pass
-
 def dump_task1_debug_data(rgb_image: Image, speech_bboxes):
     debug_id = uuid4().hex
     logger.debug_message('Dumping task1 data', category='task1_dump', debug_id=debug_id)
@@ -158,7 +153,7 @@ class BasePipeline:
         return translation_output
 
     def embed_text(self, s: str):
-        return torch.tensor(self.mt_cache.embed_text(s))
+        return self.mt_cache.embed_text(s)
 
     def get_target_texts_from_str(
         self,

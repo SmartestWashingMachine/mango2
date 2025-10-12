@@ -1,9 +1,8 @@
-from transformers.generation.streamers import TextStreamer
 from gandy.app import socketio
 from gandy.state.config_state import config_state
 from gandy.utils.replace_terms import replace_many
 
-class SocketStreamer(TextStreamer):
+class SocketStreamer():
     def __init__(
         self, tokenizer=None, skip_prompt: bool = False, box_id=None, metadata={}, **decode_kwargs
     ):
@@ -30,19 +29,7 @@ class SocketStreamer(TextStreamer):
 
             text = "".join(self.token_cache)
         else:
-            if replace:
-                self.token_cache = value
-            else:
-                if len(value.shape) > 1 and value.shape[0] > 1:
-                    raise ValueError("TextStreamer only supports batch size 1")
-                elif len(value.shape) > 1:
-                    value = value[0]
-                self.token_cache.extend(value.tolist())
-            text = self.tokenizer.decode(self.token_cache, **self.decode_kwargs)
-
-        # Prints until the last space char (simple heuristic to avoid printing incomplete words,
-        # which may change with the subsequent token -- there are probably smarter ways to do this!)
-        ### printable_text = text[:text.rfind(" ") + 1]
+            raise RuntimeError("already_detokenized should always be True as Pytorch is no longer used in this app.")
 
         printable_text = text
 

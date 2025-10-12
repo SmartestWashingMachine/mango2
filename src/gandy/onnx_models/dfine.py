@@ -1,15 +1,5 @@
 from gandy.onnx_models.base_onnx_model import BaseONNXModel
 
-try:
-    import torchvision.transforms as T
-except:
-    pass
-
-try:
-    import torch
-except:
-    pass
-
 from PIL import Image
 import numpy as np
 
@@ -35,18 +25,23 @@ class DFineONNX(BaseONNXModel):
 
         self.load_session(onnx_path)
 
-        self.tensor_transforms = T.Compose([
-            T.ToTensor(),
-        ])
+    def np_transform(self, image: Image.Image):
+        arr = np.array(image, dtype=np.uint8)
+        norm = arr.astype(np.float32) / 255.0 # Scale to [0, 1] just like torchvision's ToTensor.
+
+        # From HWC to CHW
+        return np.transpose(norm, (2, 0, 1))
 
     def forward(self, x: Image.Image):
         resized_im_pil, ratio, pad_w, pad_h = resize_with_aspect_ratio(x, 1024)
-        orig_size = torch.tensor([[resized_im_pil.size[1], resized_im_pil.size[0]]])
+        orig_size = np.array([[resized_im_pil.size[1], resized_im_pil.size[0]]])
 
-        im_data = self.tensor_transforms(resized_im_pil).unsqueeze(0)
+        im_data = self.np_transform(resized_im_pil)
+        im_data = im_data[None, ...] # Unsqueeze to get a batch size of 1.
+
         output = self.ort_sess.run(
             output_names=None,
-            input_feed={'images': im_data.numpy(), "orig_target_sizes": orig_size.numpy()}
+            input_feed={"images": im_data.numpy(), "orig_target_sizes": orig_size}
         )
 
         # bboxes_data mapped to be like YOLOONNX - [1, 5, 8400] where the 2nd axis (5 elements) represents the coordinates and the confidence score.

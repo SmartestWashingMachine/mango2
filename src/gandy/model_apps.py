@@ -66,7 +66,6 @@ from gandy.onnx_models.ebr import (
     QualityRerankerONNX,
 )
 from gandy.reranking.generic_reranker import GenericRerankerApp, BaseRerankingApp
-from transformers import NllbTokenizer, T5Tokenizer
 from gandy.utils.set_tokenizer_langs import (
     set_lang_as_j,
     set_lang_as_k,

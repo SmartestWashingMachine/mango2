@@ -29,12 +29,6 @@ from unidic_lite import unidic
 
 import pillow_avif
 
-
-try:
-	import torch
-except:
-	pass
-
 from gandy.app import run_server
 
 run_server()
