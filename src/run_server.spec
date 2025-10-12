@@ -28,9 +28,6 @@ a = Analysis(
         'tqdm',
         'unidic_lite',
         'fugashi',
-        'pytorch',
-        'torch',
-        'torchvision',
         'sentencepiece',
         'faiss',
         'faiss_cpu',
@@ -40,7 +37,11 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-
+        'pytorch',
+        'torch',
+        'torchvision',
+        'transformers',
+        'optimum',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
