@@ -8,13 +8,13 @@ class SocketStreamer():
     ):
         decode_kwargs["skip_special_tokens"] = True
 
-        super().__init__(tokenizer, skip_prompt, **decode_kwargs)
-
         self.box_id = box_id
         self.old_text = None
         self.metadata = metadata
 
         self.postprocess_before_sending = lambda s: s
+
+        self.token_cache = []
 
     # This is a slightly more optimized put for our models.
     # Most code from TextStreamer.
@@ -50,7 +50,6 @@ class SocketStreamer():
         self.old_text = text
 
         text = replace_many(text, config_state.target_terms, ctx=None)
-
         text = self.postprocess_before_sending(text)
 
         data_to_send = {
