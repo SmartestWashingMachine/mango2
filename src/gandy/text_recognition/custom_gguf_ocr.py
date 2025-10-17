@@ -138,8 +138,10 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
         return messages
 
     def ocr_images(self, images):
-        batch_inputs = [self.image_to_llm_messages(image) for image in images]
-        prediction = self.llm.call_llm_with_batch(batch_inputs)
+        with logger.begin_event('Preparing inputs'):
+            batch_inputs = [self.image_to_llm_messages(image) for image in images]
+        with logger.begin_event('Calling OCR LLM'):
+            prediction = self.llm.call_llm_with_batch(batch_inputs)
 
         return [p.strip() for p in prediction]
 
