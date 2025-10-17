@@ -41,7 +41,7 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
         return mango_config
 
     def get_can_cuda(self):
-        can_cuda = config_state.use_cuda and not config_state.force_ocr_cpu
+        can_cuda = config_state.use_cuda and not config_state.force_ocr_cpu and config_state.num_gpu_layers_ocr > 0
         return can_cuda
     
     def get_n_context(self):
