@@ -1,7 +1,5 @@
 from typing import List
 import re
-import logging
-from transformers import AutoTokenizer
 import numpy as np
 from gandy.onnx_models.base_onnx_model import BaseONNXModel
 from gandy.utils.fancy_logger import logger
@@ -15,9 +13,7 @@ class BaseRerankerONNX(BaseONNXModel):
         self.load_dataloader(tokenizer_path)
 
     def load_dataloader(self, tokenizer_path):
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            tokenizer_path, truncation_side="left", padding_side="right"
-        )
+        self.tokenizer = None
 
     def forward(self, source_text: str, candidates: List[str]):
         # TODO: Refactor. The clean() is duplicated from seq2seq and seq2seq big's strip_padding methods...
