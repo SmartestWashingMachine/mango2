@@ -78,6 +78,7 @@ export const registerLens = (
   const lensState = {
     windows: [] as BrowserWindow[],
     cb: null as null | string,
+    inProgress: false,
   };
 
   const destroyWindows = () => {
@@ -103,6 +104,9 @@ export const registerLens = (
       return;
     }
 
+    if (lensState.inProgress) return;
+    lensState.inProgress = true;
+
     console.log("Scanning screen...");
 
     for (const manager of globalState.managers) {
@@ -116,6 +120,7 @@ export const registerLens = (
     }
 
     lensState.windows = windows;
+    lensState.inProgress = false;
   };
 
   if (activationKey !== "Escape") {
