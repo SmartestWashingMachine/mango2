@@ -5,7 +5,7 @@ import dangerousConfig from "../dangerousConfig/readDangerousConfigRenderer";
  */
 export const previewCaptureWindow = async (coords?: number[]) => {
   // This always goes to local host. Window images are always captured on the local backend.
-  const apiUrl = `http://localhost:5000/previewwindowcapture`;
+  const apiUrl = `http://127.0.0.1:5000/previewwindowcapture`;
 
   const formData = new FormData();
   if (coords) {

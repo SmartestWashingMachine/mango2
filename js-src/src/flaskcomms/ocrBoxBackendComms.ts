@@ -57,7 +57,7 @@ export const translateImageGiveTextFaster = async (
   translateLinesIndividually: number = 0
 ) => {
   // This always goes to local host first - the backend there will then push it to the remote backend.
-  const apiUrl = `http://localhost:5000/processtask3new`;
+  const apiUrl = `http://127.0.0.1:5000/processtask3new`;
 
   const formData = new FormData();
   for (const f of coords) {
@@ -187,7 +187,7 @@ export const triggerEnterNodeFetch = async () => {
   console.log("Requesting ENTER key press from Python backend.");
 
   // This always goes to local host only. The game will typically be on the client machine.
-  const apiUrl = `http://localhost:5000/triggerenter`;
+  const apiUrl = `http://127.0.0.1:5000/triggerenter`;
 
   await nodeFetch(apiUrl, {
     method: "GET",
@@ -201,7 +201,7 @@ export const triggerEnterNodeFetch = async () => {
 // All params here should be snake cased not camelCase.
 export const rememberBoxActivationData = async (boxData: any) => {
   // This always goes to local host first - the backend there will then push it to the remote backend.
-  const apiUrl = `http://localhost:5000/task3rememberbox`;
+  const apiUrl = `http://127.0.0.1:5000/task3rememberbox`;
 
   await nodeFetch(apiUrl, {
     method: "POST",
@@ -223,7 +223,7 @@ export const rememberBoxActivationData = async (boxData: any) => {
 
 export const forgetBoxActivationData = async (boxId: any, thisBoxId: any) => {
   // This always goes to local host first - the backend there will then push it to the remote backend.
-  const apiUrl = `http://localhost:5000/task3forgetbox`;
+  const apiUrl = `http://127.0.0.1:5000/task3forgetbox`;
 
   await nodeFetch(apiUrl, {
     method: "POST",
