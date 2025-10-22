@@ -10,6 +10,7 @@ export type IStoreClientOnly = {
   currentView: string;
   currentOcrSubView: string;
   autoOpenOcrWindow: boolean;
+  lensActivationKey: string;
 };
 
 export type IStoreClientToServer = {

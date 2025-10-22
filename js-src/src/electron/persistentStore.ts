@@ -3,6 +3,7 @@ import IStore from "../types/ElectronStore";
 
 const storeDefaults: IStore = {
   boxes: [],
+  lensActivationKey: "Escape",
   textLineModelName: "dfine_line_emassive",
   translationModelName: "llm_jgem",
   textDetectionModelName: "dfine_l_denoise",

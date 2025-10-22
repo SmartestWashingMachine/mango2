@@ -21,6 +21,7 @@ import { Server } from "socket.io";
 import isDev from "./electronDevMode";
 import { readDangerousConfigMain } from "./dangerousConfig/readDangerousConfigMain";
 import dangerousConfigActions from "./electron/actions/dangerousConfigActions";
+import { registerLens } from "./electron/ocrUtils/lensUtils/lens";
 
 if (!isDev) Menu.setApplicationMenu(null);
 
@@ -162,9 +163,19 @@ app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
   });
 
+  let lensCleanup: any = registerLens(store.get("lensActivationKey"));
+
   // Emit store data changes to client.
   store.onDidAnyChange((s, oldState) => {
     mainWindow.webContents.send(ElectronChannels.EMIT_STORE_DATA, s, oldState);
+
+    // TODO: Inefficient?
+    if (lensCleanup !== null) {
+      lensCleanup();
+    }
+    if (s !== undefined) {
+      lensCleanup = registerLens(s.lensActivationKey);
+    }
   });
 
   // Initialize OCR box managers.

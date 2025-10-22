@@ -32,6 +32,7 @@ import { previewCaptureWindow } from "../../flaskcomms/previewCaptureWindow";
 import { getBoxDisplayName } from "../../utils/getBoxDisplayName";
 import DictionaryList from "./components/DictionaryList";
 import INameEntry from "../../types/NameEntry";
+import KeySelect from "../../components/KeySelect";
 
 export type GlobalOptionsViewProps = {
   goOcrOptionsTab: () => void;
@@ -281,6 +282,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     boxes,
     augmentNameEntries,
     detectSpeakerName,
+    lensActivationKey,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
@@ -321,6 +323,9 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
         };
       });
   };
+
+  const updateLensActivationKey = (key: string) =>
+    setStoreValue("lensActivationKey", key, false); // false == Do not send to the Python backend - this is just a frontend concern.
 
   return (
     <BaseView>
@@ -686,6 +691,20 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 defaultValue={sortTextFromTopLeft}
                 helperText="When scanning images, vertical texts are assumed to be read from left-to-right instead of right-to-left. This is used to decide how context is added. This should usually be enabled when translating Korean images."
                 label="Sort Texts Left-to-Right"
+              />
+            ),
+            "Scan Screen Key": (
+              <KeySelect
+                label="Scan Screen Key"
+                onKeyChange={updateLensActivationKey}
+                value={lensActivationKey}
+                helperText={
+                  <>
+                    Which key to press to translate the entire screen - a box
+                    will show for each translated region. Press ESCAPE to
+                    disable.
+                  </>
+                }
               />
             ),
           },
