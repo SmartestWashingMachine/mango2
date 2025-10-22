@@ -163,7 +163,10 @@ app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
   });
 
-  let lensCleanup: any = registerLens(store.get("lensActivationKey"));
+  let lensCleanup: any = registerLens(
+    store.get("lensActivationKey"),
+    electronState
+  );
 
   // Emit store data changes to client.
   store.onDidAnyChange((s, oldState) => {
@@ -174,7 +177,7 @@ app.whenReady().then(async () => {
       lensCleanup();
     }
     if (s !== undefined) {
-      lensCleanup = registerLens(s.lensActivationKey);
+      lensCleanup = registerLens(s.lensActivationKey, electronState);
     }
   });
 
