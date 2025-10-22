@@ -59,8 +59,6 @@ class RemoteRouter():
 
         self.compress_jpeg = compress_jpeg
 
-        self.session = requests.Session()
-
         self.remote_router_process = RemoteRouterProcess()
         self.remote_router_process.start()
 
@@ -91,6 +89,12 @@ class RemoteRouter():
         addr = f'http://{self.socketio_address}:5000{addr}'
 
         message_queue.put(ProcessItem(addr=addr, data=data, files=files))
+
+    def form_post_with_response(self, addr: str, data, files=None):
+        response = requests.post(addr, data=data, files=files)
+        response.raise_for_status()
+
+        return response.json()
 
     def is_remote(self):
         return self.socketio_address is not None and self.socketio_address.strip() != '' and self.socketio_address != '127.0.0.1'

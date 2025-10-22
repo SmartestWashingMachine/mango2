@@ -96,5 +96,6 @@ import gandy.tasks.task8.task8_routes
 import gandy.web_routes
 import gandy.config_routes
 import gandy.dev_routes
+import gandy.lens_routes
 
 import gandy.webui.load_html
