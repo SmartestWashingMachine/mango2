@@ -9,9 +9,23 @@ const timeout = (ms: number) => {
 /**
  * Called once when the app initially loads. Since all settings are saved on the electron client, every app load we update it on the server.
  * CALLED BY ELECTRON MAIN PROCESS.
+ *
+ * We also call it when some settings change.
  */
 export const initializeModelNames = async (data: IStoreClientToServer) => {
-  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/switchmodels`;
+  // Update the local backend config for certain variables (like capturing the window).
+  if (dangerousConfig.remoteAddress !== "127.0.0.1") {
+    await updateConfigInBackend(data, "127.0.0.1");
+  }
+
+  await updateConfigInBackend(data, dangerousConfig.remoteAddress);
+};
+
+const updateConfigInBackend = async (
+  data: IStoreClientToServer,
+  ip: string
+) => {
+  const apiUrl = `http://${ip}:5000/switchmodels`;
 
   const formData = JSON.stringify({
     ...data,
