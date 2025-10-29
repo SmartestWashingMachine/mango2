@@ -2,6 +2,7 @@ from gandy.text_recognition.tr_recognition import TrOCRTextRecognitionApp
 from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClient
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
+from gandy.text_recognition.jamo_override import JamoOverride
 from io import BytesIO
 import base64
 import os
@@ -143,7 +144,15 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
         with logger.begin_event('Calling OCR LLM'):
             prediction = self.llm.call_llm_with_batch(batch_inputs)
 
-        return [p.strip() for p in prediction]
+        # For my Korean OCR variant.
+        overrides = self.mango_config.get("overrides", {})
+
+        if "jamo" in overrides and overrides["jamo"]:
+            prediction = [JamoOverride.postprocess(p.strip()) for p in prediction]
+
+        prediction = [p.strip() for p in prediction]
+
+        return prediction
 
     def do_generate(self, image, batched = False):
         # image = single numpy image if batched=False
