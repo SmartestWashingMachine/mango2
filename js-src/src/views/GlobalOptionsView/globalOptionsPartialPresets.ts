@@ -24,7 +24,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       translationModelName: [
         "llm_jgem_goliath",
         "llm_jgem",
-        "gem_uni",
+        "gem_uni_ja",
         "nllb_jmad",
         "nllb_jq300",
         "nllb_jq",
@@ -48,7 +48,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       translationModelName: [
         "llm_jgem_goliath",
         "llm_jgem",
-        "gem_uni",
+        "gem_uni_ko",
         "nllb_jmad",
         "nllb_jq300",
         "nllb_jq",
@@ -72,6 +72,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       translationModelName: [
         "llm_jgem_goliath",
         "llm_jgem",
+        "gem_uni_ja",
         "nllb_jmad",
         "nllb_jq300",
         "nllb_jq",
@@ -94,7 +95,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       translationModelName: [
         "llm_jgem_goliath",
         "llm_kgem",
-        "gem_uni",
+        "gem_uni_ko",
         "nllb_komad",
         "nllb_ko",
       ],
@@ -113,7 +114,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: ["zh_ocr_small"],
-      translationModelName: ["llm_zhgem_goliath", "gem_uni", "llm_zhgem"],
+      translationModelName: ["llm_zhgem_goliath", "gem_uni_zh", "llm_zhgem"],
       textLineModelName: ["dfine_line_emassive", "none"],
       numBeams: 3,
       bottomTextOnly: false,

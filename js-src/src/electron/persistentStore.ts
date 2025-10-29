@@ -5,7 +5,7 @@ const storeDefaults: IStore = {
   boxes: [],
   lensActivationKey: "Escape",
   textLineModelName: "dfine_line_emassive",
-  translationModelName: "llm_jgem",
+  translationModelName: "gem_uni_ja",
   textDetectionModelName: "dfine_l_denoise",
   textRecognitionModelName: "j_ocr_small",
   spellCorrectionModelName: "default",
