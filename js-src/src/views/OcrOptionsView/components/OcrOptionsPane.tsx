@@ -288,6 +288,17 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               helperText="If greater than 0, then after being translated, the box will fade out in that many seconds. Hovering the mouse over the box shows it again."
             />
           ),
+          "Stream Output": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.useStream}
+              keyName="useStream"
+              helperText="The box will show each token as it's being generated from the model."
+              label="Stream Output"
+            />
+          ),
+        },
+        Functions: {
           "Fully Draggable": (
             <UpdateCheckbox
               changeValue={changeValue}
@@ -297,8 +308,61 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Fully Draggable"
             />
           ),
+          "Follow Cursor": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.followsCursor}
+              keyName="followsCursor"
+              helperText="The box will automatically follow the cursor at all times."
+              label="Follow Cursor"
+            />
+          ),
+          "Pipe Output": (
+            <TextField
+              onChange={updatePipeOutput}
+              defaultValue={props.pipeOutput}
+              variant="standard"
+              select
+              helperText="Pipe the output of this box to another box."
+              label="Pipe Output"
+            >
+              <MenuItem value="Self">Self</MenuItem>
+              {props.allBoxIds.map((b) => (
+                <MenuItem value={b} key={b}>
+                  {b}
+                </MenuItem>
+              ))}
+            </TextField>
+          ),
+          "Is Speaker Box": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.speakerBox}
+              keyName="speakerBox"
+              helperText="If enabled, may improve the translation output of the other boxes. Place this box over the area where the speaker is usually given."
+              label="Is Speaker Box"
+            />
+          ),
+          "Remove Speaker": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.removeSpeaker}
+              keyName="removeSpeaker"
+              helperText="Removes the speaker name from the translated text given by the speaker box."
+              label="Remove Speaker"
+            />
+          ),
+          "Enhance Text Recognition": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.textDetect}
+              keyName="textDetect"
+              helperText="Uses the text detection model before the text recognition model to enhance accuracy at the cost of speed. No effect on boxes that listen to the clipboard."
+              label="Enhance Text Recognition"
+            />
+          ),
         },
-        Actions: {
+        Keybinds: {
           "Activation Key OR Translation OR Translate Key":
             props.activationKey ? (
               <KeySelect
@@ -351,107 +415,6 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
             ) : (
               <div></div>
             ),
-          /*"Editing Key Spelling Correction Key": props.spellingCorrectionKey ? (
-            <KeySelect
-              label="Spelling Correction Key"
-              onKeyChange={updateSpellingCorrectionKey}
-              value={props.spellingCorrectionKey}
-              helperText="Refines the translation with the spelling correction model. Must listen to clipboard. Press ESCAPE to disable."
-            />
-          ) : (
-            <div></div>
-          ),*/
-          "Auto Scan Background": (
-            <UpdateCheckbox
-              changeValue={changeValue}
-              defaultValue={props.autoScan}
-              keyName="autoScan"
-              helperText="Every few seconds, automatically translate the box contents if the contents have changed significantly."
-              label="Auto Scan Background"
-            />
-          ),
-          "Listen to Clipboard": (
-            <UpdateCheckbox
-              changeValue={changeValue}
-              defaultValue={props.listenClipboard}
-              keyName="listenClipboard"
-              label="Listen to Clipboard"
-              helperText="Automatically translate the box contents whenever the clipboard has changed, using the clipboard as the contents."
-            />
-          ),
-          "Auto Enter": (
-            <TextField
-              label="Auto Enter"
-              variant="standard"
-              onChange={updateAutoEnterTime}
-              defaultValue={props.autoEnterTime}
-              helperText="If greater than 0, then after being translated, the ENTER key will be automatically pressed after that many seconds."
-            />
-          ),
-          "Scan N Seconds After Enter": (
-            <TextField
-              label="Scan N Seconds After Enter"
-              variant="standard"
-              onChange={updatescanAfterEnter}
-              defaultValue={props.scanAfterEnter}
-              helperText="If greater than 0, then the background will be OCR'd after that many seconds whenever the ENTER key is pressed manually."
-            />
-          ),
-          "Pipe Output": (
-            <TextField
-              onChange={updatePipeOutput}
-              defaultValue={props.pipeOutput}
-              variant="standard"
-              select
-              helperText="Pipe the output of this box to another box."
-              label="Pipe Output"
-            >
-              <MenuItem value="Self">Self</MenuItem>
-              {props.allBoxIds.map((b) => (
-                <MenuItem value={b} key={b}>
-                  {b}
-                </MenuItem>
-              ))}
-            </TextField>
-          ),
-        },
-        Performance: {
-          "Stream Output": (
-            <UpdateCheckbox
-              changeValue={changeValue}
-              defaultValue={props.useStream}
-              keyName="useStream"
-              helperText="The box will show each token as it's being generated from the model."
-              label="Stream Output"
-            />
-          ),
-          "Enhance Text Recognition": (
-            <UpdateCheckbox
-              changeValue={changeValue}
-              defaultValue={props.textDetect}
-              keyName="textDetect"
-              helperText="Uses the text detection model before the text recognition model to enhance accuracy at the cost of speed. No effect on boxes that listen to the clipboard."
-              label="Enhance Text Recognition"
-            />
-          ),
-          "Is Speaker Box": (
-            <UpdateCheckbox
-              changeValue={changeValue}
-              defaultValue={props.speakerBox}
-              keyName="speakerBox"
-              helperText="If enabled, may improve the translation output of the other boxes. Place this box over the area where the speaker is usually given."
-              label="Is Speaker Box"
-            />
-          ),
-          "Remove Speaker": (
-            <UpdateCheckbox
-              changeValue={changeValue}
-              defaultValue={props.removeSpeaker}
-              keyName="removeSpeaker"
-              helperText="Removes the speaker name from the translated text given by the speaker box."
-              label="Remove Speaker"
-            />
-          ),
           "Faster Activation Key Scanning": (
             <UpdateCheckbox
               changeValue={changeValue}
@@ -478,6 +441,44 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               onChange={updateTranslateLinesIndividually}
               defaultValue={props.translateLinesIndividually}
               helperText="If greater than 0, only that many of the bottom-most text lines will be scanned and translated, and each text line will be separately translated. This can be useful when attempting to translate system elements like a battle log."
+            />
+          ),
+        },
+        Auto: {
+          "Listen to Clipboard": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.listenClipboard}
+              keyName="listenClipboard"
+              label="Listen to Clipboard"
+              helperText="Automatically translate the box contents whenever the clipboard has changed, using the clipboard as the contents."
+            />
+          ),
+          "Auto Scan Background": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.autoScan}
+              keyName="autoScan"
+              helperText="Every few seconds, automatically translate the box contents if the contents have changed significantly."
+              label="Auto Scan Background"
+            />
+          ),
+          "Auto Enter": (
+            <TextField
+              label="Auto Enter"
+              variant="standard"
+              onChange={updateAutoEnterTime}
+              defaultValue={props.autoEnterTime}
+              helperText="If greater than 0, then after being translated, the ENTER key will be automatically pressed after that many seconds."
+            />
+          ),
+          "Scan N Seconds After Enter": (
+            <TextField
+              label="Scan N Seconds After Enter"
+              variant="standard"
+              onChange={updatescanAfterEnter}
+              defaultValue={props.scanAfterEnter}
+              helperText="If greater than 0, then the background will be OCR'd after that many seconds whenever the ENTER key is pressed manually."
             />
           ),
         },

@@ -50,10 +50,12 @@ export class OcrBoxManager implements BoxOptionsBackend {
   scanAfterEnter: number;
   serverSideActivationKey: boolean;
   translateLinesIndividually: number;
+  followsCursor: boolean;
 
   _timerAutoScan?: any;
   _timerClipboard?: any;
   _timerScanAfterEnter?: any;
+  _timerFollowsCursor?: any;
   _paused?: boolean;
   _hide?: boolean;
   _clickThrough?: boolean;
@@ -93,6 +95,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.hideKey = DEFAULT_BOX_OPTIONS.hideKey;
     this.clickThroughKey = DEFAULT_BOX_OPTIONS.clickThroughKey;
     this.spellingCorrectionKey = DEFAULT_BOX_OPTIONS.spellingCorrectionKey;
+    this.followsCursor = DEFAULT_BOX_OPTIONS.followsCursor;
     this.enabled = DEFAULT_BOX_OPTIONS.enabled;
 
     this.translateLinesIndividually =
@@ -109,6 +112,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this._timerAutoScan = null;
     this._timerClipboard = null;
     this._timerScanAfterEnter = null;
+    this._timerFollowsCursor = null;
     this._paused = false;
     this._hide = false;
     this._clickThrough = false;
@@ -175,6 +179,9 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.translateLinesIndividually =
       boxSettings.translateLinesIndividually ||
       DEFAULT_BOX_OPTIONS.translateLinesIndividually;
+
+    this.followsCursor =
+      boxSettings.followsCursor || DEFAULT_BOX_OPTIONS.followsCursor;
 
     if (!boxSettings) {
       this.enabled = true;
@@ -539,6 +546,39 @@ export class OcrBoxManager implements BoxOptionsBackend {
       }
     }
 
+    if (this.followsCursor) {
+      const sz = this.ocrWindow.getSize();
+
+      // ElectronJS bug requires a fixed size to be used -_-
+      let prevWidth = sz[0];
+      let prevHeight = sz[1];
+
+      this._timerFollowsCursor = setInterval(() => {
+        if (!this.ocrWindow) return;
+
+        try {
+          const windowBounds = this.ocrWindow.getContentBounds();
+          const windowWidth = windowBounds.width;
+          const windowHeight = windowBounds.height;
+
+          const point = screen.getCursorScreenPoint();
+
+          // Center
+          const x = point.x - windowWidth / 2;
+          const y = point.y - windowHeight / 2;
+
+          this.ocrWindow.setBounds({
+            width: prevWidth,
+            height: prevHeight,
+            x: Math.round(x),
+            y: Math.round(y),
+          });
+        } catch (err) {
+          // Sometimes an error happens when moving out of the screen bounds, so we just gotta catch it.
+        }
+      }, 15);
+    }
+
     console.log("Opening OCR BOX:");
     console.log(`X Offset: ${this.xOffset}`);
     console.log(`Y Offset: ${this.yOffset}`);
@@ -604,9 +644,12 @@ export class OcrBoxManager implements BoxOptionsBackend {
     if (this._timerClipboard) clearInterval(this._timerClipboard);
     if (this._timerScanAfterEnter) clearTimeout(this._timerScanAfterEnter);
 
+    if (this._timerFollowsCursor) clearInterval(this._timerFollowsCursor);
+
     this._timerAutoScan = null;
     this._timerClipboard = null;
     this._timerScanAfterEnter = null;
+    this._timerFollowsCursor = null;
 
     this._paused = false;
     this._hide = false;

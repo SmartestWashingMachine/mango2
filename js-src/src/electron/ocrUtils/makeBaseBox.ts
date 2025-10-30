@@ -36,6 +36,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   serverSideActivationKey: false,
   translateLinesIndividually: 0,
   fullyDraggable: false,
+  followsCursor: false,
 };
 
 export const makeBaseBox = (boxId: string) => {

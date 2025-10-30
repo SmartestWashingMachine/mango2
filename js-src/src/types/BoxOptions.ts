@@ -19,6 +19,7 @@ export type BoxOptionsFrontend = {
   pipeOutput: string;
   useStream: boolean;
   fullyDraggable: boolean;
+  followsCursor: boolean;
 };
 
 export type BoxOptionsBackend = {

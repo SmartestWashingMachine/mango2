@@ -43,6 +43,7 @@ const genericOptions = {
   serverSideActivationKey: false,
   translateLinesIndividually: 0,
   fullyDraggable: false,
+  followsCursor: false,
 };
 
 export const OPTIONS_PRESETS: BoxPreset[] = [
