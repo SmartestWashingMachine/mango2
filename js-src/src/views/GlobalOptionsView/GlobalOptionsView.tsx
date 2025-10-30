@@ -627,7 +627,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 keyName="augmentNameEntries"
                 defaultValue={augmentNameEntries}
                 label="Augment Dictionary"
-                helperText="Uses another model to look for names in texts and inform the user. It can also match these names with a stored dictionary file for use with a Goliath or Massive translation model. This will require more memory and be slightly slower."
+                helperText="Uses another model to look for names in texts and inform the user. It can also match these names with a stored dictionary file for use when translating. This will require more memory and be slightly slower."
               />
             ),
             "Detect Speaker Name": (

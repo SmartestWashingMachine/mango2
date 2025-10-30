@@ -124,10 +124,7 @@ const DictionaryList = ({
           <Typography align="center" variant="body2">
             You can instruct the AI on how to translate certain names and
             entities here. This can be useful for translating names more
-            effectively.{" "}
-            <b>
-              This requires a Goliath or Massive translation model to be used.
-            </b>{" "}
+            effectively.
           </Typography>
         </Grid>
       </Grid>
