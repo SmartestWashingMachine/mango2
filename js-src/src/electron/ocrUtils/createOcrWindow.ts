@@ -37,6 +37,8 @@ export const createOcrWindow = (opts: CreateOcrWindowOpts) => {
   ocrWindow.setVisibleOnAllWorkspaces(true);
   ocrWindow.setFullScreenable(false);
 
+  ocrWindow.setContentProtection(true);
+
   // Prevent electron-builder from rechanging title to "Mango"
   ocrWindow.on("page-title-updated", (e) => {
     e.preventDefault();
