@@ -189,110 +189,56 @@ TEXT_RECOGNITION_APP = SwitchApp(
     apps=[
         CustomGgufOcrApp(
             model_sub_path="config",
-            config_sub_path="j_ocr_small",
+            config_sub_path="j_ocr_tiny",
             transform=alt_robust_transform_custom, # Intended for use with a line detection model.
+        ),
+        CustomGgufOcrApp(
+            model_sub_path="config",
+            config_sub_path="j_ocr_small",
+            transform=alt_robust_transform_custom,
         ),
         CustomGgufOcrApp(
             model_sub_path="config",
             config_sub_path="ko_ocr_small",
-            transform=alt_robust_transform_custom, # Intended for use with a line detection model.
+            transform=alt_robust_transform_custom,
             join_lines_with=" "
         ),
         CustomGgufOcrApp(
             model_sub_path="config",
-            config_sub_path="zh_ocr_small",
-            transform=alt_robust_transform_custom, # Intended for use with a line detection model.
+            config_sub_path="q25_zh",
+            transform=alt_robust_transform_custom,
         ),
     ],
-    app_names=["j_ocr_small", "ko_ocr_small", "zh_ocr_small"],
+    app_names=["j_ocr_tiny", "j_ocr_small", "ko_ocr_small", "q25_zh"],
 )
 
 TRANSLATION_APP = SwitchApp(
     apps=[
-        LlmCppTranslationApp(
-            model_sub_path="gem/gem",
-            prepend_fn=prepend_gem_ja,
-            lang="Japanese",
-        ),
-        LlmCppTranslationApp(
-            model_sub_path="gem/gem_ko",
-            prepend_fn=prepend_gem_ko,
-            lang="Korean",
-        ),
-        LlmCppTranslationApp(
-            model_sub_path="gem/gem_zh",
-            prepend_fn=prepend_gem_zh,
-            lang="Chinese",
-        ),
-        GoliathTranslationApp(
-            model_sub_path="gem/gemgoliath",
-            prepend_fn=lambda s: s,
-            lang="Japanese",
-            prepend_model_output="Here\'s a translation:\n\n" # Llama CPP seems to already add an extra newline.
-        ),
-        GoliathTranslationApp(
-            model_sub_path="gem/gemgoliath",
-            prepend_fn=lambda s: s,
-            lang="Korean",
-            # prepend_model_output="\\nHere\\'s a translation:\\n\\n" # FUDGING LLAMA CPP JINJA REQUIRES ALL THIS SHEEP.
-            prepend_model_output="Here\'s a translation:\n\n" # Llama CPP seems to already add an extra newline.
-        ),
-        GoliathTranslationApp(
-            model_sub_path="gem/gemgoliath",
-            prepend_fn=lambda s: s,
-            lang="Chinese",
-            prepend_model_output="Here\'s a translation:\n\n" # Llama CPP seems to already add an extra newline.
-        ),
         CustomGgufTranslationApp(
-            model_sub_path="qwenmoderate",
+            model_sub_path="config",
             prepend_fn=lambda s: s,
             lang="Generic",
-            config_sub_path="qwenmoderate_j",
+            config_sub_path="gem_uni_ja",
         ),
         CustomGgufTranslationApp(
-            model_sub_path="qwenmoderate",
+            model_sub_path="config",
             prepend_fn=lambda s: s,
             lang="Generic",
-            config_sub_path="qwenmoderate_k",
+            config_sub_path="gem_uni_ko",
         ),
         CustomGgufTranslationApp(
-            model_sub_path="qwenmoderate",
+            model_sub_path="config",
             prepend_fn=lambda s: s,
             lang="Generic",
-            config_sub_path="qwenmoderate_zh",
-        ),
-        CustomGgufTranslationApp(
-            model_sub_path="qwenmassive",
-            prepend_fn=lambda s: s,
-            lang="Generic",
-            config_sub_path="qwenmassive_j"
-        ),
-        CustomGgufTranslationApp(
-            model_sub_path="qwenmassive",
-            prepend_fn=lambda s: s,
-            lang="Generic",
-            config_sub_path="qwenmassive_k"
-        ),
-        CustomGgufTranslationApp(
-            model_sub_path="qwenmassive",
-            prepend_fn=lambda s: s,
-            lang="Generic",
-            config_sub_path="qwenmassive_zh"
+            config_sub_path="gem_uni_zh",
         ),
     ],
     app_names=[
-        "llm_jgem",
-        "llm_kgem",
-        "llm_zhgem",
-        "llm_jgem_goliath",
-        "llm_kgem_goliath",
-        "llm_zhgem_goliath",
-        "llm_jqwen_moderate",
-        "llm_kqwen_moderate",
-        "llm_zhqwen_moderate",
-        "llm_jqwen_massive",
-        "llm_kqwen_massive",
-        "llm_zhqwen_massive",
+        "gem_uni_ja",
+        "gem_uni_ko",
+        "gem_uni_zh",
+        # There's also the gem_reforged_x_massive model family.
+        # There's also the mage_uni_x model family - but let's keep that as a genuine custom model.
     ],
 )
 
@@ -395,7 +341,7 @@ TEXT_LINE_MODEL_APP = SwitchApp(
 
 os.makedirs("models/custom_translators", exist_ok=True)
 
-IGNORE_FILES = ['qwenmassive_j', 'qwenmassive_k', 'qwenmassive_zh'] # These are my models.
+IGNORE_FILES = TRANSLATION_APP.app_names # These are my models.
 
 custom_model_suffix = ".mango_config.json"
 
@@ -423,7 +369,7 @@ for model in os.listdir("models/custom_translators"):
 os.makedirs("models/custom_ocrs", exist_ok=True)
 
 # IGNORE_FILES = ['q25_j', 'q25_k', 'q25_zh']
-IGNORE_FILES = []
+IGNORE_FILES = TEXT_RECOGNITION_APP.app_names
 
 for model in os.listdir("models/custom_ocrs"):
     if model.endswith(custom_model_suffix):

@@ -147,8 +147,10 @@ class YOLOImageDetectionApp(BaseImageDetection):
 
     def unload_model(self):
         try:
+            if self.model is not None:
+                logger.info("Unloading object detection model...")
+
             del self.model
-            logger.info("Unloading object detection model...")
         except:
             pass
         self.model = None
@@ -344,8 +346,10 @@ class YOLOTDImageDetectionApp(YOLOImageDetectionApp):
 
     def unload_model(self):
         try:
+            if self.model is not None:
+                logger.info("Unloading object detection model...")
+
             del self.model
-            logger.info("Unloading object detection model...")
         except:
             pass
         self.model = None

@@ -91,10 +91,18 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     };
   }, []);
 
+  // "Unmount"
+  useEffect(() => {
+    return () => {
+      console.log("Sending new config data to API.");
+      MainGateway.resendData();
+    };
+  }, []);
+
   const setStoreValue = async (key: string, value: any, doResend = true) => {
     await MainGateway.setStoreValue(key, value);
 
-    if (doResend) await MainGateway.resendData();
+    // Moved to unmount for efficiency. if (doResend) await MainGateway.resendData();
 
     setLoadedData((d: any) => ({ ...d, [key]: value }));
   };
@@ -205,7 +213,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
       }
     }
 
-    await MainGateway.resendData();
+    await MainGateway.resendData(); // Need to resend to update values here for display.
   };
 
   const presetEnabled = (x: any) => {
@@ -288,7 +296,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
   const decodingParamsIgnored = decodingMode === "beam";
 
   const handlePreviewCaptureWindow = async () => {
-    await MainGateway.resendData();
+    await MainGateway.resendData(); // Need to resend to immediately see the captured window state.
     const imageBase64 = await previewCaptureWindow();
 
     setCapturedWindowPreview(imageBase64);
@@ -297,7 +305,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
   const handlePreviewCaptureWindowWithBox = async (b: any) => {
     const coords = [b.xOffset, b.yOffset, b.width, b.height];
 
-    await MainGateway.resendData();
+    await MainGateway.resendData(); // Need to resend to immediately see the captured window state.
     const imageBase64 = await previewCaptureWindow(coords);
     setCapturedWindowPreview(imageBase64);
   };
