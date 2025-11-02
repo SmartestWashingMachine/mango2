@@ -334,6 +334,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
       with_text_detect: this.textDetect,
       use_stream: this.useStream,
       activation_key: this.activationKey,
+      translate_lines_individually: this.translateLinesIndividually,
     });
   }
 
