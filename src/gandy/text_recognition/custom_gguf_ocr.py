@@ -8,6 +8,7 @@ import base64
 import os
 from PIL import Image
 import json
+from gandy.utils.robust_text_line_resize import override_transforms
 
 """
 The config file here only has these fields:
@@ -38,6 +39,11 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
                 ctx.log('Loaded Mango config', mango_config=mango_config)
 
                 self.join_lines_with = mango_config.get("join_lines_with", "")
+
+                overrides = mango_config.get("overrides", {})
+                if "transform" in overrides:
+                    found = override_transforms.get(overrides["transform"], self.transform)
+                    self.transform = found
 
         return mango_config
 

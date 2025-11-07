@@ -209,3 +209,12 @@ alt_robust_transform_custom = A.Compose(
         A.ToGray(p=1.0),
     ]
 )
+
+# Override transforms for custom OCR models.
+override_transforms = {
+    "gray_32": A.Compose([ResizeToMultipleOf(32, 32, p=1.0), A.ToGray(p=1.0)]),
+    "gray_28": A.Compose([ResizeToMultipleOf(28, 28, p=1.0), A.ToGray(p=1.0)]),
+    "gray": A.Compose([A.ToGray(p=1.0)]),
+    "initial_32": A.Compose([ResizeToMultipleOf(32, 32, p=1.0)]),
+    "initial_28": A.Compose([ResizeToMultipleOf(28, 28, p=1.0)]),
+}
