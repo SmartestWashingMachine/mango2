@@ -124,8 +124,8 @@ class LlamaCppExecutableOpenAIClient:
                 f'--dry-sequence-breaker "{dry_n_breaker}"',
                 f'--dry-sequence-breaker "{dry_colon_breaker}"',
                 f'--dry-sequence-breaker "{dry_double_quote_breaker}"', # This will be passed to cmd.exe as "\" hopefully???
-                "-ctk q8_0",
-                "-ctv q8_0",
+                #"-ctk q8_0",
+                #"-ctv q8_0",
             ]
 
             if self.verbose:
