@@ -1,5 +1,18 @@
 import React from "react";
-import { ListItem, ListItemButton, ListItemText } from "@mui/material";
+import {
+  Fade,
+  IconButton,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Stack,
+} from "@mui/material";
+import {
+  ThumbDown,
+  ThumbDownOutlined,
+  ThumbUp,
+  ThumbUpOutlined,
+} from "@mui/icons-material";
 
 type ColorState = {
   r: number;
@@ -60,6 +73,8 @@ type HistoryItemProps = {
   targetTokens: string[];
   otherTargetTexts: string[];
   isBrief?: boolean;
+  onRecommend: (index: number, recommended: boolean) => void;
+  index: number;
 };
 
 const HistoryItem = ({
@@ -74,6 +89,8 @@ const HistoryItem = ({
   targetTokens,
   otherTargetTexts,
   isBrief,
+  onRecommend,
+  index,
 }: HistoryItemProps) => {
   const targetText = targetTextList[0];
 
@@ -81,20 +98,124 @@ const HistoryItem = ({
     onContextMenu(e, sourceText, targetText);
   };
 
+  const [recommended, setRecommended] = React.useState(0);
+
+  const handleRecommend = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (recommended !== 0) return;
+
+    setRecommended(1);
+    onRecommend(index, true);
+  };
+
+  const handleNotRecommend = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (recommended !== 0) return;
+
+    setRecommended(2);
+    onRecommend(index, false);
+  };
+
+  const renderRecommend = () =>
+    recommended === 1 ? (
+      <IconButton
+        sx={{
+          marginLeft: "auto",
+        }}
+        color="primary"
+      >
+        <ThumbUp sx={{ fontSize: "16px !important" }} />
+      </IconButton>
+    ) : (
+      <IconButton
+        onClick={handleRecommend}
+        sx={{
+          marginLeft: "auto",
+        }}
+        color="info"
+      >
+        <ThumbUpOutlined sx={{ fontSize: "16px !important" }} />
+      </IconButton>
+    );
+
+  const renderNotRecommend = () =>
+    recommended === 2 ? (
+      <IconButton
+        sx={{
+          marginLeft: "auto",
+        }}
+        color="error"
+      >
+        <ThumbDown sx={{ fontSize: "16px !important" }} />
+      </IconButton>
+    ) : (
+      <IconButton
+        onClick={handleNotRecommend}
+        sx={{
+          marginLeft: "auto",
+        }}
+        color="info"
+      >
+        <ThumbDownOutlined sx={{ fontSize: "16px !important" }} />
+      </IconButton>
+    );
+
+  const [hovering, setHovering] = React.useState(false);
+
+  const handleHoverEnter = () => {
+    setHovering(true);
+  };
+
+  const handleHoverLeave = () => {
+    setHovering(false);
+  };
+
   return (
-    <ListItem dense divider={!isLast && !isBrief}>
-      <ListItemButton onClick={onClick} onContextMenu={handleContextMenu}>
-        <ListItemText
-          secondaryTypographyProps={{
-            sx: {
-              color: isSelected ? "#ce93d8" : "rgba(255, 255, 255, 0.7)",
-            },
-          }}
-          sx={{ overflowWrap: "break-word" }}
-          primary={<>{targetText}</>}
-          secondary={isBrief ? undefined : <>{sourceText}</>}
-        />
-      </ListItemButton>
+    <ListItem
+      dense
+      divider={!isLast && !isBrief}
+      onMouseEnter={handleHoverEnter}
+      onMouseLeave={handleHoverLeave}
+    >
+      <Stack spacing={0.5} sx={{ width: "100%" }}>
+        <ListItemButton
+          onClick={onClick}
+          onContextMenu={handleContextMenu}
+          disableRipple
+          sx={{ borderRadius: "2px" }} // For a better outline when hovering over.
+        >
+          <ListItemText
+            secondaryTypographyProps={{
+              sx: {
+                color: isSelected ? "#ce93d8" : "rgba(255, 255, 255, 0.7)",
+              },
+            }}
+            sx={{ overflowWrap: "break-word" }}
+            primary={<>{targetText}</>}
+            secondary={
+              isBrief ? undefined : (
+                <Stack direction="row" sx={{ width: "100%" }}>
+                  {sourceText}
+                  <Fade unmountOnExit={false} in={hovering} timeout={200}>
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      style={{ marginLeft: "auto" }}
+                    >
+                      {renderRecommend()}
+                      {renderNotRecommend()}
+                    </Stack>
+                  </Fade>
+                </Stack>
+              )
+            }
+          />
+        </ListItemButton>
+      </Stack>
     </ListItem>
   );
 };

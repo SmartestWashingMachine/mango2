@@ -6,6 +6,9 @@ from gandy.utils.fancy_logger import logger
 from gandy.full_pipelines.switch_app import SwitchApp
 from typing import List
 from gc import collect
+import json
+import os
+from uuid import uuid4
 
 @app.route("/changecleaning", methods=["POST"])
 def change_cleaning_route():
@@ -203,3 +206,24 @@ def get_allowed_models_route():
         ctx.log("Installed models", **data)
 
     return data
+
+save_labels_path = os.path.expanduser("~/Documents/Mango/labels")
+os.makedirs(save_labels_path, exist_ok=True)
+
+@app.route("/recommendtranslation", methods=["POST"])
+def recommend_translation_route():
+    with logger.begin_event("Saving labeled translation preference data") as ctx:
+        data = request.json
+        item_id = uuid4().hex
+
+        ctx.log("Received data", items=data["items"], recommended=data["recommended"], item_id=item_id)
+
+        with open(os.path.join(save_labels_path, f"{item_id}.json"), "a", encoding="utf-8") as f:
+            dat = {
+                "items": data["items"],
+                "recommended": data["recommended"],
+            }
+
+            json.dump(dat, f, ensure_ascii=False, indent=4)
+
+    return {}, 200

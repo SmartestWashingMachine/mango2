@@ -6,6 +6,7 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import HistoryContextMenu from "./HistoryContextMenu";
 import { Virtuoso } from "react-virtuoso";
 import NameItem from "./NameItem";
+import { recommendAndRecordTranslation } from "../../../flaskcomms/textViewComms";
 
 type HistoryPaneProps = {
   texts: (IHistoryText | INameItem)[];
@@ -55,6 +56,22 @@ const HistoryPane = ({
     }
   };
 
+  const recommendTranslation = async (index: number, recommended: boolean) => {
+    // Here we take more context than users actually use - it may be useful for future experiments.
+    const N_MAX_CTX = 8;
+
+    const startIndex = Math.max(0, index - N_MAX_CTX);
+    const contextsAndCur = texts.slice(startIndex, index + 1) as IHistoryText[];
+
+    recommendAndRecordTranslation(
+      contextsAndCur.map((ct) => ({
+        src: ct.sourceText,
+        tgt: ct.targetText[0],
+      })),
+      recommended
+    );
+  };
+
   // ref is for auto scrolling.
   const ref = useRef<any | null>(null);
 
@@ -90,7 +107,14 @@ const HistoryPane = ({
         otherTargetTexts: t.otherTargetTexts,
       };
 
-      return <HistoryItem {...data} isBrief={isBrief} />;
+      return (
+        <HistoryItem
+          {...data}
+          isBrief={isBrief}
+          onRecommend={recommendTranslation}
+          index={index}
+        />
+      );
     }
   };
 

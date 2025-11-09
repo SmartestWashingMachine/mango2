@@ -190,3 +190,28 @@ export const pollDetectedNameItem = (
 
   return cleanupFn;
 };
+
+type TranslationItem = {
+  src: string;
+  tgt: string;
+};
+
+export const recommendAndRecordTranslation = async (
+  items: TranslationItem[],
+  recommended: boolean
+) => {
+  // This always goes to local host only.
+  const apiUrl = `http://127.0.0.1:5000/recommendtranslation`;
+
+  // The last item is the one being recommended / not recommended. The prior ones are context.
+  const body: any = { items, recommended };
+
+  const output = fetch(apiUrl, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
+};
