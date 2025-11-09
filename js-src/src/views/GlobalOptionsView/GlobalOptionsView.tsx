@@ -812,10 +812,9 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
           "Capture Specific Window": {
             "Capture Specific Window": (
               <Typography align="center" variant="body2">
-                When you OCR a game with multiple detached boxes, you may want
-                to overlap some boxes without them OCR'ing each other. If a
-                window partially matching this name is found, only the contents
-                of that window can be OCR'd.{" "}
+                If a window partially matching this name is found, only the
+                contents of that window can be OCR'd. This setting isn't usually
+                necessary and can be left as-is.{" "}
                 <b>Make sure the window is visible somewhere on the screen.</b>
               </Typography>
             ),
