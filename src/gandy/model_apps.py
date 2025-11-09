@@ -199,6 +199,12 @@ TEXT_RECOGNITION_APP = SwitchApp(
         ),
         CustomGgufOcrApp(
             model_sub_path="config",
+            config_sub_path="ko_ocr_tiny",
+            transform=alt_robust_transform_custom,
+            join_lines_with=" "
+        ),
+        CustomGgufOcrApp(
+            model_sub_path="config",
             config_sub_path="ko_ocr_small",
             transform=alt_robust_transform_custom,
             join_lines_with=" "
@@ -209,7 +215,7 @@ TEXT_RECOGNITION_APP = SwitchApp(
             transform=alt_robust_transform_custom,
         ),
     ],
-    app_names=["j_ocr_tiny", "j_ocr_small", "ko_ocr_small", "q25_zh"],
+    app_names=["j_ocr_tiny", "j_ocr_small", "ko_ocr_tiny", "ko_ocr_small", "q25_zh"],
 )
 
 TRANSLATION_APP = SwitchApp(

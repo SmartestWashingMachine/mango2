@@ -70,7 +70,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     description: "This preset is good for translating Korean webtoon images.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["ko_ocr_small"],
+      textRecognitionModelName: ["ko_ocr_small", "ko_ocr_tiny"],
       translationModelName: ["llm_kgem_goliath", "gem_uni_ko"],
       textLineModelName: ["dfine_line_emassive", "none"],
       numBeams: 3,

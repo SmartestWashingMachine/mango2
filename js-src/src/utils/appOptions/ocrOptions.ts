@@ -7,12 +7,17 @@ export const OCR_OPTIONS = [
   {
     name: "Japanese Moderate",
     value: "j_ocr_small",
-    desc: "A stronger OCR model for Japanese.",
+    desc: "A slightly stronger OCR model for Japanese.",
+  },
+  {
+    name: "Korean Nano",
+    value: "ko_ocr_tiny",
+    desc: "A baseline OCR model for Korean.",
   },
   {
     name: "Korean Moderate",
     value: "ko_ocr_small",
-    desc: "A strong OCR model for Korean.",
+    desc: "A slightly stronger OCR model for Korean.",
   },
   {
     name: "Chinese Heavy",
