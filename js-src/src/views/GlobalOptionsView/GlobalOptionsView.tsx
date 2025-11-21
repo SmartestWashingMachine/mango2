@@ -670,7 +670,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 changeValue={setStoreValue}
                 keyName="batchOcr"
                 defaultValue={batchOcr}
-                helperText="Batch text lines together for faster OCR processing. Uses more memory."
+                helperText="Batch text lines together for faster OCR processing. Uses more memory. May reduce accuracy."
                 label="Batch OCR Lines"
               />
             ),
