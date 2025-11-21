@@ -301,7 +301,7 @@ class BasePipeline:
 
         return speech_bboxes
     
-    def _translate_image_to_image_from_data(self, source_texts, rgb_image, speech_bboxes, progress_cb=None, return_debug_data=False, skip_redrawing=False):
+    def _translate_image_to_image_from_data(self, source_texts, rgb_image, speech_bboxes, progress_cb=None, return_debug_data=False, skip_redrawing=False, cb_on_text_done=None):
         target_texts = self.get_target_texts_from_str(
             source_texts=source_texts, use_stream=None, progress_cb=progress_cb,
         )
@@ -324,6 +324,10 @@ class BasePipeline:
                 speech_bboxes.append(b)
 
             logger.log_message('Ignoring single words', n_before=old_len, n_after=len(target_texts))
+
+        if cb_on_text_done is not None:
+            for (st, tt) in zip(source_texts, target_texts):
+                cb_on_text_done(st, tt)
 
         if skip_redrawing:
             return {
@@ -373,6 +377,7 @@ class BasePipeline:
         return_debug_data=False,
         return_metadata_to_translate_later=False,
         skip_redrawing=False,
+        cb_on_text_done=None,
     ):
         with logger.begin_event("Image to image") as ctx:
 
@@ -432,6 +437,7 @@ class BasePipeline:
                     speech_bboxes=speech_bboxes,
                     return_debug_data=return_debug_data,
                     skip_redrawing=skip_redrawing,
+                    cb_on_text_done=cb_on_text_done,
                 )
 
     def text_to_text(

@@ -93,6 +93,12 @@ export const pollTranslateImagesStatus = (
       }
     });
 
+    socket.on("textitem_task1", (data) => {
+      // sourceText = str & text = str
+      const w = window as any;
+      w.electronAPI.addToTextHistory([[data.text]], [data.sourceText]);
+    });
+
     socket.on("done_translating_task1", (data) => {
       if (data && data.taskId !== taskId) return;
 

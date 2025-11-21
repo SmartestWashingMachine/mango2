@@ -196,18 +196,23 @@ def translate_task1_background_job(
                 ctx.log(f"Task1 processing image", img_name=img_name)
 
                 if config_state.memory_efficient_tasks:
+                    # TODO: I'm pretty sure "cb_on_text_done" will fail for memory_efficient_tasks (nothing emitted).
+                    # But that's low priority - most users shouldn't be using mem efficient tasks anyways anymore - models are much slimmer.
                     with logger.begin_event('Process image'):
                         data_to_translate = translate_pipeline.image_to_image(
-                            img, progress_cb=None, return_metadata_to_translate_later=True
+                            img, progress_cb=None, return_metadata_to_translate_later=True, cb_on_text_done=None,
                         )
 
                         memory_efficient_data_to_translate_later.append(data_to_translate)
 
                     progress_cb(((((1 + img_idx) / len(images_data)) * 100) // 2) + 5)
                 else:
+                    def _emit_on_text_done(sou: str, tar: str):
+                        socketio.patched_emit("textitem_task1", { "text": tar, "sourceText": sou, })
+
                     with logger.begin_event('Process image'):
                         new_image, is_amg = translate_pipeline.image_to_image(
-                            img, progress_cb=progress_cb
+                            img, progress_cb=progress_cb, cb_on_text_done=_emit_on_text_done,
                         )
 
                     # Send img (b64) to client.
