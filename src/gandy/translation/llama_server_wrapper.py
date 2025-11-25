@@ -23,7 +23,7 @@ loop = asyncio.new_event_loop()
 
 class LlamaCppExecutableOpenAIClient:
     def __init__(self, model_path, num_gpu_layers, can_cuda,
-                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750, embedding=False, stop = None, mmproj = None):
+                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750, embedding=False, stop = None, mmproj = None, extra_commands = [], extra_body = {}):
 
         self.model_path = model_path
 
@@ -43,6 +43,9 @@ class LlamaCppExecutableOpenAIClient:
         self.n_context = n_context
 
         self.mmproj = mmproj
+
+        self.extra_commands = extra_commands
+        self.extra_body = extra_body
 
         self.stop = stop
         if self.stop is None:
@@ -135,6 +138,9 @@ class LlamaCppExecutableOpenAIClient:
                 command.append("--mmproj")
                 command.append(self.mmproj)
 
+            # To ensure only 1 slot is used with new llama-cpp server versions.
+            command.append("-kvu")
+
             if self.embedding:
                 command = [
                     self.llama_cpp_server_path,
@@ -157,6 +163,8 @@ class LlamaCppExecutableOpenAIClient:
                 # This sheep randomly makes some models hang. WHY? WHY? WHY?
                 # command.append("--run-time-repack")
                 pass
+
+            command.extend(self.extra_commands)
 
             command = ' '.join(command)
             ctx.log(f"Starting server with command", command=command)
@@ -293,6 +301,7 @@ class LlamaCppExecutableOpenAIClient:
                 stream=False,
                 temperature=0.02,
                 stop=self.stop,
+                extra_body=self.extra_body,
             )
             prediction = completion.choices[0].message.content
 

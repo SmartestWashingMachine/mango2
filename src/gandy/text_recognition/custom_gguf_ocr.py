@@ -98,6 +98,11 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
             stop=None,
             mmproj=self.get_mmproj_path_for_llmcpp(),
             verbose=False,
+            extra_commands=self.mango_config.get("extra_commands", []),
+            extra_body={
+                # The Nano model does not support prompt caching. Others might, but let's not risk it.
+                "cache_prompt": False,
+            },
         )
 
         self.llm.start_server()
