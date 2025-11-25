@@ -51,13 +51,19 @@ const setBoxValue: GatewayAction = {
 const newOcrBox: GatewayAction = {
   command: ElectronCommands.NEW_OCR_BOX,
   commandType: "handle",
-  fn: (e, w, state, store) => {
+  fn: (e, w, state, store, boxId: string) => {
     const newBoxId = uuidv4();
 
     // Add box to store.
     const boxes = store.get("boxes") as any[];
-    const baseBox = makeBaseBox(newBoxId);
-    boxes.push(baseBox);
+
+    let boxToDuplicate = boxes.find((b) => b.boxId === boxId);
+
+    // This should only ever happen if the user for some reason deletes all the boxes then wants to create a new one, without using the presets.
+    if (!boxToDuplicate) boxToDuplicate = makeBaseBox(newBoxId);
+
+    const newBox = { ...boxToDuplicate, boxId: newBoxId };
+    boxes.push(newBox);
     store.set("boxes", boxes);
 
     const newManager = new OcrBoxManager(newBoxId, store, state.texts);

@@ -81,7 +81,8 @@ const OptionsView = (props: OptionsViewProps) => {
   };
 
   const createBox = () => {
-    MainGateway.newOcrBox();
+    // Duplicate data of selected box.
+    MainGateway.newOcrBox(selId);
   };
 
   const handleTabChange = async (newValue: string) => {
@@ -129,13 +130,15 @@ const OptionsView = (props: OptionsViewProps) => {
           goTextTab={props.goTextTab}
           createBox={
             <Button variant="text" onClick={createBox} color="info">
-              New Box
+              {boxesOptions && boxesOptions.length > 0
+                ? "Duplicate Box"
+                : "New Box"}
             </Button>
           }
           removeBox={
             !!selId ? (
               <Button variant="text" onClick={removeBox} color="info">
-                Delete {getBoxDisplayName(selBoxOptions)}
+                Delete Box
               </Button>
             ) : (
               <div></div>
