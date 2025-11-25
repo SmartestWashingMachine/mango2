@@ -11,9 +11,12 @@ import {
   Button,
   Link,
   CardActionArea,
+  Divider,
 } from "@mui/material";
 import React from "react";
-import BOX_USE_CASES from "../../../utils/boxUseCases";
+import BOX_USE_CASES, {
+  RECOMMENDED_BOX_USE_CASES,
+} from "../../../utils/boxUseCases";
 import { BoxOptions } from "../../../types/BoxOptions";
 
 export type QuickCaseProps = {
@@ -101,12 +104,34 @@ const QuickSetup = (props: QuickSetupProps) => {
       <Stack spacing={2}>
         <Typography
           variant="h3"
-          align="center"
+          align="left"
           sx={{ marginTop: 12 }}
           color="primary.500"
         >
           What's your use case?
         </Typography>
+      </Stack>
+      <Stack spacing={1}>
+        <Typography variant="h6" align="left" fontWeight="semibold">
+          Recommended
+        </Typography>
+        <Divider />
+      </Stack>
+      <Stack spacing={2}>
+        {RECOMMENDED_BOX_USE_CASES.map((x) => (
+          <QuickCase
+            key={x.title}
+            description={x.description}
+            title={x.title}
+            onClick={() => selectCase(x)}
+          />
+        ))}
+      </Stack>
+      <Stack spacing={1}>
+        <Typography variant="h6" align="left" fontWeight="semibold">
+          All
+        </Typography>
+        <Divider />
       </Stack>
       <Stack spacing={2}>
         {BOX_USE_CASES.map((x) => (

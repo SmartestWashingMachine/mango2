@@ -338,4 +338,23 @@ for (const useCase of BOX_USE_CASES) {
   }
 }
 
+const pick = (desc: string) => {
+  const f = BOX_USE_CASES.find((x) => x.description.includes(desc));
+  if (!f) throw new Error(`Picked an invalid box use case: desc=${desc}`);
+
+  return f;
+};
+
+export const RECOMMENDED_BOX_USE_CASES = [
+  pick(
+    '"I want a box with a transparent background that reads text from the clipboard."'
+  ),
+  pick(
+    '"I want two boxes that each reads text on the screen with their own buttons, and sends the results to a third box (with a transparent background) wherever I place it."'
+  ),
+  pick(
+    '"I want three boxes that each reads text on the screen with their own buttons, and sends the results to a fourth box (with a transparent background) wherever I place it. The third box should translate each line individually."'
+  ),
+];
+
 export default BOX_USE_CASES;
