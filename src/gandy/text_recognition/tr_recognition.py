@@ -131,15 +131,8 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
                                 greatest_width = max(greatest_width, cropped_image.width)
                                 greatest_height = max(greatest_height, cropped_image.height)
 
-                            # Make all images same size.
-                            for idx in range(len(crop_batch)):
-                                # Slight stretching.
-                                cropped_image: Image.Image = crop_batch[idx]
-                                cropped_image = cropped_image.resize((greatest_width, greatest_height), resample=Image.BICUBIC)
-                                crop_batch[idx] = np.array(cropped_image)
-
-                                if debug_state.debug:
-                                    self.save_debug(crop_batch[idx], msg='Saving partial line image from batch', text='N/A (Batched)')
+                            # We don't need to resize each image to have same size anymore, even with batching.
+                            crop_batch = [np.array(pil_img) for pil_img in crop_batch]
 
                             outp = self.process_multiple_images(crop_batch)
                             ### outp = [""]
