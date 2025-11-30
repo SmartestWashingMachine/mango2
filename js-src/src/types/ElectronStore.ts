@@ -47,6 +47,7 @@ export type IStoreClientToServer = {
   spellCorrectionSeparate: boolean;
   strokeSize: number;
   bottomTextOnly: boolean;
+  ignoreThinText: boolean;
   tileWidth: number;
   tileHeight: number;
   batchOcr: boolean;

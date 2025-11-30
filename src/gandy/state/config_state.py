@@ -44,6 +44,7 @@ class ConfigState:
         self.cut_ocr_punct = False
         self.ignore_detect_single_words = False
         self.sort_text_from_top_left = False
+        self.ignore_thin_text = False
 
         self.cache_mt = True
 

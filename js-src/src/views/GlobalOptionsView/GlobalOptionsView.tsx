@@ -279,6 +279,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     repetitionPenalty,
     maxLengthA,
     bottomTextOnly,
+    ignoreThinText,
     batchOcr,
     cutOcrPunct,
     ignoreDetectSingleWords,
@@ -690,6 +691,15 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 defaultValue={ignoreDetectSingleWords}
                 helperText="Removes potentially erroneous single word detections in image translation jobs."
                 label="Ignore Single Words In Images"
+              />
+            ),
+            "Ignore Thin Texts": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="ignoreThinText"
+                defaultValue={ignoreThinText}
+                helperText="Ignores any thin lines of text that are detected. This can be useful if the line detection model is still picking up furigana."
+                label="Ignore Thin Texts"
               />
             ),
             "Sort Texts Left-to-Right": (

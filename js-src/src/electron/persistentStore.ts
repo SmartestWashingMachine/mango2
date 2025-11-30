@@ -43,6 +43,7 @@ const storeDefaults: IStore = {
   spellCorrectionSeparate: false, // TODO: Unused. Probably don't need it either.
   strokeSize: 1.0,
   bottomTextOnly: false,
+  ignoreThinText: false,
   tileWidth: 100,
   tileHeight: 100,
   batchOcr: false,

@@ -234,7 +234,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
             logger.log_message('Filtering for bottom text regions in image.')
         height_thr = image_height * 0.79 # on the bottom 21% of the image.
 
-        if self.confidence_threshold is not None:
+        if self.confidence_threshold is not None: # TODO: full numpy for speed.
             boxes = []
             for i in range(len(scores)):
                 if config_state.bottom_text_only:
@@ -251,6 +251,34 @@ class YOLOImageDetectionApp(BaseImageDetection):
                 boxes = np.empty((0, 4))
         else:
             boxes = processed_boxes
+
+        if config_state.ignore_thin_text:
+            with logger.begin_event("Filtering out thin texts", n_before=boxes.shape[0]):
+                # The line detection model sometimes picks up furigana - especially in the horizontal direction.
+                # So a neat heuristic here is to filter out boxes that have a much smaller width/height than the others.
+                # What do we mean by "others"? - Normally we would use the mean here... but if there's a lot of thin text (furigana), it can bring it down.
+                # Instead, we use the largest box as the representative box. That way, even if there's a lot of furigana on the screen, it can all still get filtered out.
+
+                x1 = boxes[:, 0]  # [N]
+                y1 = boxes[:, 1]
+                x2 = boxes[:, 2]
+                y2 = boxes[:, 3]
+
+                width = x2 - x1
+                height = y2 - y1
+
+                aspect_ratio = width / height
+                avg_aspect_ratio = aspect_ratio.mean()
+
+                threshold_factor = 0.7 # 0.7 = Must be at least 70% of the representative box's side length.
+                if avg_aspect_ratio <= 1.0:
+                    # Boxes are vertical - filter out boxes with low width.
+                    representative_width = width.max() * threshold_factor
+                    boxes = boxes[width >= representative_width, :]
+                else:
+                    # Boxes are horizontal - filter out boxes with low height.
+                    representative_height = height.max() * threshold_factor
+                    boxes = boxes[height >= representative_height, :]
 
         logger.log_message(f"Done using NMS! (Filtered Boxes #: {boxes.shape[0]})")
 
