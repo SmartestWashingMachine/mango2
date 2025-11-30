@@ -199,12 +199,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   }
 
   cloakBox() {
-    if (!this.ocrWindow) return;
-
-    // this.ocrWindow.hide();
-    //this.ocrWindow.minimize(); - feil
-    this.ocrWindow.setOpacity(0); // seems to work. Not the prettiest solution.
-    //this.ocrWindow.setSize(0, 0, false); - feil
+    // no-op: Since we use setContentProtection now we don't need to hide the box - Windows will automatically ignore it when taking pictures.
   }
 
   revealBox() {
