@@ -349,6 +349,7 @@ export const RECOMMENDED_BOX_USE_CASES = [
   pick(
     '"I want a box with a transparent background that reads text from the clipboard."'
   ),
+  pick('"I want a box that reads text on the screen when I press a button."'),
   pick(
     '"I want two boxes that each reads text on the screen with their own buttons, and sends the results to a third box (with a transparent background) wherever I place it."'
   ),
