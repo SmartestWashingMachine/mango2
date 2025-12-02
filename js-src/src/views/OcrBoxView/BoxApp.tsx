@@ -70,6 +70,19 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
 
   useEffect(() => {
     document.body.style.backgroundColor = "rgba(255, 255, 255, 0.0)"; // for fade-in. this gives a transparent window.
+
+    // Hide the scrollbar as we shrink text to fit the box.
+    // But we still need a "scrollbar" technically as our text fitting logic relies on the scrollHeight property (see BoxPane.fitTextInBox).
+    const styleElement = document.createElement("style");
+
+    const scrollbarStyles = "::-webkit-scrollbar { width: 0px !important; }";
+    styleElement.textContent = scrollbarStyles;
+
+    document.head.appendChild(styleElement);
+
+    return () => {
+      document.head.removeChild(styleElement);
+    };
   }, []);
 
   useEffect(() => {

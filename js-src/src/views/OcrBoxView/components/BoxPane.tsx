@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Box, Fade, Stack, SxProps, Typography } from "@mui/material";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
 import { BoxOptionsFrontend } from "../../../types/BoxOptions";
@@ -39,6 +45,8 @@ const hexWithAlpha = (color: string, percentage: number) => {
   return color + decimal;
 };
 
+const TEXT_FIT_EVERY_MS = 500;
+
 const OcrBoxPane = ({
   loading,
   text,
@@ -71,6 +79,14 @@ const OcrBoxPane = ({
   );
 
   const timer = useRef<any>(null);
+
+  const [usingFontSize, setUsingFontSize] = useState<number>(
+    parseInt(fontSize as string)
+  );
+  const [usingStrokeSize, setUsingStrokeSize] = useState<number>(strokeSize);
+
+  const textRef = useRef<any>(null);
+  const lastTextFitTime = useRef(Date.now());
 
   // Prevent double-clicking from focusing text (annoying when trying to toggle handle color).
   // From: https://stackoverflow.com/questions/880512/prevent-text-selection-after-double-click
@@ -162,6 +178,70 @@ const OcrBoxPane = ({
     );
   }, [text, pause]);
 
+  const fitTextInBox = useCallback(() => {
+    if (!textRef.current) return;
+
+    const minFontSize = 6;
+    let curFontSize = parseInt(fontSize as string, 10);
+
+    let curStrokeSize = strokeSize;
+
+    textRef.current.style.fontSize = `${curFontSize}px`;
+    textRef.current.style.WebkitTextStrokeWidth = `${curStrokeSize}px`;
+
+    while (
+      document.documentElement.scrollHeight >
+      document.documentElement.clientHeight
+    ) {
+      curFontSize -= 1;
+      curStrokeSize = Math.max(
+        strokeSize * 0.4,
+        curStrokeSize - strokeSize * 0.1
+      );
+
+      if (curFontSize <= minFontSize) {
+        curFontSize = minFontSize;
+        break;
+      }
+
+      textRef.current.style.fontSize = `${curFontSize}px`;
+      textRef.current.style.WebkitTextStrokeWidth = `${curStrokeSize}px`;
+    }
+
+    setUsingFontSize(curFontSize);
+    setUsingStrokeSize(curStrokeSize);
+  }, [text, fontSize, strokeSize]);
+
+  useLayoutEffect(() => {
+    // Throttle instead of debounce.
+    // !loading so we always fit the final result.
+
+    const now = Date.now();
+    if (!loading || now - lastTextFitTime.current >= TEXT_FIT_EVERY_MS) {
+      fitTextInBox();
+      lastTextFitTime.current = now;
+    }
+  }, [fitTextInBox, loading]);
+
+  useEffect(() => {
+    let debounce: any = undefined;
+
+    const cb = () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => {
+        // Since "resize" window event is only called at the END of a resize (via the debounce), we reset the font size.
+        fitTextInBox();
+      }, 500);
+    };
+
+    window.addEventListener("resize", cb);
+
+    return () => {
+      clearTimeout(debounce);
+      window.removeEventListener("resize", cb);
+    };
+  }, [fitTextInBox]);
+
   let textOpacity = pause ? 0.6 : 1;
   if (loading) textOpacity = loadingOpacity;
 
@@ -169,8 +249,8 @@ const OcrBoxPane = ({
     opacity: textOpacity,
     textAlign,
     color: `${fontColor} !important`,
-    fontSize,
-    WebkitTextStrokeWidth: `${strokeSize}px`,
+    fontSize: usingFontSize,
+    WebkitTextStrokeWidth: `${usingStrokeSize}px`,
     WebkitTextStrokeColor: strokeColor,
     fontFamily: '"ocrbox.otf", "ocrbox.ttf", Roboto, "Roboto", Arial',
     paintOrder: "stroke fill", // Necessary for pretty strokes.
@@ -181,8 +261,8 @@ const OcrBoxPane = ({
     opacity: textOpacity - 0.25,
     textAlign,
     color: `${fontColor} !important`,
-    fontSize: Math.floor(parseInt(fontSize as string) * 0.75),
-    WebkitTextStrokeWidth: `${strokeSize}px`,
+    fontSize: Math.floor(usingFontSize * 0.75),
+    WebkitTextStrokeWidth: `${usingStrokeSize}px`,
     WebkitTextStrokeColor: strokeColor,
     fontFamily: '"ocrbox.otf", "ocrbox.ttf", Roboto, "Roboto", Arial',
     paintOrder: "stroke fill", // Necessary for pretty strokes.
@@ -250,6 +330,7 @@ const OcrBoxPane = ({
               variant="body1"
               sx={extraTextStyles}
               align={textAlign as any}
+              ref={textRef}
             >
               {renderText()}
             </Typography>
