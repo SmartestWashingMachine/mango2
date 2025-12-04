@@ -252,7 +252,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
         else:
             boxes = processed_boxes
 
-        if config_state.ignore_thin_text:
+        if config_state.ignore_thin_text and boxes.shape[0] > 0:
             with logger.begin_event("Filtering out thin texts", n_before=boxes.shape[0]):
                 # The line detection model sometimes picks up furigana - especially in the horizontal direction.
                 # So a neat heuristic here is to filter out boxes that have a much smaller width/height than the others.
