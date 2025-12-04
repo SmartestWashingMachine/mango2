@@ -9,6 +9,7 @@ import os
 from PIL import Image
 import json
 from gandy.utils.robust_text_line_resize import override_transforms
+import numpy as np
 
 """
 The config file here only has these fields:
@@ -87,6 +88,10 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
             # Else the CUDA binaries are still loaded.
             llama_cpp_server_path = os.path.join('models', "llamacpp_cpu", "llama-server.exe")
 
+        extra_commands = self.mango_config.get("extra_commands", [])
+        if "warmup" in self.mango_config:
+            extra_commands.append("--no-warmup")
+
         self.llm = LlamaCppExecutableOpenAIClient(
             model_path=self.get_model_path_for_llmcpp(),
             num_gpu_layers=(config_state.num_gpu_layers_ocr if can_cuda else 0),
@@ -98,7 +103,7 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
             stop=None,
             mmproj=self.get_mmproj_path_for_llmcpp(),
             verbose=False,
-            extra_commands=self.mango_config.get("extra_commands", []),
+            extra_commands=extra_commands,
             extra_body={
                 # The Nano model does not support prompt caching. Others might, but let's not risk it.
                 "cache_prompt": False,
@@ -112,7 +117,14 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
         self.loaded = True
 
         # Call whatever is the ancestor of TrOCRTextRecognitionApp (the base app).
-        return super(TrOCRTextRecognitionApp, self).load_model()
+        retn = super(TrOCRTextRecognitionApp, self).load_model()
+
+        # The default warmup image used is pretty heavy for my default lightweight OCR models - using more memory than it should.
+        # Thanks to ngxson we can manually warm it up with our expected max image size (https://github.com/ggml-org/llama.cpp/pull/17652)
+        if "warmup" in self.mango_config:
+            self.warmup_image(self.mango_config["warmup"]["width"], self.mango_config["warmup"]["height"])
+
+        return retn
 
     def unload_model(self):
         try:
@@ -181,3 +193,10 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
             else:
                 # Must return single string instead of list here... TODO: Refactor.
                 return output_texts[0]
+
+    def warmup_image(self, width: int, height: int):
+        with logger.begin_event("Warming up OCR model with image size", width=width, height=height):
+            dummy_image = np.array(Image.new("RGB", (width, height)))
+            batch_inputs = [self.image_to_llm_messages(dummy_image)]
+
+            self.llm.call_llm(batch_inputs, max_completion_tokens=1)
