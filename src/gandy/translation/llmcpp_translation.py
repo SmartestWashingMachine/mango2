@@ -6,6 +6,7 @@ from gandy.utils.augment_name_entries_with_ner import NameAdder
 from gandy.socket_process import socketio # TODO: Messy import.
 from typing import List
 import os
+from gandy.utils.clean_text_v2 import clean_text_vq
 
 # Some caveats:
 # Does not support batch translations. Translations are always done sequentially. (moderate priority)
@@ -141,6 +142,8 @@ class LlmCppTranslationApp(BaseTranslation):
         return messages
 
     def translate_string(self, inp: str, use_stream=None):
+        inp = clean_text_vq(inp)
+
         messages = self.create_messages(inp)
 
         with logger.begin_event("Feeding to LLM") as ctx:
