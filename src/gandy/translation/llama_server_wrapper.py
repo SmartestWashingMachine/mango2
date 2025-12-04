@@ -258,7 +258,7 @@ class LlamaCppExecutableOpenAIClient:
     def get_model_name(self):
         return self.model_path.split(os.sep)[-1] # Just the model name (e.g., "my_model.gguf")
 
-    async def single_async_call(self, messages, use_stream = None):
+    async def single_async_call(self, messages, use_stream = None, max_completion_tokens = NOT_GIVEN):
         """
         Calls the llama.cpp server using the OpenAI client for chat completion.
         Messages should be in OpenAI chat format:
@@ -281,6 +281,7 @@ class LlamaCppExecutableOpenAIClient:
                 stream=True,
                 temperature=0.02,
                 stop=self.stop,
+                max_completion_tokens=max_completion_tokens,
             )
 
             async for chunk in stream_response:
@@ -302,19 +303,20 @@ class LlamaCppExecutableOpenAIClient:
                 temperature=0.02,
                 stop=self.stop,
                 extra_body=self.extra_body,
+                max_completion_tokens=max_completion_tokens,
             )
             prediction = completion.choices[0].message.content
 
         return prediction
     
-    async def batch_async(self, batch_inputs, use_stream = None):
-        tasks = [self.single_async_call(messages, use_stream) for messages in batch_inputs]
+    async def batch_async(self, batch_inputs, use_stream = None, max_completion_tokens = NOT_GIVEN):
+        tasks = [self.single_async_call(messages, use_stream, max_completion_tokens) for messages in batch_inputs]
         predictions = await asyncio.gather(*tasks)
 
         return predictions
 
-    def call_llm(self, batch_inputs, use_stream = None):
-        predictions = loop.run_until_complete(self.batch_async(batch_inputs, use_stream))
+    def call_llm(self, batch_inputs, use_stream = None, max_completion_tokens = NOT_GIVEN):
+        predictions = loop.run_until_complete(self.batch_async(batch_inputs, use_stream, max_completion_tokens))
         return predictions
 
     def call_llm_no_batch(self, messages, use_stream = None):
@@ -324,7 +326,7 @@ class LlamaCppExecutableOpenAIClient:
     def call_llm_with_batch(self, batch_inputs):
         # For batched inference. batch_inputs should be a List of messages.
         return self.call_llm(batch_inputs, use_stream=None)
-    
+
     async def embed_async(self, msg: str):
         model_name = self.get_model_name()
         response = await self.client.embeddings.create(input=[msg], model=model_name)
