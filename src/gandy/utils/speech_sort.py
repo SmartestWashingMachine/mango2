@@ -148,7 +148,9 @@ def sort_frames(boxes: List[SpeechBubble], left_to_right = False):
                             break
                         elif a_b_split_vertical_cuts(eroded_box_i, eroded_box_j, eroded_boxes):
                             # B.1.3. (2). If there exists a vertical cut that separates frame[i] and frame[j].
-                            G.add_edge(i, j)
+
+                            # Yes, this is correct (according to the paper).
+                            G.add_edge(j, i)
 
                             # print(f"Added edge {i} -> {j} (case 6)")
                             break
@@ -162,7 +164,52 @@ def sort_frames(boxes: List[SpeechBubble], left_to_right = False):
 
     return sorted_boxes
 
-def sort_text_in_sorted_frames(frame_boxes: List[SpeechBubble], text_boxes: List[SpeechBubble], left_to_right = False):
+def merge_nearby_text_boxes(text_boxes: List[SpeechBubble], image_width: int, image_height: int, distance_threshold = 0.02):
+    # distance_threshold of 0.02 means 2% of the image side.
+    # We merge nearby text boxes that are close to each other.
+    # Two boxes I and J are defined as close if they match one horizontal rule and one vertical rule:
+    # 1. The bottom of I is close to the top of J. (vert)
+    # 2. The right of I is close to the left of J. (horz)
+    # 3. The top of I is close to the bottom of J. (vert)
+    # 4. The left of I is close to the right of J. (horz)
+    # NOTE: text_boxes must be sorted in reading order beforehand.
+
+    merged: List[SpeechBubble] = []
+
+    for box in text_boxes:
+        did_merge = False
+        for i in range(len(merged)): # TODO: We might be able to get away with using a stack instead, considering the reading order...
+            mbox = merged[i]
+
+            vertical_distance = min(
+                abs(box[1] - mbox[3]), # box top to mbox bottom
+                abs(box[3] - mbox[1]) # box bottom to mbox top
+            )
+
+            horizontal_distance = min(
+                abs(box[0] - mbox[2]), # box left to mbox right
+                abs(box[2] - mbox[0]) # box right to mbox left
+            )
+
+            if (
+                vertical_distance <= distance_threshold * image_height and
+                horizontal_distance <= distance_threshold * image_width
+            ):
+                merged[i] = [
+                    min(box[0], mbox[0]),
+                    min(box[1], mbox[1]),
+                    max(box[2], mbox[2]),
+                    max(box[3], mbox[3]),
+                ]
+                did_merge = True
+                break
+
+        if not did_merge:
+            merged.append(box)
+
+    return merged
+
+def sort_text_in_sorted_frames(frame_boxes: List[SpeechBubble], text_boxes: List[SpeechBubble], left_to_right = False, merge_nearby_text_boxes_in_frame = False):
     # For each text box, find which (already sorted) frame it belongs to.
     # We assume that the text box belongs to the frame which it overlaps the most.
     frame_text_map = {i: [] for i in range(len(frame_boxes))}
@@ -208,12 +255,20 @@ def sort_text_in_sorted_frames(frame_boxes: List[SpeechBubble], text_boxes: List
 
     for i in range(len(frame_boxes)):
         frame_box = frame_boxes[i]
-        texts_in_frame = frame_text_map[i]
 
+        texts_in_frame = frame_text_map[i]
         if len(texts_in_frame) == 0:
             continue
-
         texts_in_frame.sort(key=_text_box_distance)
+
+        if merge_nearby_text_boxes_in_frame:
+            # Let's keep this to False for now... it's rather buggy.
+            texts_in_frame = merge_nearby_text_boxes(
+                texts_in_frame, 
+                image_width=frame_box[2] - frame_box[0], 
+                image_height=frame_box[3] - frame_box[1],
+                distance_threshold=0.02,
+            )
 
         sorted_text_boxes.extend(texts_in_frame)
 
