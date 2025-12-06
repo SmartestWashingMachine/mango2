@@ -26,6 +26,7 @@ class AdvancedPipeline(BasePipeline):
         image_redrawing_app: SwitchApp = None,
         reranking_model_app: SwitchApp = None,
         text_line_model_app: SwitchApp = None,
+        frame_model: BaseImageDetection = None,
     ):
         if text_detection_app is None:
             text_detection_app = nullable_app(BaseImageDetection)
@@ -53,6 +54,7 @@ class AdvancedPipeline(BasePipeline):
             image_redrawing_app=image_redrawing_app,
             reranking_app=reranking_model_app,
             text_line_model_app=text_line_model_app,
+            frame_model=frame_model,
         )
 
     """ For Desktop App (Mango) """

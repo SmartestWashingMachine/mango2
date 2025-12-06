@@ -46,6 +46,8 @@ class ConfigState:
         self.sort_text_from_top_left = False
         self.ignore_thin_text = False
 
+        self.detect_frames = True
+
         self.cache_mt = True
 
         self.capture_window = ""

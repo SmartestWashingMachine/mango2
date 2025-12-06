@@ -280,6 +280,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     maxLengthA,
     bottomTextOnly,
     ignoreThinText,
+    detectFrames,
     batchOcr,
     cutOcrPunct,
     ignoreDetectSingleWords,
@@ -700,6 +701,15 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 defaultValue={ignoreThinText}
                 helperText="Ignores any thin lines of text that are detected. This can be useful if the line detection model is still picking up furigana."
                 label="Ignore Thin Texts"
+              />
+            ),
+            "Advanced Comic Sorting": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="detectFrames"
+                defaultValue={detectFrames}
+                helperText="When enabled, text boxes will be sorted based on detected frames in addition to their positions. This can improve text order in manga or comics with complex layouts. Recommended to leave this on."
+                label="Advanced Comic Sorting"
               />
             ),
             "Sort Texts Left-to-Right": (

@@ -221,11 +221,14 @@ class YOLOImageDetectionApp(BaseImageDetection):
         bboxes_pos, bboxes_scores = self.process_before_tnms(bboxes_scores, bboxes_pos, image_width, image_height)
 
         # NMS
-        keep = tnms(
-            bboxes_pos,
-            bboxes_scores,
-            thresh=self.iou_thr,
-        )
+        if self.iou_thr is not None:
+            keep = tnms(
+                bboxes_pos,
+                bboxes_scores,
+                thresh=self.iou_thr,
+            )
+        else:
+            keep = np.arange(bboxes_pos.shape[0])
 
         processed_boxes = bboxes_pos[keep, :]
         scores = bboxes_scores[keep]

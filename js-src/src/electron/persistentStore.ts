@@ -44,6 +44,7 @@ const storeDefaults: IStore = {
   strokeSize: 1.0,
   bottomTextOnly: false,
   ignoreThinText: false,
+  detectFrames: true,
   tileWidth: 100,
   tileHeight: 100,
   batchOcr: false,

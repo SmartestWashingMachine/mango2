@@ -56,7 +56,7 @@ from gandy.text_detection.rtdetr_image_detection import (
 )
 from gandy.text_detection.none_image_detection import NoneImageDetectionApp
 from gandy.text_detection.union_image_detection import UnionImageDetectionApp
-from gandy.text_detection.dfine_image_detection import DFineImageDetectionApp, DFineLineImageDetectionApp
+from gandy.text_detection.dfine_image_detection import DFineImageDetectionApp, DFineLineImageDetectionApp, DFineFrameDetectionApp
 from gandy.text_recognition.custom_gguf_ocr import CustomGgufOcrApp
 from gandy.reranking.generic_reranker import BaseRerankingApp
 from gandy.translation.llmcpp_translation import LlmCppTranslationApp, GoliathTranslationApp
@@ -118,6 +118,10 @@ yolo_line_emassive_calibrated = RTDetrExpandedLineImageDetectionApp(
 
 yolo_line_light = YOLOLineExtendedImageDetectionApp640(
     model_name="yolo_line_light", confidence_threshold=0.52, iou_thr=0.15,
+)
+
+dfine_frame = DFineFrameDetectionApp(
+    model_name="dfine_frame", confidence_threshold=0.4, iou_thr=None, image_size=1024,
 )
 
 
@@ -407,4 +411,5 @@ translate_pipeline = AdvancedPipeline(
     image_redrawing_app=IMAGE_REDRAWING_APP,
     reranking_model_app=RERANKING_MODEL_APP,
     text_line_model_app=TEXT_LINE_MODEL_APP,
+    frame_model=dfine_frame,
 )

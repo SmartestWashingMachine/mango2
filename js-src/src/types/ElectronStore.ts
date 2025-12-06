@@ -48,6 +48,7 @@ export type IStoreClientToServer = {
   strokeSize: number;
   bottomTextOnly: boolean;
   ignoreThinText: boolean;
+  detectFrames: boolean;
   tileWidth: number;
   tileHeight: number;
   batchOcr: boolean;

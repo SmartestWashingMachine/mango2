@@ -6,6 +6,8 @@ from gandy.onnx_models.dfine import DFineONNX
 from gandy.text_detection.line_mixin import ExpandedLineMixin
 import albumentations as A
 from PIL import Image
+import copy
+from gandy.utils.speech_sort import sort_frames
 
 class DFineImageDetectionApp(YOLOTDImageDetectionApp):
     def load_model(self):
@@ -93,3 +95,9 @@ class DFineLineImageDetectionApp(DFineImageDetectionApp, ExpandedLineMixin):
     
     def process_before_tnms(self, bboxes_scores, bboxes_pos, image_width, image_height):
         return bboxes_pos, bboxes_scores
+    
+class DFineFrameDetectionApp(DFineImageDetectionApp):
+    def sort_bboxes(self, bboxes, image_width, image_height):
+        new_bboxes = copy.deepcopy(bboxes)
+
+        return np.array(sort_frames(new_bboxes))

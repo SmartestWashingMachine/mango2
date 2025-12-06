@@ -25,6 +25,7 @@ from uuid import uuid4
 import os
 import json
 from gandy.database.faiss_mt_cache import MTCache
+from gandy.utils.speech_sort import sort_frames, sort_text_in_sorted_frames
 
 def dump_task1_debug_data(rgb_image: Image, speech_bboxes):
     debug_id = uuid4().hex
@@ -85,6 +86,7 @@ class BasePipeline:
         image_redrawing_app: BaseImageRedraw,
         reranking_app: BaseTranslation,
         text_line_model_app: BaseImageDetection,
+        frame_model: BaseImageDetection,
     ):
         self.mt_cache = MTCache()
 
@@ -127,6 +129,8 @@ class BasePipeline:
             raise RuntimeError("text_line_model_app must be given")
         else:
             self.text_line_app = text_line_model_app
+
+        self.frame_model = frame_model
 
     def log_app_usage(self, ctx):
         ctx.log(
@@ -290,7 +294,7 @@ class BasePipeline:
             logger.event_exception(ctx=None)
             return []
 
-    def get_bboxes_from_image(self, rgb_image: Image):
+    def get_bboxes_from_image(self, rgb_image: Image, with_frames = True):
         with logger.begin_event("Text detection") as ctx:
             if config_state.tile_width != 100 or config_state.tile_height != 100:
                 ctx.log('Splitting image into tiles', tile_width=config_state.tile_width, tile_height=config_state.tile_height)
@@ -298,6 +302,20 @@ class BasePipeline:
                 speech_bboxes = detect_image_chunks(rgb_image, config_state.tile_width, config_state.tile_height, detect_in_chunk=self._detect_in_chunk)
             else:
                 speech_bboxes = self._detect_in_chunk(rgb_image)
+
+        if with_frames and config_state.detect_frames and len(speech_bboxes) > 0:
+            with logger.begin_event("Frame-based sorting"):
+                with logger.begin_event("Frame detection"):
+                    if not self.frame_model.loaded:
+                        self.frame_model.load_model()
+                    frame_bboxes = self.frame_model.begin_process(rgb_image)
+
+                with logger.begin_event("Sorting frames"):
+                    frame_bboxes = sort_frames(frame_bboxes, left_to_right=config_state.sort_text_from_top_left)
+
+                with logger.begin_event("Sorting text boxes within frames", before=speech_bboxes) as ctx:
+                    speech_bboxes = sort_text_in_sorted_frames(frame_bboxes, speech_bboxes, left_to_right=config_state.sort_text_from_top_left)
+                    ctx.log("Sorted text boxes within frames", after=speech_bboxes)
 
         return speech_bboxes
     
@@ -386,7 +404,7 @@ class BasePipeline:
             if progress_cb is not None:
                 progress_cb(progress=10)
 
-            speech_bboxes = self.get_bboxes_from_image(rgb_image)
+            speech_bboxes = self.get_bboxes_from_image(rgb_image, with_frames=True)
             if progress_cb is not None:
                 progress_cb(progress=20)
 
@@ -474,7 +492,7 @@ class BasePipeline:
             config_state.tile_height = 100
 
             if with_text_detect:
-                speech_bboxes = self.get_bboxes_from_image(image)
+                speech_bboxes = self.get_bboxes_from_image(image, with_frames=False)
             else:
                 speech_bboxes = create_entire_bbox(image)
 
