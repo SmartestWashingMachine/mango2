@@ -1,6 +1,6 @@
-import networkx as nx
 from typing import List
 from gandy.utils.speech_bubble import SpeechBubble
+from gandy.utils.crude_dag import CrudeDAG
 
 # A lot of theory from: https://arxiv.org/pdf/2401.10224
 
@@ -91,8 +91,9 @@ def a_b_split_vertical_cuts(a: SpeechBubble, b: SpeechBubble, boxes: List[Speech
 
 
 def sort_frames(boxes: List[SpeechBubble], left_to_right = False):
-    G = nx.DiGraph() # Directed graph
-    G.add_nodes_from(range(len(boxes)))
+    G = CrudeDAG() # Directed graph
+    for i in range(len(boxes)):
+        G.add_node(i)
 
     for i in range(len(boxes)):
         for j in range(len(boxes)):
@@ -156,7 +157,7 @@ def sort_frames(boxes: List[SpeechBubble], left_to_right = False):
                             eroded_boxes = [erode_box(box) for box in eroded_boxes]
                             continue
 
-    sorted_nodes = list(nx.topological_sort(G))
+    sorted_nodes = G.topological_sort()
     sorted_boxes = [boxes[i] for i in sorted_nodes]
 
     return sorted_boxes
