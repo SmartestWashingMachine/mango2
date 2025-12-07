@@ -21,6 +21,13 @@ export const TEXT_DETECTION_OPTIONS = [
     `,
   },
   {
+    name: "D-FINE Large Group",
+    value: "dfine_l_group",
+    desc: `
+    Similar to D-FINE Large but can group together nearby speech bubbles more effectively.
+    `,
+  },
+  {
     name: "Union D-FINE Large Noisy",
     value: "union_dfine_noisy",
     desc: `

@@ -92,6 +92,10 @@ dfine_l_denoise = DFineImageDetectionApp(
     model_name="dfine_l_denoise", confidence_threshold=0.5, iou_thr=0.3, image_size=1024, filter_out_overlapping_bboxes=True,
 )
 
+dfine_l_group = DFineImageDetectionApp(
+    model_name="dfine_l_group", confidence_threshold=0.5, iou_thr=0.3, image_size=1024, filter_out_overlapping_bboxes=True,
+)
+
 yolo_line_e = RTDetrLineImageDetectionApp(
     model_name="yolo_line_e", confidence_threshold=0.38, iou_thr=0.15,
 )
@@ -121,7 +125,7 @@ yolo_line_light = YOLOLineExtendedImageDetectionApp640(
 )
 
 dfine_frame = DFineFrameDetectionApp(
-    model_name="dfine_frame", confidence_threshold=0.4, iou_thr=None, image_size=1024,
+    model_name="dfine_frame", confidence_threshold=0.4, iou_thr=0.7, image_size=1024,
 )
 
 
@@ -186,6 +190,7 @@ TEXT_DETECTION_APP = SwitchApp(
         "debug_dfine_line_emassive",
         "union_dfine_noisy",
         "union_dfine_denoise",
+        "dfine_l_group",
     ],
 )
 
