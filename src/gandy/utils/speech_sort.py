@@ -1,6 +1,7 @@
 from typing import List
 from gandy.utils.speech_bubble import SpeechBubble
 from gandy.utils.crude_dag import CrudeDAG
+from gandy.utils.merge_speeches import distance_segment_to_segment
 
 # A lot of theory from: https://arxiv.org/pdf/2401.10224
 
@@ -167,34 +168,55 @@ def sort_frames(boxes: List[SpeechBubble], left_to_right = False):
 def merge_nearby_text_boxes(text_boxes: List[SpeechBubble], image_width: int, image_height: int, distance_threshold = 0.02):
     # distance_threshold of 0.02 means 2% of the image side.
     # We merge nearby text boxes that are close to each other.
-    # Two boxes I and J are defined as close if they match one horizontal rule and one vertical rule:
-    # 1. The bottom of I is close to the top of J. (vert)
-    # 2. The right of I is close to the left of J. (horz)
-    # 3. The top of I is close to the bottom of J. (vert)
-    # 4. The left of I is close to the right of J. (horz)
-    # NOTE: text_boxes must be sorted in reading order beforehand.
 
     merged: List[SpeechBubble] = []
+
+    _width_thr = distance_threshold * image_width
+    _height_thr = distance_threshold * image_height
+    width_thr = height_thr = _width_thr + _height_thr
 
     for box in text_boxes:
         did_merge = False
         for i in range(len(merged)): # TODO: We might be able to get away with using a stack instead, considering the reading order...
             mbox = merged[i]
 
-            vertical_distance = min(
-                abs(box[1] - mbox[3]), # box top to mbox bottom
-                abs(box[3] - mbox[1]) # box bottom to mbox top
-            )
+            if distance_segment_to_segment(
+                [box[0], box[1]],
+                [box[0], box[3]],
+                [mbox[2], mbox[1]],
+                [mbox[2], mbox[3]],
+            ) <= width_thr:
+                # Case 1. Left edge of I is near right edge of J.
+                do_add = True
+            elif distance_segment_to_segment(
+                [box[2], box[1]],
+                [box[2], box[3]],
+                [mbox[0], mbox[1]],
+                [mbox[0], mbox[3]],
+            ) <= width_thr:
+                # Case 2. Right edge of I is near left edge of J.
+                do_add = True
+            elif distance_segment_to_segment(
+                [box[0], box[3]],
+                [box[2], box[3]],
+                [mbox[0], mbox[1]],
+                [mbox[2], mbox[1]],
+            ) <= height_thr:
+                # NOTE: Currently disabling case 3/4 - does not seem wise.
+                # Case 3. Bottom edge of I is near top edge of J.
+                do_add = False
+            elif distance_segment_to_segment(
+                [box[0], box[1]],
+                [box[2], box[1]],
+                [mbox[0], mbox[3]],
+                [mbox[2], mbox[3]],
+            ) <= height_thr:
+                # Case 4. Top edge of I is near bottom edge of J.
+                do_add = False
+            else:
+                do_add = False
 
-            horizontal_distance = min(
-                abs(box[0] - mbox[2]), # box left to mbox right
-                abs(box[2] - mbox[0]) # box right to mbox left
-            )
-
-            if (
-                vertical_distance <= distance_threshold * image_height and
-                horizontal_distance <= distance_threshold * image_width
-            ):
+            if do_add:
                 merged[i] = [
                     min(box[0], mbox[0]),
                     min(box[1], mbox[1]),
@@ -262,12 +284,11 @@ def sort_text_in_sorted_frames(frame_boxes: List[SpeechBubble], text_boxes: List
         texts_in_frame.sort(key=_text_box_distance)
 
         if merge_nearby_text_boxes_in_frame:
-            # Let's keep this to False for now... it's rather buggy.
             texts_in_frame = merge_nearby_text_boxes(
                 texts_in_frame, 
                 image_width=frame_box[2] - frame_box[0], 
                 image_height=frame_box[3] - frame_box[1],
-                distance_threshold=0.02,
+                distance_threshold=0.03,
             )
 
         sorted_text_boxes.extend(texts_in_frame)
