@@ -100,4 +100,8 @@ class DFineFrameDetectionApp(DFineImageDetectionApp):
     def sort_bboxes(self, bboxes, image_width, image_height):
         new_bboxes = copy.deepcopy(bboxes)
 
+        if new_bboxes.shape[0] == 0:
+            # No boxes to sort.
+            return new_bboxes
+
         return np.array(sort_frames(new_bboxes))
