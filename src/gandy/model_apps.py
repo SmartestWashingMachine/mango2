@@ -223,19 +223,19 @@ TRANSLATION_APP = SwitchApp(
             model_sub_path="config",
             prepend_fn=lambda s: s,
             lang="Generic",
-            config_sub_path="gem_uni_ja",
+            config_sub_path="jam",
         ),
         CustomGgufTranslationApp(
             model_sub_path="config",
             prepend_fn=lambda s: s,
             lang="Generic",
-            config_sub_path="gem_uni_ko",
+            config_sub_path="kam",
         ),
         CustomGgufTranslationApp(
             model_sub_path="config",
             prepend_fn=lambda s: s,
             lang="Generic",
-            config_sub_path="gem_uni_zh",
+            config_sub_path="zham",
         ),
     ],
     app_names=[
@@ -346,7 +346,7 @@ TEXT_LINE_MODEL_APP = SwitchApp(
 
 os.makedirs("models/custom_translators", exist_ok=True)
 
-IGNORE_FILES = TRANSLATION_APP.app_names # These are my models.
+IGNORE_FILES = TRANSLATION_APP.app_names + ["jam", "kam", "zham"] # These are my models.
 
 custom_model_suffix = ".mango_config.json"
 

@@ -86,7 +86,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     description: "This preset is good for translating certain Chinese comics.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["q25_zh"],
+      textRecognitionModelName: ["q25_zh", "zh_ocr_tiny"],
       translationModelName: ["llm_zhgem_goliath", "gem_uni_zh"],
       textLineModelName: ["dfine_line_emassive", "none"],
       numBeams: 3,
