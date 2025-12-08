@@ -170,6 +170,7 @@ TEXT_DETECTION_APP = SwitchApp(
             td_model_app=dfine_l_denoise,
             line_model_app=dfine_line_emassive_calibrated,
         ),
+        dfine_l_group,
     ],
     app_names=[
         "yolo_td",
