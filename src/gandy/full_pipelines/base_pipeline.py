@@ -313,9 +313,10 @@ class BasePipeline:
                 with logger.begin_event("Sorting frames"):
                     frame_bboxes = sort_frames(frame_bboxes, left_to_right=config_state.sort_text_from_top_left)
 
-                with logger.begin_event("Sorting text boxes within frames", before=speech_bboxes) as ctx:
-                    speech_bboxes = sort_text_in_sorted_frames(frame_bboxes, speech_bboxes, left_to_right=config_state.sort_text_from_top_left)
-                    ctx.log("Sorted text boxes within frames", after=speech_bboxes)
+                if len(frame_bboxes) > 0:
+                    with logger.begin_event("Sorting text boxes within frames", before=speech_bboxes) as ctx:
+                        speech_bboxes = sort_text_in_sorted_frames(frame_bboxes, speech_bboxes, left_to_right=config_state.sort_text_from_top_left)
+                        ctx.log("Sorted text boxes within frames", after=speech_bboxes)
 
         return speech_bboxes
     
