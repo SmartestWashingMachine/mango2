@@ -50,5 +50,3 @@ Once we have a custom translator, we need to modify the input prompt to include 
 Now select the RAG-supported translator in the Mango options and try translating with it! The RAG data files will be processed on the first translation call, so expect that to take the longest. But once that's done, the RAG data files never need to be processed again.
 
 Up to **three** similar results will be found and appended to the input prompt. If the translator is capable, it should use the results to generate better translations.
-
-If you want to use a different dataset, delete the `models/database/rag_index` and `models/database/rag_data` files.

@@ -155,6 +155,7 @@ class LlamaCppExecutableOpenAIClient:
                     "-c", # Context size (equivalent to n_ctx)
                     str(self.n_context),
                     "--embeddings",
+                    "--log-disable",
                 ]
 
             if self.can_cuda and self.num_gpu_layers > 0:

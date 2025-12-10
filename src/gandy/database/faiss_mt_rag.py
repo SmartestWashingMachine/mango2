@@ -3,6 +3,21 @@ import json
 import os
 from gandy.database.faiss_store import FAISSStore
 from tqdm import tqdm
+import hashlib
+
+# This function is AI generated, not that it matters... it's fairly simple.
+def hash_file_sha256(filename):
+    h = hashlib.sha256()
+    
+    with open(filename, 'rb') as file:
+        while True:
+            chunk = file.read(65536) 
+            if not chunk:
+                break
+
+            h.update(chunk)
+            
+    return h.hexdigest()
 
 # Unlike FAISS MT Cache, which is used for retrieving cached machine translations from source texts...
 # This RAG module is intended to be used to find similar source texts and their translations from some user-given dataset.
@@ -13,7 +28,7 @@ class TranslationRAG():
     def __init__(self):
         self.mt_rag = None
 
-    def _build_dataset(self, items):
+    def _build_dataset(self, items, cur_data_hash = None):
         with logger.begin_event('Creating RAG data and index files') as ctx:
             # Each item should be a tuple of (source STR, target STR).
             for idx, (st, tt) in enumerate(tqdm(items, desc="Building RAG dataset")):
@@ -26,16 +41,38 @@ class TranslationRAG():
             self.mt_rag._save_async() # Actually not async cause we call it directly here, rather than using a thread.
             del self.mt_rag
 
+            # Save the hash after everything is done.
+            with open(self.get_hash_path(), "w", encoding="utf-8") as fp:
+                fp.write(cur_data_hash)
+
         with logger.begin_event('Reloading RAG module'):
             self._load_mt_rag()
 
+    def get_hash_path(self):
+        return rf'models/database/rag_hash'
+
+    def do_build_index(self):
+        with logger.begin_event("Checking whether or not to build RAG data") as ctx:
+            input_path = 'models/database/rag_input_data.jsonl'
+            cur_hash = hash_file_sha256(input_path).strip()
+            
+            # If the hash of the previous JSONL user input data does not exist or is not equal to the current JSONL user input data, rebuild.
+            precomputed_hash_path = self.get_hash_path()
+            if not os.path.exists(precomputed_hash_path):
+                ctx.log("Old hash does not exist - building.", cur_hash=cur_hash)
+                return (True, cur_hash)
+
+            prev_hash = open(precomputed_hash_path, encoding="utf-8").read().strip()
+            ctx.log("Checking if old hash is equal to current hash", cur_hash=cur_hash, prev_hash=prev_hash, equal=cur_hash == prev_hash)
+            return (cur_hash != prev_hash, cur_hash)
+
     def _load_mt_rag(self):
         with logger.begin_event('Loading RAG module for translation') as ctx:
-            # If the index does not exist, try to create it from the INPUT data (not to be confused with rag_data, which is a more optimized storage structure).
-            index_did_not_exist = not os.path.exists('models/database/rag_index')
             self.mt_rag = FAISSStore(db_path='models/database/rag', model_name='nite', save_interval=-1, db_name='_index', data_name='_data')
 
-            if index_did_not_exist:
+            do_build, cur_data_hash = self.do_build_index()
+
+            if do_build:
                 ctx.log('RAG Index file does NOT exist - creating from input data file.')
 
                 input_path = 'models/database/rag_input_data.jsonl'
@@ -56,7 +93,7 @@ class TranslationRAG():
 
                     loading_ctx.log('Done mapping items in input data file', n_items=len(items))
 
-                self._build_dataset(items)
+                self._build_dataset(items, cur_data_hash)
             else:
                 ctx.log('RAG Index file already exists - using existing RAG data file.')
 
