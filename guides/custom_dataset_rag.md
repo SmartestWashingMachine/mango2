@@ -1,6 +1,6 @@
 # Using our own dataset to inform a translation model.
 
-If we have a custom translation model and our own dataset, we can feed this dataset into the model to help it learn whatever patterns or information lie within it.
+If we have a RAG-supported translation model and our own dataset, we can feed this dataset into the model to help it learn whatever patterns or information lie within it.
 
 Some use cases include:
 - Showing it how to translate specific phrases / idioms.
@@ -16,7 +16,9 @@ There are typically two main ways of "feeding" this dataset into a model:
 <sup>(And we have to suffer through hyperparameter tuning, increased hallucination rates, catastrophic forgetting, GPU spot allocation, memory leaks, dataset filtering, model exporting, the list goes on...)</sup>
 
 
-(2) is almost fully supported out of the box: Mango has RAG built-in. All we need is our own dataset and a custom translator that "places" the retrieved samples somewhere in the input prompt.
+(2) is almost fully supported out of the box: Mango has RAG built-in. All we need is our own dataset and a RAG-supported translator model that "places" the retrieved samples somewhere in the input prompt.
+
+The `jam_rag_\<language\>` models support RAG and come pre-installed! Custom translator models can also be configured to use RAG.
 
 ## Getting Started
 
@@ -35,6 +37,8 @@ In some of my personal tests, well-performing datasets would have around 100 - 1
 
 ### Step 2. Configure a custom GGUF translator to use RAG.
 
+**Skip this step if you're using a pre-installed RAG model.**
+
 [See here on how to create a custom translator.](loading_custom_translator_llms.md)
 
 Once we have a custom translator, we need to modify the input prompt to include the `{{JOIN_EACH_RAG_ENTRY(__SRC__ ... __TGT__)}}` operator. For example, here's a custom user message prompt:
@@ -43,7 +47,7 @@ Once we have a custom translator, we need to modify the input prompt to include 
 
 ### Step 3. Done!
 
-Now select the custom translator in the Mango options and try translating with it! The RAG data files will be processed on the first translation call, so expect that to take the longest. But once that's done, the RAG data files never need to be processed again.
+Now select the RAG-supported translator in the Mango options and try translating with it! The RAG data files will be processed on the first translation call, so expect that to take the longest. But once that's done, the RAG data files never need to be processed again.
 
 Up to **three** similar results will be found and appended to the input prompt. If the translator is capable, it should use the results to generate better translations.
 

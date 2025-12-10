@@ -133,6 +133,8 @@ class LlamaCppExecutableOpenAIClient:
 
             if self.verbose:
                 command.append("--verbose")
+            else:
+                command.append("--log-disable")
 
             if self.mmproj is not None:
                 command.append("--mmproj")

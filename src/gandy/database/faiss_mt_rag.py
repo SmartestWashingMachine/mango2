@@ -2,10 +2,12 @@ from gandy.utils.fancy_logger import logger
 import json
 import os
 from gandy.database.faiss_store import FAISSStore
+from tqdm import tqdm
 
 # Unlike FAISS MT Cache, which is used for retrieving cached machine translations from source texts...
 # This RAG module is intended to be used to find similar source texts and their translations from some user-given dataset.
 # Only "Custom GGUF models" (including my Reforged model) can use this, as my initial models were not trained to work with RAG effectively.
+# ^ Actually that comment is old. My new models (gem_uni & gem_mage) can also work with it. And gem_uni is a default model.
 
 class TranslationRAG():
     def __init__(self):
@@ -14,7 +16,7 @@ class TranslationRAG():
     def _build_dataset(self, items):
         with logger.begin_event('Creating RAG data and index files') as ctx:
             # Each item should be a tuple of (source STR, target STR).
-            for idx, (st, tt) in enumerate(items):
+            for idx, (st, tt) in enumerate(tqdm(items, desc="Building RAG dataset")):
                 self.mt_rag.add_translation(source_text=st, translated_text=(st, tt), do_log=False)
 
                 if idx % 1000 == 0:
