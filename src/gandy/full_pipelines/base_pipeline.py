@@ -25,7 +25,7 @@ from uuid import uuid4
 import os
 import json
 from gandy.database.faiss_mt_cache import MTCache
-from gandy.utils.speech_sort import sort_frames, sort_text_in_sorted_frames
+from gandy.utils.speech_sort import sort_frames, sort_text_in_sorted_frames, add_frames_for_ghost_text_boxes
 
 def dump_task1_debug_data(rgb_image: Image, speech_bboxes):
     debug_id = uuid4().hex
@@ -311,6 +311,7 @@ class BasePipeline:
                     frame_bboxes = self.frame_model.begin_process(rgb_image)
 
                 with logger.begin_event("Sorting frames"):
+                    frame_bboxes = add_frames_for_ghost_text_boxes(frame_bboxes, speech_bboxes)
                     frame_bboxes = sort_frames(frame_bboxes, left_to_right=config_state.sort_text_from_top_left)
 
                 if len(frame_bboxes) > 0:

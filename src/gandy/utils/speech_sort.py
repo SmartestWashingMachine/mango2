@@ -237,9 +237,20 @@ def merge_nearby_text_boxes(text_boxes: List[SpeechBubble], image_width: int, im
 
     return merged
 
+def add_frames_for_ghost_text_boxes(frame_boxes: List[SpeechBubble], text_boxes: List[SpeechBubble]):
+    # Text boxes without any frame (no overlap) have a "ghost frame" with their size and position.
+
+    new_frame_boxes: List[SpeechBubble] = [*frame_boxes]
+    for tb in text_boxes:
+        if all(not a_b_overlap(tb, fb) for fb in new_frame_boxes):
+            new_frame_boxes.append(tb)
+
+    return new_frame_boxes
+
 def sort_text_in_sorted_frames(frame_boxes: List[SpeechBubble], text_boxes: List[SpeechBubble], left_to_right = False, merge_nearby_text_boxes_in_frame = False):
     # For each text box, find which (already sorted) frame it belongs to.
     # We assume that the text box belongs to the frame which it overlaps the most.
+
     frame_text_map = {i: [] for i in range(len(frame_boxes))}
     for text_box in text_boxes:
         max_overlap_area = 0
@@ -266,8 +277,7 @@ def sort_text_in_sorted_frames(frame_boxes: List[SpeechBubble], text_boxes: List
             distances = [((a_center_x(fb) - a_center_x(text_box)) ** 2 + (a_center_y(fb) - a_center_y(text_box)) ** 2) ** 0.5 for fb in frame_boxes]
             best_frame_index = distances.index(min(distances))
 
-        if best_frame_index != -1:
-            frame_text_map[best_frame_index].append(text_box)
+        frame_text_map[best_frame_index].append(text_box)
 
     # Then for each frame, sort its text boxes, and concatenate to the final list.
     # We usually assume that text boxes that are closer to the top right come first.
