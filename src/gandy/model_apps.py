@@ -125,7 +125,7 @@ yolo_line_light = YOLOLineExtendedImageDetectionApp640(
 )
 
 dfine_frame = DFineFrameDetectionApp(
-    model_name="dfine_frame", confidence_threshold=0.4, iou_thr=0.7, image_size=1024,
+    model_name="dfine_frame", confidence_threshold=0.55, iou_thr=0.4, image_size=1024,
 )
 
 

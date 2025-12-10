@@ -33,7 +33,7 @@ def erode_box(a: SpeechBubble, factor = 0.03):
         a[3] - height * factor,
     ]
 
-def a_b_split_horizontal_cuts(a: SpeechBubble, b: SpeechBubble, boxes: List[SpeechBubble], min_bound = -999999, max_bound = 999999, cut_size = 2):
+def a_b_split_vertical_cuts(a: SpeechBubble, b: SpeechBubble, boxes: List[SpeechBubble], min_bound = -999999, max_bound = 999999, cut_size = 2):
     candidate_cuts = []
     for x in boxes:
         candidate_cuts.append(
@@ -41,7 +41,7 @@ def a_b_split_horizontal_cuts(a: SpeechBubble, b: SpeechBubble, boxes: List[Spee
         ) # Make a cut from the right of the box.
 
         candidate_cuts.append(
-            [x[0] - cut_size, 0, x[0] - cut_size * 2, 999999]
+            [x[0] - cut_size * 2, 0, x[0] - cut_size, 999999]
         ) # Make a cut from the left of the box.
 
     for cut in candidate_cuts:
@@ -60,14 +60,14 @@ def a_b_split_horizontal_cuts(a: SpeechBubble, b: SpeechBubble, boxes: List[Spee
 
     return False
 
-def a_b_split_vertical_cuts(a: SpeechBubble, b: SpeechBubble, boxes: List[SpeechBubble], min_bound = -999999, max_bound = 999999, cut_size = 2):
+def a_b_split_horizontal_cuts(a: SpeechBubble, b: SpeechBubble, boxes: List[SpeechBubble], min_bound = -999999, max_bound = 999999, cut_size = 2):
     """
-    Determine if there exists a vertical cut that separates box a and box b (top and bottom).
+    Determine if there exists a cut that separates box a and box b (top and bottom).
     """
     candidate_cuts = []
     for x in boxes:
         candidate_cuts.append(
-            [0, x[1] - cut_size, 999999, x[1] - cut_size * 2]
+            [0, x[1] - cut_size * 2, 999999, x[1] - cut_size]
         ) # Make a cut from the top of the box.
 
         candidate_cuts.append(
@@ -90,6 +90,11 @@ def a_b_split_vertical_cuts(a: SpeechBubble, b: SpeechBubble, boxes: List[Speech
 
     return False
 
+def a_center_x(a: SpeechBubble):
+    return (a[0] + a[2]) // 2
+
+def a_center_y(a: SpeechBubble):
+    return (a[1] + a[3]) // 2
 
 def sort_frames(boxes: List[SpeechBubble], left_to_right = False):
     G = CrudeDAG() # Directed graph
@@ -105,7 +110,6 @@ def sort_frames(boxes: List[SpeechBubble], left_to_right = False):
 
             eroded_box_i = [*boxes[i]]
             eroded_box_j = [*boxes[j]]
-            eroded_boxes = [*boxes]
 
             while a_b_overlap(eroded_box_i, eroded_box_j):
                 eroded_box_i = erode_box(eroded_box_i)
@@ -139,6 +143,8 @@ def sort_frames(boxes: List[SpeechBubble], left_to_right = False):
                 ):
                     # B.1.1. If frame[i] is strictly above frame[j] AND frame[j] is strictly to the right of frame[i].
                     # B.1.1b (LTR). If frame[i] is strictly above frame[j] AND frame[i] is strictly to the right of frame[j].
+
+                    eroded_boxes = [*boxes]
 
                     for _ in range(100):
                         if a_b_split_horizontal_cuts(eroded_box_i, eroded_box_j, eroded_boxes):
@@ -254,6 +260,11 @@ def sort_text_in_sorted_frames(frame_boxes: List[SpeechBubble], text_boxes: List
             if overlap_area > max_overlap_area:
                 max_overlap_area = overlap_area
                 best_frame_index = i
+
+        if best_frame_index == -1:
+            # Find the closest frame by distance, and just add it there.
+            distances = [((a_center_x(fb) - a_center_x(text_box)) ** 2 + (a_center_y(fb) - a_center_y(text_box)) ** 2) ** 0.5 for fb in frame_boxes]
+            best_frame_index = distances.index(min(distances))
 
         if best_frame_index != -1:
             frame_text_map[best_frame_index].append(text_box)
