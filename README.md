@@ -4,18 +4,41 @@ Mango 4 is an all-batteries-included tool to machine translate Japanese media su
 
 **All these models are installed locally** - no need to worry about rate limits! My models are also amoral... if you know you know.
 
-Some other features:
-- Automatically stores past texts as context for future texts to translate (potentially better pronoun resolution.)
-- Caches translations in case they need to be translated again quickly (such as for user interfaces in games.)
-- OCR texts across a variety of domains (still locally!)
-- Allows the user to specify how certain character names should be translated (with my big translation model!)
-- Supports most custom GGUF translation models, and they can be configured to use RAG and retrieve similar translations as examples (in-context learning!)
-- Supports Chinese/Korean OCR'ing and translation to English with my other models (installed separately.)
-- Supports multiple open OCR windows (for games where text can appear in multiple locations.)
+Features include:
 
-<sub>Most of these features can be enabled in the options menu!</sub>
+### Local AI optimized for speed for cheap (no need for killer hardware!)
 
-# Examples
+<video src="examples/mainline/fastja.mp4" width="500" controls muted></video>
+
+### Stores translations in case they need to be translated again even faster (such as for user interfaces in games.)
+
+<video src="examples/mainline/caching.mp4" width="500" controls muted></video>
+
+### Supports Chinese/Korean OCR'ing and translation to English with my other models (installed separately.)
+
+<img src="examples/mainline/zh.png" width="500" />
+
+<img src="examples/mainline/ko.png" width="500" />
+
+### Stores past texts as context for future texts to translate (potentially better pronoun resolution.)
+
+<img src="examples/mainline/ctx_history.png" width="500" />
+
+### Supports translating certain character names with your own dictionary (dictionary-aware!)
+
+<img src="examples/mainline/custom_dictionary.png" width="500" />
+
+### Supports custom GGUF translation models, and they can be configured to use RAG with your own data - retrieving similar translations to use as examples (in-context learning!)
+
+<img src="examples/mainline/custom_mts.png" width="500" />
+
+### Supports multiple open OCR windows (for games where text can appear in multiple locations.)
+
+<img src="examples/mainline/multiui.png" width="500" />
+
+<sub>Most of these features can be enabled/disabled in the settings menu.</sub>
+
+# Other examples
 
 ### Translating manga
 
@@ -55,23 +78,21 @@ Some other features:
 
 # Installation
 
-1. [Download Mango](https://drive.google.com/file/d/1EZs0Cd5nHGP3lQsl7qGBXatBpqb5EGCJ/view?usp=sharing)
-2. Unzip the file. 7zip was used to zip it.
+1. [Download Mango]()
+2. Unzip the file.
 3. Open "mango.exe" - it will take a minute to load.
 
 # Requirements
 
 - Windows 10 (some users report it working with older Windows versions... not 100% sure on this)
-- 16 GB disk space
-- 16 GB RAM
-- Semi-modern CPU
+- 12 GB disk space
+- 8 GB RAM
 - Visual Studio 2015, 2017, 2019, and 2022 C++ Redistributables (install from [here](https://aka.ms/vs/17/release/vc_redist.x64.exe) or [here](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170))
 
 A Nvidia GPU should **NOT** be required for CPU usage. A Nvidia GPU is only required if you want even faster translations, in which case:
 
 - 4 to 6 GB VRAM (for base models)
-- 12 GB VRAM (for strong translation model OR editing model)
-- 16 GB VRAM (for strong translation model AND editing model)
+- 16 GB VRAM (for stronger translation models)
 
 # Guides
 
@@ -93,12 +114,12 @@ A Nvidia GPU should **NOT** be required for CPU usage. A Nvidia GPU is only requ
 
 Mango 4 comes preinstalled with the necessary models. There are additional model packs here which may enhance the experience (not to be confused with other custom models).
 
-Unzipping a model pack will reveal a `models` folder. Drag this `models` folder to where `mango.exe` is located.
+Download all the `.gguf` and `.json` and any `.txt` files in the link, then drag them to the `models/custom_ocrs` folder if it's an OCR model, or the `models/custom_translators` folder if it's a translation model.
 
-- [Stronger MT model](https://drive.google.com/file/d/15gvST4_UgWgaIBZ_J4cugr23ahQ2Zzom/view?usp=sharing) [Supports Japanese/Korean/Chinese to English and is just generally better albeit slower]
-- [Korean + Chinese OCR models](https://drive.google.com/file/d/1Cg1haoMSqEqQRqkbWn8qsZ_rJruKkIvU/view?usp=sharing) [Self-explanatory]
-- [Post editing model](https://drive.google.com/file/d/1bClqgpoBPYms8ZCja8UymQrx2kJOqY1G/view?usp=sharing) [Refines translations for even better quality but is slow as [REDACTED]] (NOTE: I do NOT recommend using this model due to mixed performance.)
-- 2X Stronger MT model [Supports CJK to English and may be even better albeit EVEN slower] [MAYBE COMING SOON]
+- [Heavy translation model (12 GB VRAM)](https://huggingface.co/octopusmegalopod/cjk2english-mtmage-24b-trial3/tree/main)
+- (Soon) Heavier translation model (16 GB VRAM)
+- [Korean OCR model](https://huggingface.co/octopusmegalopod/fast-jamo-ko-ocr-gguf/tree/main)
+- [Chinese OCR model](https://huggingface.co/octopusmegalopod/lfm-zh-ocr-plain-test-gguf/tree/main)
 
 # API usage
 
@@ -110,7 +131,7 @@ For example:
 
 Errors return the string `ERROR (search logs for "Task7 Error")` with response code `201`.
 
-The currently active translation model will be used to translate the string, regardless of what language the input string is in. You can change the active model in the options menu.
+The currently active translation model will be used to translate the string, regardless of what language the input string is in. You can change the active model in the settings menu.
 
 # Where are the benchmarks?
 
@@ -128,6 +149,30 @@ Unfortunately from personal experiments, COMET (and other deep metrics) wasn't h
 
 **Issue 4.5:** Why I don't use QE metrics instead. There are papers finding that these metrics bizarrely work just as well as actual quality metrics (that have a gold translation to compare to) when it comes to reinforcement tuning a model. I found similar results but with one reaaaaallly bad downside: Reward hacking. If the metric has a length bias *cough* MetricX *cough* then the translation model *will* learn it. If the metric overrewards certain pointless / hallucinated phrases like "Oh my" or "Ah," or "Wow, ", then the model *will* learn it. All these QE metrics have hallucinated phrases that they overreward. They are disastrous for reinforcement tuning. I found Comet23Kiwi XL (QE) to suffer the least from this, but Comet 22 (not QE) was even better so who cares.
 
+# (Slightly Technical) How does this app translate media?
+
+There's a *lot* to it, depending on the configuration and what's being translated. Here's a simplified example for translating an image:
+
+A text detection model detects text in images. This is not to be confused with speech bubbles. It's fairly common to find comic panels where a character is "thinking" but their thoughts are reflected in text plainly overlaid on the panel - we want to capture that too.
+
+Then, a frame detection model detects the frames / panels in the image. This is used to determine the reading order of the detected texts. I tried numerous heuristics and algorithms but ultimately a modified version of the Manga Whisperer algorithm worked best, so that's what we use here.
+
+Then, for each detected text, a text line detection model separates it into horizontal / vertical lines. The model is usually smart enough to determine whether it's to be read horizontally and vertically. This model is *very* helpful to improve the OCR accuracy.
+
+Then, an OCR model reads each text (or rather, reads each line in each text, then concatenate the results). I spend a **lot** of time fine-tuning OCR models, almost as much as the translation models. It's almost always the initial source of errors, which obviously affect the ultimate translation. A custom smart resizing algorithm is used to ensure long horizontal / vertical texts can be read well, without horrifically distorting the image dimensions.
+
+Then, dictionary information such as how to translate certain names (user-specified) along with the OCR'd texts are fed to to the translation model...
+
+In addition, if name detection is enabled and a large dictionary file is installed (the user has to give one), an NER model is used to add additional dictionary information for names detected in the OCR'd texts and in the large dictionary file. This allows the user to specify a *massive* list of dictionary names (e.g: 60000+), but only feed relevant ones at runtime.
+
+In addition, if a RAG translation model is used and a RAG data file is installed (the user has to give one), an embedding model is used to find similar texts to the one to translate, and these are fed as examples to the translation model.
+
+In addition (yes...), some prior texts in the image (the user can specify how many) are fed as context, which help to further inform the translation model.
+
+Then, the translation model actually translates!
+
+Finally, simple cleaning and repainting heuristics are used to draw the translations onto the final image.
+
 # Wait, where did you get the data to train these models?
 
 :innocent:
@@ -136,13 +181,15 @@ Unfortunately from personal experiments, COMET (and other deep metrics) wasn't h
 
 Gemma - Gemma models are pretty good. It's just a shame they're so difficult to train with - almost all libraries utilizing them need manual patches to actually train the models right.
 
+LiquidAI - Very nice modern models!
+
 MangaOCR - They have an awesome script to synthesize data.
 
 COMET - Their training scripts were used to help train one of the reranking models. Also used their models for reinforcement tuning.
 
 OPUS - While the OPUS dataset was not used to train these models, it was used for experimentation. Some of the logic they used to clean their data was also reused here.
 
-ONNX - A siren's call. A decent inference engine and good for the OCR models. But it's also responsible for 4 GB of bloatware in the form of Pytorch due to IO bindings...
+ONNX - A siren's call. A decent inference engine and good for the OCR models. But it was also responsible for 4 GB of bloatware in the form of Pytorch due to IO bindings...
 
 llama_cpp - Very nice inference engine. Unlike vLLM it actually works mostly out of the box on Windows.
 
@@ -156,4 +203,4 @@ Too many MT research papers / projects to name (Adafactor, DocRepair, knn-MT, BE
 
 Mango 1/2 is deprecated - bigger models and bigger systems are the way to go. We don't talk about 3.
 
-[Some observations and discoveries in my journey](guides/quibbles.md)
+[Some (old - mostly prior to the LLM boom) observations and discoveries in my journey](guides/quibbles.md)
