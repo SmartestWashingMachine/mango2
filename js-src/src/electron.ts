@@ -176,7 +176,7 @@ app.whenReady().then(async () => {
     if (lensCleanup !== null) {
       lensCleanup();
     }
-    if (s !== undefined) {
+    if (s?.lensActivationKey !== undefined) {
       lensCleanup = registerLens(s.lensActivationKey, electronState);
     }
   });
