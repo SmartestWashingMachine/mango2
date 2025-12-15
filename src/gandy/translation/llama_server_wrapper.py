@@ -285,6 +285,7 @@ class LlamaCppExecutableOpenAIClient:
                 temperature=0.02,
                 stop=self.stop,
                 max_completion_tokens=max_completion_tokens,
+                extra_body=self.extra_body if len(self.extra_body) > 0 else None,
             )
 
             async for chunk in stream_response:
@@ -305,7 +306,7 @@ class LlamaCppExecutableOpenAIClient:
                 stream=False,
                 temperature=0.02,
                 stop=self.stop,
-                extra_body=self.extra_body,
+                extra_body=self.extra_body if len(self.extra_body) > 0 else None,
                 max_completion_tokens=max_completion_tokens,
             )
             prediction = completion.choices[0].message.content

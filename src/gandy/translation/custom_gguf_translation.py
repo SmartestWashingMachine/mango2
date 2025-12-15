@@ -94,7 +94,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
     def load_model(self):
         self.mango_config = self.load_mango_config()
 
-        return super().load_model(extra_commands=self.mango_config.get("extra_commands", []))
+        return super().load_model(extra_commands=self.mango_config.get("extra_commands", []), extra_body=self.mango_config.get("extra_body", {}))
     
     def ignore_field(self, msg: str):
         return msg == "" or msg is None

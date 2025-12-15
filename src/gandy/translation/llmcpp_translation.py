@@ -54,6 +54,7 @@ class LlmCppTranslationApp(BaseTranslation):
     def load_model(
         self,
         extra_commands = [],
+        extra_body = {},
     ):
         can_cuda = self.get_can_cuda()
         logger.info(f"Loading translation model ({self.model_sub_path})... CanCuda={can_cuda} NGpuLayers={config_state.num_gpu_layers_mt}")
@@ -75,6 +76,7 @@ class LlmCppTranslationApp(BaseTranslation):
             port=self.get_server_port(),
             stop=self.get_stop_words(),
             extra_commands=extra_commands,
+            extra_body=extra_body,
         )
 
         self.llm.start_server()
