@@ -22,7 +22,11 @@ Make sure to hook into the game and find the right hook.
     <img src="../examples/tutorials/game/ga2p5.jpg" width="500" />
 </p>
 
-## Click the purple button on the bottom left in Mango.
+## Click the blue button with the gear icon on the bottom left in Mango.
+
+Here we'll select and configure a box to listen to the clipboard for text to translate.
+
+## Go back to the Text tab and Click the purple button on the bottom left in Mango.
 
 <p float="left">
     <img src="../examples/tutorials/game/ga2p6.jpg" width="500" />
