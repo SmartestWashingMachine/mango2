@@ -16,6 +16,9 @@ class LineMixin(BaseImageDetection):
                 image, do_sort=False, return_list=False
             )  # [N, 4] (where 4 == (x1, y1, x2, y2))
 
+        return self.sort_images(bboxes, image, return_image_if_fails)
+
+    def sort_images(self, bboxes, image, return_image_if_fails = True):
         with logger.begin_event("LineMixin sorting"):
             # Sort from left-to-right to right-to-left
             if bboxes.shape[0] > 1:
@@ -77,7 +80,7 @@ class ExpandedLineMixin(LineMixin):
                 image, do_sort=False, return_list=False
             )  # [N, 4] (where 4 == (x1, y1, x2, y2))
 
-        with logger.begin_event("ExpandedLineMixin sorting"):
+        with logger.begin_event("ExpandedLineMixin sorting") as ctx:
             # Sort from left-to-right to right-to-left
             if bboxes.shape[0] > 1:
                 x1 = bboxes[:, 0]  # [N]
@@ -93,7 +96,8 @@ class ExpandedLineMixin(LineMixin):
 
                 # Previous avg aspect ratio was 0.5.
                 if avg_aspect_ratio <= 1.0:
-                    return super().get_images(image, return_image_if_fails)
+                    ctx.log("Vertical texts detected - falling back to standard LineMixin sorting instead.")
+                    return super().sort_images(bboxes, image, return_image_if_fails)
 
                 # Here we assume texts are horizontal.
                 # Closest points to the TOP LEFT of the image come first.
@@ -123,7 +127,7 @@ class ExpandedLineMixinWithMargin(ExpandedLineMixin):
         im_width, im_height = image.size
         bboxes: np.ndarray = super().get_images(image, return_image_if_fails)
 
-        with logger.begin_event("ExpandedLinneMixinWithMargin adding margin"):
+        with logger.begin_event("ExpandedLineMixinWithMargin adding margin"):
             x1 = bboxes[:, 0]  # [N]
             y1 = bboxes[:, 1]
             x2 = bboxes[:, 2]
