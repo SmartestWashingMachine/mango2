@@ -68,6 +68,8 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
 
   const [append, setAppend] = useState(false);
 
+  const [enableCuda, setEnableCuda] = useState(false);
+
   useEffect(() => {
     document.body.style.backgroundColor = "rgba(255, 255, 255, 0.0)"; // for fade-in. this gives a transparent window.
 
@@ -199,6 +201,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
         setUseStream(boxOptions?.useStream);
         setAutoEnterTime(boxOptions?.autoEnterTime);
         setAppend(boxOptions?.append);
+        setEnableCuda(data.enableCuda); // This is just for a more informative loading text.
 
         if (boxOptions.listenClipboard) {
           setText([CLIPBOARD_COPY_DEFAULT_TEXT]);
@@ -325,6 +328,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
         hide={hide}
         boxId={boxId} // TODO: Refactor MainGateway to only be called here, thus dispensing of boxId in OcrBoxPane.
         clickThrough={clickThrough}
+        enableCuda={enableCuda}
       />
     </CssBaseline>
   );

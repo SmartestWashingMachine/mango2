@@ -20,6 +20,7 @@ type OcrBoxPaneProps = BoxOptionsFrontend & {
   boxId: string;
   hideHandle?: boolean;
   clickThrough: boolean;
+  enableCuda: boolean;
 };
 
 const msToSecs = (ms: number) => (ms ? ms * 1000 : 300);
@@ -68,6 +69,7 @@ const OcrBoxPane = ({
   hideHandle,
   clickThrough,
   fullyDraggable,
+  enableCuda,
 }: OcrBoxPaneProps) => {
   const [visible, setVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
@@ -87,6 +89,20 @@ const OcrBoxPane = ({
 
   const textRef = useRef<any>(null);
   const lastTextFitTime = useRef(Date.now());
+
+  /** Give the user an informative "loading" text the very first time the box is loading (processing some text). */
+  const [firstLoading, setFirstLoading] = useState(false);
+  const firstLoadingDone = useRef(false);
+  useEffect(() => {
+    if (loading && !firstLoadingDone.current) {
+      setFirstLoading(true);
+    }
+
+    if (!loading && firstLoading) {
+      setFirstLoading(false);
+      firstLoadingDone.current = true;
+    }
+  }, [loading, firstLoading]);
 
   // Prevent double-clicking from focusing text (annoying when trying to toggle handle color).
   // From: https://stackoverflow.com/questions/880512/prevent-text-selection-after-double-click
@@ -140,7 +156,21 @@ const OcrBoxPane = ({
   }, [text, loading]);
 
   const getTextContent = useCallback(
-    (t: string) => {
+    (t: string, firstLoad: boolean, cudaEnabled: boolean) => {
+      if (firstLoad)
+        return (
+          <>
+            <span>Loading the model. This may take a minute...</span>
+            <br />
+            <br />
+            {!cudaEnabled && (
+              <i>
+                Have a good Nvidia GPU? Enable CUDA in the settings for faster
+                processing!
+              </i>
+            )}
+          </>
+        );
       if (pause) return `${t} (PAUSED)`;
       return t;
     },
@@ -151,24 +181,24 @@ const OcrBoxPane = ({
     if (bold) {
       return (
         <>
-          <b>{getTextContent(text)}</b>
+          <b>{getTextContent(text, firstLoading, enableCuda)}</b>
         </>
       );
     }
 
-    if (!bionicReading || !text || text.length <= 1) {
-      return getTextContent(text);
+    if (!bionicReading || !text || text.length <= 1 || firstLoading) {
+      return getTextContent(text, firstLoading, enableCuda);
     }
 
     const middleIndex = Math.floor(text.length / 2);
     const firstHalf = text.slice(0, middleIndex).split("");
-    let secondHalf = text.slice(middleIndex);
+    let secondHalf: any = text.slice(middleIndex);
 
     const firstHalfBold = firstHalf.map((char, index) => (
       <b key={`${char}_${index}`}>{char}</b>
     ));
 
-    secondHalf = getTextContent(secondHalf);
+    secondHalf = getTextContent(secondHalf, firstLoading, enableCuda);
 
     return (
       <>
@@ -176,7 +206,7 @@ const OcrBoxPane = ({
         {secondHalf}
       </>
     );
-  }, [text, pause]);
+  }, [text, pause, firstLoading, enableCuda]);
 
   const fitTextInBox = useCallback(() => {
     if (!textRef.current) return;
