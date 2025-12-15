@@ -9,10 +9,7 @@ import IReplaceTerm from "../../types/ReplaceTerm";
 import BaseView from "../BaseView";
 import { TEXT_DETECTION_OPTIONS } from "../../utils/appOptions/textDetectionOptions";
 import { TEXT_LINE_OPTIONS } from "../../utils/appOptions/textLineOptions";
-import {
-  LEGACY_TRANSLATION_OPTIONS,
-  TRANSLATION_OPTIONS,
-} from "../../utils/appOptions/translationOptions";
+import { TRANSLATION_OPTIONS } from "../../utils/appOptions/translationOptions";
 import { RERANKING_OPTIONS } from "../../utils/appOptions/rerankingOptions";
 import { SPELLING_CORRECTION_OPTIONS } from "../../utils/appOptions/spellingCorrectionOptions";
 import { DECODING_OPTIONS } from "../../utils/appOptions/decodingOptions";
@@ -451,30 +448,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                       {x.name}
                     </MenuItem>
                   )),
-                  ...LEGACY_TRANSLATION_OPTIONS.map(renderItem),
                 ]}
-              </UpdateListField>
-            ),
-            "Reranking Model": (
-              <UpdateListField
-                changeValue={setStoreValue}
-                keyName="rerankingModelName"
-                defaultValue={rerankingModelName}
-                label="Reranking Model"
-                helperText="May improve translation quality. Only works if the decoding mode is NOT set to MAP Beam Decoding."
-              >
-                {RERANKING_OPTIONS.map(renderItem)}
-              </UpdateListField>
-            ),
-            "Editing Model": (
-              <UpdateListField
-                changeValue={setStoreValue}
-                keyName="spellCorrectionModelName"
-                defaultValue={spellCorrectionModelName}
-                label="Editing Model"
-                helperText="Used to correct translations."
-              >
-                {SPELLING_CORRECTION_OPTIONS.map(renderItem)}
               </UpdateListField>
             ),
           },
