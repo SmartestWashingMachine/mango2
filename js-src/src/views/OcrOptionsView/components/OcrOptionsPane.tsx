@@ -317,6 +317,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Follow Cursor"
             />
           ),
+          "Do Not Record": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.contentProtection}
+              keyName="contentProtection"
+              helperText="The box will not show up in any video recordings or images taken. If disabled, you MUST hide this box with the Hide Key before being able to OCR behind it."
+              label="Do Not Record"
+            />
+          ),
           "Pipe Output": (
             <TextField
               onChange={updatePipeOutput}
@@ -373,11 +382,6 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
                   <>
                     Which key to press to translate the box contents. Press
                     ESCAPE to disable.
-                    <br />
-                    <span style={{ color: "#cc8500", fontStyle: "italic" }}>
-                      Any editing model will NOT be used - paste the text into
-                      the Text input page to see the fully edited translation.
-                    </span>
                   </>
                 }
               />

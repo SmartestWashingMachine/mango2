@@ -8,6 +8,7 @@ export type CreateOcrWindowOpts = {
   xOffset: number;
   yOffset: number;
   boxId: string;
+  contentProtection: boolean;
 };
 
 export const createOcrWindow = (opts: CreateOcrWindowOpts) => {
@@ -37,7 +38,7 @@ export const createOcrWindow = (opts: CreateOcrWindowOpts) => {
   ocrWindow.setVisibleOnAllWorkspaces(true);
   ocrWindow.setFullScreenable(false);
 
-  ocrWindow.setContentProtection(true);
+  ocrWindow.setContentProtection(opts.contentProtection);
 
   // Prevent electron-builder from rechanging title to "Mango"
   ocrWindow.on("page-title-updated", (e) => {

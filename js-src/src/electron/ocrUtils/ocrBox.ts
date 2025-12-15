@@ -51,6 +51,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   serverSideActivationKey: boolean;
   translateLinesIndividually: number;
   followsCursor: boolean;
+  contentProtection: boolean;
 
   _timerAutoScan?: any;
   _timerClipboard?: any;
@@ -96,6 +97,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.clickThroughKey = DEFAULT_BOX_OPTIONS.clickThroughKey;
     this.spellingCorrectionKey = DEFAULT_BOX_OPTIONS.spellingCorrectionKey;
     this.followsCursor = DEFAULT_BOX_OPTIONS.followsCursor;
+    this.contentProtection = DEFAULT_BOX_OPTIONS.contentProtection;
     this.enabled = DEFAULT_BOX_OPTIONS.enabled;
 
     this.translateLinesIndividually =
@@ -161,6 +163,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
       boxSettings.listenClipboard || DEFAULT_BOX_OPTIONS.listenClipboard;
     this.textDetect = boxSettings.textDetect || DEFAULT_BOX_OPTIONS.textDetect;
     this.speakerBox = boxSettings.speakerBox || DEFAULT_BOX_OPTIONS.speakerBox;
+    this.contentProtection =
+      boxSettings.contentProtection !== undefined
+        ? boxSettings.contentProtection
+        : DEFAULT_BOX_OPTIONS.contentProtection;
     this.useStream = boxSettings.useStream || DEFAULT_BOX_OPTIONS.useStream;
     this.hideKey = boxSettings.hideKey || DEFAULT_BOX_OPTIONS.hideKey;
     this.clickThroughKey =
@@ -195,6 +201,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
       xOffset: this.xOffset,
       yOffset: this.yOffset,
       boxId: this.boxId,
+      contentProtection: this.contentProtection,
     });
   }
 

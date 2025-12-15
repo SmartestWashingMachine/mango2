@@ -20,6 +20,7 @@ export type BoxOptionsFrontend = {
   useStream: boolean;
   fullyDraggable: boolean;
   followsCursor: boolean;
+  contentProtection: boolean;
 };
 
 export type BoxOptionsBackend = {

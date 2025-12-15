@@ -44,6 +44,7 @@ const genericOptions = {
   translateLinesIndividually: 0,
   fullyDraggable: false,
   followsCursor: false,
+  contentProtection: true,
 };
 
 export const OPTIONS_PRESETS: BoxPreset[] = [
