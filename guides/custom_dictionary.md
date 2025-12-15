@@ -1,7 +1,5 @@
 # Using our own dictionary to augment a translator with name knowledge.
 
-**All of these methods require a Goliath or custom translator model to be used.**
-
 It's well known that translation models suffer when it comes to translating names. We can "patch" that up by using our own dictionary dataset, teaching the model on how certain names should be translated. 
 
 Mango supports two (technically three) general approaches for dictionary augmentation.
