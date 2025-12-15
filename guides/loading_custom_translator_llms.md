@@ -19,7 +19,7 @@ Once that's done, paste this inside the config contents:
   "extract_from_output": "",
   "n_context": 1024,
   "stop_words": null,
-  "model_name": "<modelname>"
+  "model_name": "gemma-3-4b-it-UD-Q4_K_XL"
 }
 ```
 
