@@ -23,6 +23,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   textDetect: false,
   speakerBox: false,
   removeSpeaker: false,
+  showSource: false,
   useStream: false,
   hideKey: "Escape",
   clickThroughKey: "Escape",

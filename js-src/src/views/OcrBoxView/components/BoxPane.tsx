@@ -13,6 +13,7 @@ import { MainGateway } from "../../../utils/mainGateway";
 type OcrBoxPaneProps = BoxOptionsFrontend & {
   loading: boolean;
   text: string;
+  sourceText: string | undefined;
   loadingOpacity: number;
   hide: boolean;
   pause: boolean;
@@ -70,6 +71,7 @@ const OcrBoxPane = ({
   clickThrough,
   fullyDraggable,
   enableCuda,
+  sourceText,
 }: OcrBoxPaneProps) => {
   const [visible, setVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
@@ -178,16 +180,39 @@ const OcrBoxPane = ({
   );
 
   const renderText = useCallback(() => {
+    const sourceTextComponent =
+      !firstLoading && sourceText ? (
+        <>
+          <br />
+          <br />
+          <i
+            style={{
+              fontSize: Math.floor(usingFontSize * 0.75) + 1,
+            }}
+          >
+            {sourceText}
+          </i>
+        </>
+      ) : (
+        <></>
+      );
+
     if (bold) {
       return (
         <>
           <b>{getTextContent(text, firstLoading, enableCuda)}</b>
+          {sourceTextComponent}
         </>
       );
     }
 
     if (!bionicReading || !text || text.length <= 1 || firstLoading) {
-      return getTextContent(text, firstLoading, enableCuda);
+      return (
+        <>
+          {getTextContent(text, firstLoading, enableCuda)}
+          {sourceTextComponent}
+        </>
+      );
     }
 
     const middleIndex = Math.floor(text.length / 2);
@@ -204,9 +229,10 @@ const OcrBoxPane = ({
       <>
         {firstHalfBold}
         {secondHalf}
+        {sourceTextComponent}
       </>
     );
-  }, [text, pause, firstLoading, enableCuda]);
+  }, [text, pause, firstLoading, enableCuda, sourceText, usingFontSize]);
 
   const fitTextInBox = useCallback(() => {
     if (!textRef.current) return;

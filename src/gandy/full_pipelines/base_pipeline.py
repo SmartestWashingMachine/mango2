@@ -162,7 +162,7 @@ class BasePipeline:
     def get_target_texts_from_str(
         self,
         source_texts: List[str],
-        use_stream: bool,
+        use_stream,
         socketio: SocketIO = None,
         with_global_cache=False,
         progress_cb=None,
@@ -523,6 +523,9 @@ class BasePipeline:
 
             source_texts = replace_terms_source_side([source_texts], config_state.source_terms)
             source_texts = source_texts[0]
+
+            if use_stream is not None:
+                use_stream.metadata = { **use_stream.metadata, "source": source_texts, } # source here is just a string.
 
             target_texts = self.get_target_texts_from_str(
                 [source_texts], use_stream=use_stream

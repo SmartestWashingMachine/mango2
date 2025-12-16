@@ -51,12 +51,15 @@ const getLastAndOthersInArr = (arr: string[]) => {
 const BoxApp = ({ boxId }: BoxAppProps) => {
   // Output target text.
   const [text, setText] = useState<string[]>([]);
+  // Optionally also output source text - just a simple meagre string.
+  const [sourceText, setSourceText] = useState<string | undefined>(undefined);
 
   const [loading, setLoading] = useState(false);
   const [options, setOptions] = useState<BoxOptionsFrontend | null>(null);
 
   const [removeSpeaker, setRemoveSpeaker] = useState(false);
   const [useStream, setUseStream] = useState(false);
+  const [showSource, setShowSource] = useState(false);
 
   const [hide, setHide] = useState(false);
   const [pause, setPause] = useState(false);
@@ -118,7 +121,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
       setLoading(false);
     };
 
-    const streamCb = (values: string) => {
+    const streamCb = (values: string, source: string) => {
       // May act weird with removeSpeaker / task3...
       if (!values || values.length === 0) return;
 
@@ -126,6 +129,11 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
         setText((t) => [...sliceArrIgnorePlaceHolders(t, 0, -1), values]);
       } else {
         setText([values]);
+      }
+
+      if (showSource) {
+        const split = source.split("<TSOS>");
+        setSourceText(split[split.length - 1].trim());
       }
     };
 
@@ -156,7 +164,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
       window.removeEventListener("beforeunload", cleanup);
       cleanup();
     };
-  }, [removeSpeaker, useStream, boxId]);
+  }, [removeSpeaker, useStream, showSource, boxId]);
 
   useEffect(() => {
     if (!loading && autoEnterTime !== null && autoEnterTime > 0) {
@@ -199,6 +207,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
         setOptions(boxOptions);
         setRemoveSpeaker(boxOptions?.removeSpeaker);
         setUseStream(boxOptions?.useStream);
+        setShowSource(boxOptions?.showSource);
         setAutoEnterTime(boxOptions?.autoEnterTime);
         setAppend(boxOptions?.append);
         setEnableCuda(data.enableCuda); // This is just for a more informative loading text.
@@ -322,6 +331,7 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
         loading={loading}
         text={curText}
         prevTexts={prevTexts}
+        sourceText={sourceText}
         {...options}
         loadingOpacity={useStream ? 0.75 : 0.25}
         pause={pause}

@@ -30,6 +30,7 @@ const genericOptions = {
   textDetect: false,
   speakerBox: false,
   removeSpeaker: false,
+  showSource: false,
   useStream: true,
   hideKey: "Escape",
   clickThroughKey: "Escape",

@@ -258,6 +258,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Mini Backlog"
             />
           ),
+          "Show Source": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.showSource}
+              keyName="showSource"
+              helperText="Show the OCR'd source text in the box when the activation key is pressed."
+              label="Show Source"
+            />
+          ),
         },
         "Box Appearance": {
           "Background Color": (

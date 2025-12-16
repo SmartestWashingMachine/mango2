@@ -5,7 +5,7 @@ export const listenTask3Updates = (
   boxId: string,
   beginCb: () => void,
   doneCb: (sourceText: string[], targetText: string[]) => void,
-  streamCb?: (targetText: string) => void,
+  streamCb?: (targetText: string, sourceText: string) => void,
   connectCb?: () => void,
   disconnectCb?: () => void
 ) => {
@@ -54,9 +54,9 @@ export const listenTask3Updates = (
     if (!streamCb) return;
 
     if (!data || !data.text) {
-      streamCb("");
+      streamCb("", "");
     } else if (data.boxId == boxId) {
-      streamCb(data.text);
+      streamCb(data.text, data.source);
     }
   });
 
