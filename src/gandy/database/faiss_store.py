@@ -10,11 +10,12 @@ from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClien
 # Vibe coded bro.
 
 class FAISSEmbedder:
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, high_cost: bool = False):
         """
         Initialize the FAISSEmbedder with a multilingual model.
 
         :param model_name: Name of the multilingual model.
+        :param high_cost: If True, the server will be setup for high parallelism / throughput. This should only be used when BUILDING a RAG database.
         """
 
         can_cuda = self.get_can_cuda()
@@ -34,6 +35,7 @@ class FAISSEmbedder:
             n_context=self.get_n_context(),
             port=self.get_server_port(),
             embedding=True,
+            high_cost_embedding=high_cost,
         )
 
         self.llm.start_server()
@@ -58,12 +60,16 @@ class FAISSEmbedder:
         :param sentences: List of sentences to embed.
         :return: Numpy array of embeddings.
         """
-        embed = [self.llm.call_embed_no_batch(s) for s in sentences] # An array of N elements where N is the number of sentences. Then each inner item has "384" (hidden dim) elements.
+
+        if len(sentences) == 1:
+            embed = [self.llm.call_embed_no_batch(s) for s in sentences] # An array of N elements where N is the number of sentences. Then each inner item has "384" (hidden dim) elements.
+        else:
+            embed = self.llm.call_embed_with_batch(sentences)
 
         return embed
 
 class FAISSStore:
-    def __init__(self, db_path: str, model_name: str, hnsw_m: int = 32, save_interval: int = 50, db_name = '_index', data_name = '_machinetranslations'):
+    def __init__(self, db_path: str, model_name: str, hnsw_m: int = 32, save_interval: int = 50, db_name = '_index', data_name = '_machinetranslations', high_cost = False):
         """
         Initialize the FAISSStore.
 
@@ -74,7 +80,7 @@ class FAISSStore:
         """
         self.db_path = db_path + db_name
         self.hnsw_m = hnsw_m
-        self.embedder = FAISSEmbedder(model_name)
+        self.embedder = FAISSEmbedder(model_name, high_cost=high_cost)
         self.index = None
         self.translations = []  # Store only translated_text
         self.translations_file = db_path + data_name

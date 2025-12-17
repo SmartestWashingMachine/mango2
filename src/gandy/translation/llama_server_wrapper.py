@@ -23,7 +23,7 @@ loop = asyncio.new_event_loop()
 
 class LlamaCppExecutableOpenAIClient:
     def __init__(self, model_path, num_gpu_layers, can_cuda,
-                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750, embedding=False, stop = None, mmproj = None, extra_commands = [], extra_body = {}):
+                 llama_cpp_server_path, host="127.0.0.1", port=8000, prepend_phrase = None, verbose = False, n_context=750, embedding=False, stop = None, mmproj = None, extra_commands = [], extra_body = {}, high_cost_embedding = False):
 
         self.model_path = model_path
 
@@ -39,6 +39,7 @@ class LlamaCppExecutableOpenAIClient:
         self.verbose = verbose
 
         self.embedding = embedding
+        self.high_cost_embedding = high_cost_embedding
 
         self.n_context = n_context
 
@@ -152,11 +153,33 @@ class LlamaCppExecutableOpenAIClient:
                     self.host,
                     "--port",
                     str(self.port),
-                    "-c", # Context size (equivalent to n_ctx)
-                    str(self.n_context),
                     "--embeddings",
-                    "--log-disable",
+                    #"--log-disable",
                 ]
+
+                if self.high_cost_embedding and self.can_cuda and self.num_gpu_layers > 0:
+                    ctx.log("Using high cost embedding variant.")
+
+                    batch_size = 6
+
+                    command.extend([
+                        "-c",
+                        str(self.n_context * batch_size),
+                        "-np",
+                        str(batch_size),
+                        "-ub",
+                        "16384",
+                        "-b",
+                        "16384",
+                        "--cache-ram",
+                        "0",
+                        "--log-disable"
+                    ])
+                else:
+                    command.extend([
+                        "-c",
+                        str(self.n_context),
+                    ])
 
             if self.can_cuda and self.num_gpu_layers > 0:
                 command.extend(["-ngl", str(self.num_gpu_layers)])
@@ -339,4 +362,14 @@ class LlamaCppExecutableOpenAIClient:
     
     def call_embed_no_batch(self, msg: str):
         emb = loop.run_until_complete(self.embed_async(msg))
+        return emb
+    
+    async def embed_batch_async(self, msgs):
+        model_name = self.get_model_name()
+        response = await self.client.embeddings.create(input=msgs, model=model_name)
+
+        return [data.embedding for data in response.data]
+
+    def call_embed_with_batch(self, msg: str):
+        emb = loop.run_until_complete(self.embed_batch_async(msg))
         return emb

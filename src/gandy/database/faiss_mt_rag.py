@@ -4,6 +4,7 @@ import os
 from gandy.database.faiss_store import FAISSStore
 from tqdm import tqdm
 import hashlib
+from math import ceil
 
 # This function is AI generated, not that it matters... it's fairly simple.
 def hash_file_sha256(filename):
@@ -31,11 +32,31 @@ class TranslationRAG():
     def _build_dataset(self, items, cur_data_hash = None):
         with logger.begin_event('Creating RAG data and index files') as ctx:
             # Each item should be a tuple of (source STR, target STR).
-            for idx, (st, tt) in enumerate(tqdm(items, desc="Building RAG dataset")):
-                self.mt_rag.add_translation(source_text=st, translated_text=(st, tt), do_log=False)
 
-                if idx % 1000 == 0:
-                    ctx.log(f'Processing...', last_finished_idx=idx, total_len=len(items))
+            if self.mt_rag.embedder.get_can_cuda():
+                batch_size = 8192 # 16 also works decently.
+                total_batches = ceil(len(items) / batch_size)
+
+                for idx, batch in enumerate(
+                    tqdm(
+                        (items[i:i + batch_size] for i in range(0, len(items), batch_size)),
+                        total=total_batches
+                    )
+                ):
+                    self.mt_rag._add(
+                        source_texts=[x[0] for x in batch],
+                        translated_texts=batch,
+                        do_log=False,
+                    )
+
+                    if idx % 200 == 0:
+                        ctx.log(f'Processing batch...', last_finished_idx=idx, total_len=total_batches)
+            else:
+                for idx, (st, tt) in enumerate(tqdm(items, desc="Building RAG dataset")):
+                    self.mt_rag.add_translation(source_text=st, translated_text=(st, tt), do_log=False)
+
+                    if idx % 1000 == 0:
+                        ctx.log(f'Processing item...', last_finished_idx=idx, total_len=len(items))
 
         with logger.begin_event('Saving RAG data and index files'):
             self.mt_rag._save_async() # Actually not async cause we call it directly here, rather than using a thread.
@@ -68,11 +89,18 @@ class TranslationRAG():
 
     def _load_mt_rag(self):
         with logger.begin_event('Loading RAG module for translation') as ctx:
-            self.mt_rag = FAISSStore(db_path='models/database/rag', model_name='nite', save_interval=-1, db_name='_index', data_name='_data')
-
             do_build, cur_data_hash = self.do_build_index()
 
             if do_build:
+                self.mt_rag = FAISSStore(
+                    db_path='models/database/rag',
+                    model_name='nite',
+                    save_interval=-1,
+                    db_name='_index',
+                    data_name='_data',
+                    high_cost=True, # Much faster but more demanding (if using a good GPU).
+                )
+
                 ctx.log('RAG Index file does NOT exist - creating from input data file.')
 
                 input_path = 'models/database/rag_input_data.jsonl'
@@ -94,8 +122,20 @@ class TranslationRAG():
                     loading_ctx.log('Done mapping items in input data file', n_items=len(items))
 
                 self._build_dataset(items, cur_data_hash)
+
+                self.mt_rag.embedder.llm.stop_server() # So we can load the low-cost one afterwards.
+                del self.mt_rag
             else:
                 ctx.log('RAG Index file already exists - using existing RAG data file.')
+
+            self.mt_rag = FAISSStore(
+                db_path='models/database/rag',
+                model_name='nite',
+                save_interval=-1,
+                db_name='_index',
+                data_name='_data',
+                high_cost=False,
+            )
 
     def get_entries(self, inp: str):
         # Returns a list of tuples. Each tuple is (source STR, target STR).
