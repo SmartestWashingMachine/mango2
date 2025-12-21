@@ -37,6 +37,8 @@ const AnnotatedImage = ({
     viewingAnnotationTextIdx,
   } = useImageViewMode();
 
+  const [loaded, setLoaded] = useState(false); // Image loading.
+
   const calcWidth = (a: Annotation) => {
     const width = a.x2 - a.x1;
 
@@ -57,10 +59,24 @@ const AnnotatedImage = ({
     return (a.y1 / (originalImageHeight || 1)) * 100;
   };
 
+  const onLoad = () => {
+    setLoaded(true);
+  };
+
+  // I'm not sure what the default <img> display prop is. TODO
+  const imgStyles: any = {};
+  if (!loaded) imgStyles["display"] = "none";
+
   return (
     <div className={fitImage ? "imagePreviewBoxOuter" : undefined}>
       <div className={fitImage ? "imagePreviewBox" : undefined}>
-        <img src={src} className={className} onClick={onClick} />
+        <img
+          src={src}
+          className={className}
+          onClick={onClick}
+          onLoad={onLoad}
+          style={imgStyles}
+        />
         {annotations.map((a, idx) => (
           <div
             key={`${a.x1}-${a.y1}-${a.x2}-${a.y2}`}

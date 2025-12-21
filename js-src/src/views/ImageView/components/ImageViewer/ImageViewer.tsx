@@ -7,6 +7,8 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import classNames from "classnames";
@@ -61,6 +63,9 @@ const ImageViewerNoMemo = ({
   selectedPath,
   canPageWithKeys,
 }: ImageViewerProps) => {
+  const theme = useTheme();
+  const matchDownMd = useMediaQuery(theme.breakpoints.down("md"));
+
   const onDrop = useCallback(
     (acceptedFiles: any) => {
       onFilesSelected(acceptedFiles);
@@ -229,6 +234,8 @@ const ImageViewerNoMemo = ({
         in={pendingImageNames.length > 0}
         timeout={750}
         sx={{ marginBottom: 2 }}
+        mountOnEnter
+        unmountOnExit
       >
         <ImageProgressList
           pendingImageNames={pendingImageNames}
@@ -258,7 +265,11 @@ const ImageViewerNoMemo = ({
           >
             {viewingMode.startsWith("one") && (
               <div className="imagePreviewTitle">
-                <Typography variant="h6" align="center">
+                <Typography
+                  variant="caption"
+                  align="center"
+                  sx={{ fontWeight: "500" }}
+                >
                   {getFileName(imagePaths[curIndex])}
                 </Typography>
               </div>
@@ -320,19 +331,22 @@ const ImageViewerNoMemo = ({
                 page={curIndex + 1}
                 sx={{ marginBottom: "8px" }}
                 className="imageViewerPagination"
+                size={matchDownMd ? "small" : "medium"}
               />
-              <TextField
-                type="number"
-                defaultValue={1}
-                value={pageFieldVal}
-                onChange={handlePageFieldChange}
-                className="imageViewerPageField"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                sx={{ marginBottom: "8px" }}
-                variant="outlined"
-              />
+              {!matchDownMd && (
+                <TextField
+                  type="number"
+                  defaultValue={1}
+                  value={pageFieldVal}
+                  onChange={handlePageFieldChange}
+                  className="imageViewerPageField"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  sx={{ marginBottom: "8px" }}
+                  variant="outlined"
+                />
+              )}
             </div>
           )}
           {isAmg && viewingMode.startsWith("one") && (
