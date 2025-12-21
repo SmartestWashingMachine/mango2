@@ -1,5 +1,7 @@
-import { Tooltip } from "@mui/material";
+import { Tooltip, Typography } from "@mui/material";
 import React, { useEffect, useState, useCallback } from "react";
+import { useImageViewMode } from "../../../../components/ImageViewModeProvider";
+import { getColorForIndex } from "./getColorForIndex";
 
 type Annotation = {
   text: string;
@@ -7,6 +9,7 @@ type Annotation = {
   y1: number;
   x2: number;
   y2: number;
+  uuid: string;
 };
 
 type AnnotatedImageProps = {
@@ -28,6 +31,12 @@ const AnnotatedImage = ({
   fitImage,
   onClick,
 }: AnnotatedImageProps) => {
+  const {
+    viewingAnnotationIdx,
+    setViewingAnnotationIdx,
+    viewingAnnotationTextIdx,
+  } = useImageViewMode();
+
   const calcWidth = (a: Annotation) => {
     const width = a.x2 - a.x1;
 
@@ -53,29 +62,33 @@ const AnnotatedImage = ({
       <div className={fitImage ? "imagePreviewBox" : undefined}>
         <img src={src} className={className} onClick={onClick} />
         {annotations.map((a, idx) => (
-          <Tooltip
-            title={
-              <h4 style={{ fontSize: "1.5em", fontWeight: "normal" }}>
-                {a.text}
-              </h4>
-            }
+          <div
             key={`${a.x1}-${a.y1}-${a.x2}-${a.y2}`}
-            enterDelay={0}
-            arrow
+            style={{
+              //// width: (a.x2 - a.x1), height: (a.y2 - a.y1),
+              //transform: `translate(${a.x1}px, ${a.y1}px)`,
+              width: `${calcWidth(a)}%`,
+              height: `${calcHeight(a)}%`,
+              left: `${calcLeft(a)}%`,
+              top: `${calcTop(a)}%`,
+              color: getColorForIndex(idx),
+              borderColor: getColorForIndex(idx),
+              border:
+                viewingAnnotationIdx === idx || viewingAnnotationTextIdx === idx
+                  ? "2.5px solid"
+                  : "1.5px solid",
+            }}
+            className="annotation"
+            data-testid={`annotation-${idx}`}
+            onMouseEnter={() => {
+              setViewingAnnotationIdx(idx);
+            }}
+            onMouseLeave={() => {
+              setViewingAnnotationIdx(0);
+            }}
           >
-            <div
-              style={{
-                //// width: (a.x2 - a.x1), height: (a.y2 - a.y1),
-                //transform: `translate(${a.x1}px, ${a.y1}px)`,
-                width: `${calcWidth(a)}%`,
-                height: `${calcHeight(a)}%`,
-                left: `${calcLeft(a)}%`,
-                top: `${calcTop(a)}%`,
-              }}
-              className="annotation"
-              data-testid={`annotation-${idx}`}
-            ></div>
-          </Tooltip>
+            <span className="annotation-label">{idx + 1}</span>
+          </div>
         ))}
       </div>
     </div>

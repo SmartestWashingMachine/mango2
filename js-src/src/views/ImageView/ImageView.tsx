@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import BaseView from "../BaseView";
 import ImageInput from "./components/ImageViewer/ImageInput";
 import ImageViewer from "./components/ImageViewer/ImageViewer";
@@ -83,7 +83,7 @@ const ImageView = () => {
     {}
   );
 
-  //const [viewingImagePaths, setViewingImagePaths] = useState<string[]>([]);
+  const [viewingImagePaths, setViewingImagePaths] = useState<string[]>([]);
 
   // While loading (processing images in the backend), further uploading will be disabled.
   const { loading, setLoading } = useLoader();
@@ -385,20 +385,25 @@ const ImageView = () => {
     [getFolderFromImage]
   );
 
-  // ??? should be a reserved file name so it's alright.
-  const selectedItem = rootItemMap[selectedPath || "???"] || null;
-  let viewingImagePaths: string[] = [];
-  if (selectedItem) {
-    // Case 1: The selected item is a folder. Add all child files (depth 1).
-    if (selectedItem.childrenItems.length > 0) {
-      viewingImagePaths = selectedItem.childrenItems
-        .filter((c) => c.childrenItems.length === 0)
-        .map((c) => c.fullPath);
-    } else {
-      // Case 2: The selected item is a file (non-folder). Only add the file.
-      viewingImagePaths = [selectedItem.fullPath];
+  useEffect(() => {
+    // ??? should be a reserved file name so it's alright.
+    const selectedItem = rootItemMap[selectedPath || "???"] || null;
+
+    let viewingImagePaths: string[] = [];
+    if (selectedItem) {
+      // Case 1: The selected item is a folder. Add all child files (depth 1).
+      if (selectedItem.childrenItems.length > 0) {
+        viewingImagePaths = selectedItem.childrenItems
+          .filter((c) => c.childrenItems.length === 0)
+          .map((c) => c.fullPath);
+      } else {
+        // Case 2: The selected item is a file (non-folder). Only add the file.
+        viewingImagePaths = [selectedItem.fullPath];
+      }
     }
-  }
+
+    setViewingImagePaths(viewingImagePaths);
+  }, [rootItemMap, selectedPath]);
 
   const rightPane = (
     <RightPane
@@ -416,7 +421,7 @@ const ImageView = () => {
       tileHeight={tileHeight}
       handleChangeTileWidth={handleChangeTileWidth}
       handleChangeTileHeight={handleChangeTileHeight}
-      display={viewingMode === "one"}
+      display={viewingMode.startsWith("one")}
     />
   );
 
@@ -460,11 +465,11 @@ const ImageView = () => {
   return (
     <BaseView
       rightPane={rightPane}
-      leftXs={viewingMode === "one" ? 9 : 12}
-      rightXs={viewingMode === "one" ? 0 : 3}
+      leftXs={viewingMode.startsWith("one") ? 9 : 12}
+      rightXs={viewingMode.startsWith("one") ? 0 : 3}
       noHeight
       rightClassName={
-        viewingMode === "one" ? undefined : "_overwritten_class_name_"
+        viewingMode.startsWith("one") ? undefined : "_overwritten_class_name_"
       }
     >
       {leftPane}

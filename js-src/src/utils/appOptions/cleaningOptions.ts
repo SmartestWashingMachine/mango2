@@ -3,8 +3,7 @@ export const CLEANING_OPTIONS = [
     name: "None",
     value: "none",
     desc: `
-    Does not attempt to erase the text at all. Probably only
-    desirable if redrawing with the "Neighbor" mode.
+    Does not erase the text. Good to use with the "Annotate" redrawing mode.
     `,
   },
   {

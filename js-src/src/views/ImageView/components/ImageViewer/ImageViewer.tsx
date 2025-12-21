@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, memo } from "react";
 import {
   Button,
   Collapse,
+  Grid,
   Pagination,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -13,6 +15,7 @@ import AnnotatedImage from "./AnnotatedImage";
 import ImageEditor from "../ImageEditor/ImageEditor";
 import { MainGateway } from "../../../../utils/mainGateway";
 import { useImageViewMode } from "../../../../components/ImageViewModeProvider";
+import AmgViewerAnnotations from "./AmgViewerAnnotations";
 
 const checkAmg = (fullPath: string) =>
   fullPath ? fullPath.endsWith(".amg") : false;
@@ -48,7 +51,7 @@ const getFileName = (filePath: string) => {
   } else return s;
 };
 
-const ImageViewer = ({
+const ImageViewerNoMemo = ({
   imagePaths,
   onFilesSelected,
   selectDisabled,
@@ -161,6 +164,8 @@ const ImageViewer = ({
         setCurAnnotations(amg.annotations); // AMG files have external annotations.
         setIsAmg(true);
         setIsEditing(false);
+
+        changeViewingMode("one_amg"); // No library right pane. Instead, a separate AmgAnnotations panel is rendered instead.
       };
 
       asyncCb();
@@ -171,12 +176,14 @@ const ImageViewer = ({
       setOriginalWidth(1);
       setOriginalHeight(1);
       setIsEditing(false);
+
+      changeViewingMode("one");
     }
 
     return () => {
       canceled = true;
     };
-  }, [curIndex, imagePaths]);
+  }, [curIndex, imagePaths, changeViewingMode]);
 
   const onSaveImage = useCallback(
     async (image: any) => {
@@ -190,7 +197,10 @@ const ImageViewer = ({
     [imagePaths, curIndex, onSaveEditedImage]
   );
 
-  const handleEditClick = () => setIsEditing(true);
+  const handleEditClick = () => {
+    changeViewingMode("one");
+    setIsEditing(true);
+  };
 
   const imgClasses = classNames({
     dragActive: isDragActive,
@@ -213,113 +223,159 @@ const ImageViewer = ({
         onSaveImage={onSaveImage}
       />
     );
-  } else
-    return (
-      <div {...getRootProps()} className="imagePreviewRoot">
-        <Collapse
-          in={pendingImageNames.length > 0}
-          timeout={750}
-          sx={{ marginBottom: 2 }}
-        >
-          <ImageProgressList
-            pendingImageNames={pendingImageNames}
-            curProgress={loadingProgress}
-            dense
-          />
-        </Collapse>
-        <input {...getInputProps()} />
-        <div
-          className={
-            viewingMode === "vertical"
-              ? "imagePreviewContainerVertical"
-              : "imagePreviewContainer"
-          }
-          style={{
-            marginTop:
-              pendingImageNames && pendingImageNames.length > 0
-                ? "2px"
-                : "-18px",
-          }}
-        >
-          {viewingMode === "one" && (
-            <div className="imagePreviewTitle">
-              <Typography variant="h6" align="center">
-                {getFileName(imagePaths[curIndex])}
-              </Typography>
-            </div>
-          )}
-          {curIndex < imagePaths.length && viewingMode === "one" && (
-            <AnnotatedImage
-              annotations={curAnnotations}
-              className={imgClasses}
-              src={isAmg ? `data:image/jpeg;base64,${curImage}` : curImage}
-              originalImageWidth={originalWidth}
-              originalImageHeight={originalHeight}
-              fitImage={true}
-              onClick={changeViewingMode}
-            />
-          )}
-          {imagePaths.length > 0 &&
-            !isAmg && // TODO: Add AMG support for vertical stuff. Though I doubt anyone will use it?
-            viewingMode === "vertical" &&
-            [...Array(imagePaths.length).keys()].map((_, idx) => (
+  } else {
+    const progressComponent = (
+      <Collapse
+        in={pendingImageNames.length > 0}
+        timeout={750}
+        sx={{ marginBottom: 2 }}
+      >
+        <ImageProgressList
+          pendingImageNames={pendingImageNames}
+          curProgress={loadingProgress}
+          dense
+        />
+      </Collapse>
+    );
+
+    const mainComponent = (withProgress: boolean) => (
+      <>
+        <div {...getRootProps()} className="imagePreviewRoot">
+          {withProgress && progressComponent}
+          <input {...getInputProps()} />
+          <div
+            className={
+              viewingMode === "vertical"
+                ? "imagePreviewContainerVertical"
+                : "imagePreviewContainer"
+            }
+            style={{
+              marginTop:
+                pendingImageNames && pendingImageNames.length > 0
+                  ? "2px"
+                  : "-18px",
+            }}
+          >
+            {viewingMode.startsWith("one") && (
+              <div className="imagePreviewTitle">
+                <Typography variant="h6" align="center">
+                  {getFileName(imagePaths[curIndex])}
+                </Typography>
+              </div>
+            )}
+            {curIndex < imagePaths.length && viewingMode.startsWith("one") && (
               <AnnotatedImage
                 annotations={curAnnotations}
                 className={imgClasses}
-                src={
-                  isAmg
-                    ? `data:image/jpeg;base64,${imagePaths[idx]}`
-                    : imagePaths[idx]
-                }
+                src={isAmg ? `data:image/jpeg;base64,${curImage}` : curImage}
                 originalImageWidth={originalWidth}
                 originalImageHeight={originalHeight}
-                key={imagePaths[idx] || idx}
-                fitImage={false}
-                onClick={changeViewingMode}
+                fitImage={true}
+                onClick={() => {
+                  if (isAmg) return; // AMG can't go vertical.
+
+                  changeViewingMode();
+                }}
               />
-            ))}
-          {isDragActive && (
-            <Typography variant="h4" className="imageInputText" align="center">
-              Drop files here...
-            </Typography>
+            )}
+            {imagePaths.length > 0 &&
+              !isAmg && // TODO: Add AMG support for vertical stuff. Though I doubt anyone will use it?
+              viewingMode === "vertical" &&
+              [...Array(imagePaths.length).keys()].map((_, idx) => (
+                <AnnotatedImage
+                  annotations={curAnnotations}
+                  className={imgClasses}
+                  src={
+                    isAmg
+                      ? `data:image/jpeg;base64,${imagePaths[idx]}`
+                      : imagePaths[idx]
+                  }
+                  originalImageWidth={originalWidth}
+                  originalImageHeight={originalHeight}
+                  key={imagePaths[idx] || idx}
+                  fitImage={false}
+                  onClick={() => {
+                    if (isAmg) return; // AMG can't go vertical.
+
+                    changeViewingMode();
+                  }}
+                />
+              ))}
+            {isDragActive && (
+              <Typography
+                variant="h4"
+                className="imageInputText"
+                align="center"
+              >
+                Drop files here...
+              </Typography>
+            )}
+          </div>
+          {imagePaths.length > 1 && viewingMode.startsWith("one") && (
+            <div className="imageViewerControls">
+              <Pagination
+                count={imagePaths.length}
+                shape="rounded"
+                onChange={handlePageChange}
+                page={curIndex + 1}
+                sx={{ marginBottom: "8px" }}
+                className="imageViewerPagination"
+              />
+              <TextField
+                type="number"
+                defaultValue={1}
+                value={pageFieldVal}
+                onChange={handlePageFieldChange}
+                className="imageViewerPageField"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                sx={{ marginBottom: "8px" }}
+                variant="outlined"
+              />
+            </div>
+          )}
+          {isAmg && viewingMode.startsWith("one") && (
+            <Stack spacing={2} direction="row" sx={{ marginBottom: "8px" }}>
+              <Button
+                variant="contained"
+                sx={{
+                  fontWeight: "normal",
+                  color: "white !important",
+                  backgroundColor: "primary.600",
+                }}
+                onClick={handleEditClick}
+                fullWidth
+              >
+                Edit
+              </Button>
+            </Stack>
           )}
         </div>
-        {imagePaths.length > 1 && viewingMode === "one" && (
-          <div className="imageViewerControls">
-            <Pagination
-              count={imagePaths.length}
-              shape="rounded"
-              onChange={handlePageChange}
-              page={curIndex + 1}
-              sx={{ marginBottom: "8px" }}
-              className="imageViewerPagination"
-            />
-            <TextField
-              type="number"
-              defaultValue={1}
-              value={pageFieldVal}
-              onChange={handlePageFieldChange}
-              className="imageViewerPageField"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              sx={{ marginBottom: "8px" }}
-              variant="outlined"
-            />
-          </div>
-        )}
-        {isAmg && viewingMode === "one" && (
-          <Button
-            variant="text"
-            color="primary"
-            onClick={handleEditClick}
-            sx={{ marginBottom: "8px" }}
-          >
-            Edit
-          </Button>
-        )}
-      </div>
+      </>
     );
+
+    if (viewingMode === "one_amg") {
+      return (
+        <Stack spacing={4}>
+          {progressComponent}
+          <Grid container spacing={1} sx={{ width: "60vw" }}>
+            <Grid item xs={8} className="appContainerLeftNoHeight">
+              {mainComponent(false)}
+            </Grid>
+            <Grid item xs={4} sx={{ display: "flex" }}>
+              <AmgViewerAnnotations
+                annotations={curAnnotations}
+                selectedAnnotationId=""
+              />
+            </Grid>
+          </Grid>
+        </Stack>
+      );
+    } else return mainComponent(true);
+  }
 };
+
+const ImageViewer = memo(ImageViewerNoMemo);
 
 export default ImageViewer;
