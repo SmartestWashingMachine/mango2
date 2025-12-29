@@ -72,15 +72,10 @@ def run_server():
     print("Running...")
 
     if dangerous_config.enable_web_ui:
-        logic_thread = threading.Thread(target=lambda: WSGIServer(('0.0.0.0', 5000), app).serve_forever())
         web_thread = threading.Thread(target=lambda: WSGIServer(('0.0.0.0', 5200), web_app).serve_forever())
-
-        logic_thread.start()
         web_thread.start()
-    else:
-        # serve(app, host='0.0.0.0', port=5000, threads=1)
-        WSGIServer(('0.0.0.0', 5000), app).serve_forever()
-    # app.run(host="0.0.0.0", debug=False)
+
+    WSGIServer(('0.0.0.0', 5000), app).serve_forever()
 
 
 import gandy.book_routes
