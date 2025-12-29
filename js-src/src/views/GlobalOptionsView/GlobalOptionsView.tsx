@@ -283,6 +283,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     ignoreDetectSingleWords,
     sortTextFromTopLeft,
     useTranslationServer,
+    sanitizeAscii,
     memoryEfficientTasks,
     cacheMt,
     captureWindow,
@@ -693,6 +694,15 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 defaultValue={sortTextFromTopLeft}
                 helperText="When scanning images, vertical texts are assumed to be read from left-to-right instead of right-to-left. This is used to decide how context is added. This should usually be enabled when translating Korean images."
                 label="Sort Texts Left-to-Right"
+              />
+            ),
+            "Sanitize Image Translations": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="sanitizeAscii"
+                defaultValue={sanitizeAscii}
+                helperText="Removes strange characters from translation outputs that typically show as unknown characters when redrawing onto the image."
+                label="Sanitize Image Translations"
               />
             ),
             "Scan Screen Key": (

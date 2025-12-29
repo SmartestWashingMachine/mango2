@@ -50,6 +50,7 @@ const storeDefaults: IStore = {
   batchOcr: false,
   cutOcrPunct: false,
   ignoreDetectSingleWords: false,
+  sanitizeAscii: true,
   sortTextFromTopLeft: false,
   useTranslationServer: false,
   memoryEfficientTasks: false,

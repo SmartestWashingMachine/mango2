@@ -54,6 +54,7 @@ export type IStoreClientToServer = {
   batchOcr: boolean;
   cutOcrPunct: boolean;
   ignoreDetectSingleWords: boolean;
+  sanitizeAscii: boolean;
   sortTextFromTopLeft: boolean;
   useTranslationServer: boolean;
   memoryEfficientTasks: boolean;

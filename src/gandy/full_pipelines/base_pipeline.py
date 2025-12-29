@@ -329,7 +329,8 @@ class BasePipeline:
             progress_cb(80)
 
         # Since most fonts don't work well with weird characters.
-        target_texts = [t.replace("―", "-").encode("ascii", "ignore").decode("utf-8") for t in target_texts]
+        if config_state.sanitize_ascii:
+            target_texts = [t.replace("―", "-").encode("ascii", "ignore").decode("utf-8") for t in target_texts]
 
         if config_state.ignore_detect_single_words:
             targets_and_bboxes = zip(target_texts, speech_bboxes)

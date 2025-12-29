@@ -148,7 +148,8 @@ def change_multiple_models_route():
             capture_window=data["captureWindow"],
             name_entries=data["nameEntries"],
             augment_name_entries=data["augmentNameEntries"],
-            detect_speaker_name=data["detectSpeakerName"]
+            detect_speaker_name=data["detectSpeakerName"],
+            sanitize_ascii=data["sanitizeAscii"],
         )
 
         config_state.update_terms(terms=data["terms"])

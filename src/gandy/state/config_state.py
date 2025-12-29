@@ -43,6 +43,7 @@ class ConfigState:
         self.batch_ocr = False
         self.cut_ocr_punct = False
         self.ignore_detect_single_words = False
+        self.sanitize_ascii = False
         self.sort_text_from_top_left = False
         self.ignore_thin_text = False
 
