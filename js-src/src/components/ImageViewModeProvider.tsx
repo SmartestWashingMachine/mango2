@@ -5,7 +5,6 @@ import React, {
   useCallback,
   useEffect,
 } from "react";
-import { useAlerts } from "./AlertProvider";
 
 export type ViewingModes = "one" | "vertical" | "one_amg";
 
@@ -24,20 +23,14 @@ type ImageViewModeProviderProps = {
 
 const ImageViewModeProvider = ({ children }: ImageViewModeProviderProps) => {
   const [viewingMode, setViewingMode] = useState<ViewingModes>("one");
-  const pushAlert = useAlerts();
 
   // If one_amg is the current viewing mode. TODO: separate.
   const [viewingAnnotationIdx, setViewingAnnotationIdx] = useState(0); // Annotation bounding box on the left (inside image) is hovered.
   const [viewingAnnotationTextIdx, setViewingAnnotationTextIdx] = useState(0); // Annotation card on the right (outside image) is hovered.
 
-  const changeViewingMode = useCallback(
-    (newV?: ViewingModes) => {
-      setViewingMode((v) => newV || (v === "one" ? "vertical" : "one"));
-
-      if (newV !== "one_amg") pushAlert("Changed viewing mode!");
-    },
-    [pushAlert]
-  );
+  const changeViewingMode = useCallback((newV?: ViewingModes) => {
+    setViewingMode((v) => newV || (v === "one" ? "vertical" : "one"));
+  }, []);
 
   return (
     <ImageViewModeContext.Provider
