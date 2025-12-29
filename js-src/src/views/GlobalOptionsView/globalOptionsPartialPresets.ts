@@ -15,12 +15,11 @@ export type PresetItem = {
 
 const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
   {
-    name: "Manga / Games",
-    description:
-      "This preset is good for translating Japanese manga panels or games.",
+    name: "Manga Fast",
+    description: "This preset is fast for translating Japanese manga panels.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["j_ocr_small", "j_ocr_tiny"],
+      textRecognitionModelName: ["j_ocr_mang", "j_ocr_small", "j_ocr_tiny"],
       translationModelName: ["llm_jgem_goliath", "gem_uni_ja"],
       textLineModelName: ["none"],
       numBeams: 3,
@@ -37,7 +36,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       "This preset is good for translating Japanese manga panels or games. It uses an additional text line detection model to improve the OCR quality.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["j_ocr_small", "j_ocr_small"],
+      textRecognitionModelName: ["j_ocr_small", "j_ocr_tiny"],
       translationModelName: ["llm_jgem_goliath", "gem_uni_ja"],
       textLineModelName: ["dfine_line_emassive", "none"],
       numBeams: 3,
