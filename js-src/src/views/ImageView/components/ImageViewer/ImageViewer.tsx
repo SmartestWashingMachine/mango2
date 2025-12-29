@@ -101,7 +101,7 @@ const ImageViewerNoMemo = ({
 
   useEffect(() => {
     const cb = (e: KeyboardEvent) => {
-      if (!canPageWithKeys) return;
+      if (!canPageWithKeys || isEditing) return;
 
       if (e.code === "ArrowLeft" || e.code == "KeyA") {
         // Left
@@ -118,7 +118,7 @@ const ImageViewerNoMemo = ({
     return () => {
       document.removeEventListener("keydown", cb);
     };
-  }, [imagePaths.length, canPageWithKeys]);
+  }, [imagePaths.length, canPageWithKeys, isEditing]);
 
   const handlePageChange = (e: React.ChangeEvent<unknown>, page: number) => {
     // Arrays start at 0. Pages start at 1.
