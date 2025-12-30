@@ -19,7 +19,11 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     description: "This preset is fast for translating Japanese manga panels.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["j_ocr_mang", "j_ocr_small", "j_ocr_tiny"],
+      textRecognitionModelName: [
+        "(Custom OCR) j_ocr_mang",
+        "j_ocr_small",
+        "j_ocr_tiny",
+      ],
       translationModelName: ["llm_jgem_goliath", "gem_uni_ja"],
       textLineModelName: ["none"],
       numBeams: 3,

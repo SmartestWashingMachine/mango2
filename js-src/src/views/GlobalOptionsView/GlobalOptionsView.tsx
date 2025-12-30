@@ -364,6 +364,16 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 helperText="You can select a preset here to quickly configure the models used behind the scenes. Some presets will require additional model packs to be installed."
                 variant="standard"
                 select
+                SelectProps={{
+                  // This SelectProps was AI generated - MUI docs are flaky.
+                  displayEmpty: true,
+                  renderValue: (selected) => {
+                    if (selected === "" || selected === undefined) {
+                      return <span style={{ color: "gray" }}>Presets...</span>;
+                    }
+                    return selected as any;
+                  },
+                }}
               >
                 {GLOBAL_OPTIONS_PARTIAL_PRESETS.map((b) => [
                   <MenuItem
