@@ -78,7 +78,7 @@ Features include:
 
 # Installation
 
-1. [Download Mango]()
+1. [Download Mango](https://drive.google.com/file/d/1AK88-vD9ilSp3VHksyG4XPpxUS0ERuCH/view?usp=sharing)
 2. Unzip the file.
 3. Open "mango.exe" - it will take a minute to load.
 
