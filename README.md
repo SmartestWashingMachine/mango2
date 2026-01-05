@@ -8,11 +8,11 @@ Features include:
 
 ### Local AI optimized for speed for cheap (no need for killer hardware!)
 
-<video src="examples/mainline/fastja.mp4" width="500" controls muted></video>
+<video src="https://github.com/user-attachments/assets/b7462028-5500-4496-ad0d-0decda1b3a7a" width="500" controls muted></video>
 
 ### Stores translations in case they need to be translated again even faster (such as for user interfaces in games.)
 
-<video src="examples/mainline/caching.mp4" width="500" controls muted></video>
+<video src="https://github.com/user-attachments/assets/d6800d99-9920-4b0b-b799-bc8a22128e23" width="500" controls muted></video>
 
 ### Supports Chinese/Korean OCR'ing and translation to English with my other models (installed separately.)
 
