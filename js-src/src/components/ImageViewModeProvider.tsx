@@ -11,6 +11,7 @@ export type ViewingModes = "one" | "vertical" | "one_amg";
 const ImageViewModeContext = createContext({
   viewingMode: "one" as ViewingModes,
   changeViewingMode: (v?: ViewingModes) => {},
+  setViewingModeDirectly: (cb: (v: ViewingModes) => ViewingModes) => {},
   viewingAnnotationIdx: 0,
   setViewingAnnotationIdx: (v: number) => {},
   viewingAnnotationTextIdx: 0,
@@ -41,6 +42,7 @@ const ImageViewModeProvider = ({ children }: ImageViewModeProviderProps) => {
         setViewingAnnotationIdx,
         viewingAnnotationTextIdx,
         setViewingAnnotationTextIdx,
+        setViewingModeDirectly: setViewingMode,
       }}
     >
       {children}

@@ -73,7 +73,8 @@ const ImageViewerNoMemo = ({
     [onFilesSelected]
   );
 
-  const { viewingMode, changeViewingMode } = useImageViewMode();
+  const { viewingMode, changeViewingMode, setViewingModeDirectly } =
+    useImageViewMode();
 
   const [curIndex, setCurIndex] = useState(0);
 
@@ -182,13 +183,13 @@ const ImageViewerNoMemo = ({
       setOriginalHeight(1);
       setIsEditing(false);
 
-      changeViewingMode("one");
+      setViewingModeDirectly((v) => (v === "one_amg" ? "one" : v));
     }
 
     return () => {
       canceled = true;
     };
-  }, [curIndex, imagePaths, changeViewingMode]);
+  }, [curIndex, imagePaths, changeViewingMode, setViewingModeDirectly]);
 
   const onSaveImage = useCallback(
     async (image: any) => {
@@ -246,7 +247,7 @@ const ImageViewerNoMemo = ({
     );
 
     const mainComponent = (withProgress: boolean) => (
-      <>
+      <React.Fragment key={`wp-${withProgress}`}>
         <div {...getRootProps()} className="imagePreviewRoot">
           {withProgress && progressComponent}
           <input {...getInputProps()} />
@@ -366,7 +367,7 @@ const ImageViewerNoMemo = ({
             </Stack>
           )}
         </div>
-      </>
+      </React.Fragment>
     );
 
     if (viewingMode === "one_amg") {
