@@ -119,6 +119,22 @@ const AmgViewerAnnotations = (props: AmgViewerAnnotationsProps) => {
                 >
                   {x.text}
                 </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  mt="2px"
+                  fontSize="0.6rem"
+                  sx={{
+                    opacity: 0.75,
+                    fontWeight:
+                      (idx === 0 && viewingAnnotationTextIdx === 0) ||
+                      viewingAnnotationTextIdx === idx
+                        ? "500"
+                        : "normal",
+                  }}
+                >
+                  {x.sourceText}
+                </Typography>
               </Box>
             </Stack>
             <Divider sx={{ width: "90%" }} />

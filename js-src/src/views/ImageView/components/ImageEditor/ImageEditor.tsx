@@ -119,11 +119,12 @@ const ImageEditor = ({
 
     const newAnnotation: IAnnotation = {
       text: "Type some text here.",
+      sourceText: "",
       // TODO: Better position defaults.
-      x1: Math.floor(originalImageWidth / 4) || (25),
-      y1: Math.floor(originalImageHeight / 4) || (25),
-      x2: Math.floor(originalImageWidth / 2) || (150),
-      y2: Math.floor(originalImageHeight / 2) || (150),
+      x1: Math.floor(originalImageWidth / 4) || 25,
+      y1: Math.floor(originalImageHeight / 4) || 25,
+      x2: Math.floor(originalImageWidth / 2) || 150,
+      y2: Math.floor(originalImageHeight / 2) || 150,
       ...getDefaultAnnotationStyles(fontFamilies),
       uuid: v4(), // used for keys in html.
     };

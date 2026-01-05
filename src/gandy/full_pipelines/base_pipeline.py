@@ -382,6 +382,11 @@ class BasePipeline:
             rgb_image, dict
         )  # AMG convert app returns a dict rather than an image directly.
 
+        if is_amg:
+            # Hack to avoid mucking about with redrawing APIs. TODO
+            for anno_idx in range(len(rgb_image["annotations"])):
+                rgb_image["annotations"][anno_idx]["sourceText"] = source_texts[anno_idx].split("<TSOS>")[-1].strip()
+
         if return_debug_data:
             debug_data = {
                 "speech_bboxes": speech_bboxes,
