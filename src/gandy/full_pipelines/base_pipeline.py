@@ -553,7 +553,9 @@ class BasePipeline:
 
             line_rows = get_bottom_rows(boxes=line_bboxes, N=bottom_n_lines)
 
-            for row in line_rows:
+            source_line_texts = []
+
+            for idx, row in enumerate(line_rows):
                 # TODO: Add batch for full images (not just lines)?
                 line_texts = self.get_source_texts_from_bboxes(image, row, use_text_line_app=False)
                 line_texts = "".join(line_texts)
@@ -562,6 +564,11 @@ class BasePipeline:
 
                 source_texts = replace_terms_source_side([source_texts], config_state.source_terms)
                 source_texts = source_texts[0]
+
+                source_line_texts.append(source_texts)
+
+                if use_stream is not None:
+                    use_stream.put(f"({idx + 1}): ", already_detokenized=True)
 
                 target_texts = self.get_target_texts_from_str(
                     [source_texts], use_stream=use_stream, on_cache_hit=lambda cached_output: use_stream.put(cached_output, already_detokenized=True)
@@ -574,4 +581,7 @@ class BasePipeline:
                 # Assuming there's no context needed for this task (since it's used for system UI stuff).
                 all_targets.append(target_texts[0])
 
-        return ["\n\n".join(all_targets)], "<LINES>"
+        output_target = "\n\n".join([f"({idx + 1}): {all_targets[idx]}" for idx in range(len(all_targets))])
+        output_source = " ".join([f"({idx + 1}): {source_line_texts[idx]}" for idx in range(len(source_line_texts))] + ["<LINES>"])
+
+        return [output_target], output_source
