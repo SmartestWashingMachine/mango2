@@ -26,6 +26,7 @@ import os
 import json
 from gandy.database.faiss_mt_cache import MTCache
 from gandy.utils.speech_sort import sort_frames, sort_text_in_sorted_frames, add_frames_for_ghost_text_boxes
+import regex as re
 
 def dump_task1_debug_data(rgb_image: Image, speech_bboxes):
     debug_id = uuid4().hex
@@ -575,7 +576,7 @@ class BasePipeline:
                 for line in unjoined_source_lines:
                     cur_candidate += line
 
-                    if join_lines_until_finds in line:
+                    if re.search(join_lines_until_finds, line, flags=re.DOTALL):
                         joined_source_lines.append(cur_candidate)
                         cur_candidate = ""
 
