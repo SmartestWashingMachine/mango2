@@ -11,7 +11,8 @@ export const translateImageGiveText = async (
   textDetect: boolean,
   tgtContextMemory: string | null,
   streamOutput: boolean | null,
-  translateLinesIndividually: number = 0
+  translateLinesIndividually: number = 0,
+  joinLinesUntilFinds: string = ""
 ) => {
   const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processtask3`;
 
@@ -35,6 +36,8 @@ export const translateImageGiveText = async (
     translateLinesIndividually.toString()
   );
 
+  formData.append("joinLinesUntilFinds", joinLinesUntilFinds);
+
   const output = await nodeFetch(apiUrl, {
     method: "POST",
     body: formData,
@@ -54,7 +57,8 @@ export const translateImageGiveTextFaster = async (
   textDetect: boolean,
   tgtContextMemory: string | null,
   streamOutput: boolean | null,
-  translateLinesIndividually: number = 0
+  translateLinesIndividually: number = 0,
+  joinLinesUntilFinds: string = ""
 ) => {
   // This always goes to local host first - the backend there will then push it to the remote backend.
   const apiUrl = `http://127.0.0.1:5000/processtask3new`;
@@ -81,6 +85,8 @@ export const translateImageGiveTextFaster = async (
     "translateLinesIndividually",
     translateLinesIndividually.toString()
   );
+
+  formData.append("joinLinesUntilFinds", joinLinesUntilFinds);
 
   const output = await nodeFetch(apiUrl, {
     method: "POST",

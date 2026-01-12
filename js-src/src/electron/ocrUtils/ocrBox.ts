@@ -50,6 +50,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   scanAfterEnter: number;
   serverSideActivationKey: boolean;
   translateLinesIndividually: number;
+  joinLinesUntilFinds: string;
   followsCursor: boolean;
   contentProtection: boolean;
 
@@ -102,6 +103,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     this.translateLinesIndividually =
       DEFAULT_BOX_OPTIONS.translateLinesIndividually;
+
+    this.joinLinesUntilFinds = DEFAULT_BOX_OPTIONS.joinLinesUntilFinds;
 
     this.prevImage = null; // For autoScan.
     this.prevText = null; // For listenClipboard.
@@ -186,6 +189,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
       boxSettings.translateLinesIndividually ||
       DEFAULT_BOX_OPTIONS.translateLinesIndividually;
 
+    this.joinLinesUntilFinds =
+      boxSettings.joinLinesUntilFinds ||
+      DEFAULT_BOX_OPTIONS.joinLinesUntilFinds;
+
     this.followsCursor =
       boxSettings.followsCursor || DEFAULT_BOX_OPTIONS.followsCursor;
 
@@ -259,7 +266,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
         this.textDetect,
         null,
         this.useStream,
-        this.translateLinesIndividually
+        this.translateLinesIndividually,
+        this.joinLinesUntilFinds
       );
     }
   }
@@ -292,7 +300,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
       this.textDetect,
       null,
       this.useStream,
-      this.translateLinesIndividually
+      this.translateLinesIndividually,
+      this.joinLinesUntilFinds
     );
 
     if (!isHidden) this.revealBox();
@@ -325,6 +334,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
   }
 
   rememberThisBox() {
+    // TODO: add "joinLinesUntilFinds" here too.
+
     const coords = this.getCoords();
     rememberBoxActivationData({
       x1: coords[0],

@@ -36,6 +36,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   scanAfterEnter: 0,
   serverSideActivationKey: false,
   translateLinesIndividually: 0,
+  joinLinesUntilFinds: "",
   fullyDraggable: false,
   followsCursor: false,
   contentProtection: true,

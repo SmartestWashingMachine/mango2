@@ -43,6 +43,7 @@ const genericOptions = {
   scanAfterEnter: 0,
   serverSideActivationKey: false,
   translateLinesIndividually: 0,
+  joinLinesUntilFinds: "",
   fullyDraggable: false,
   followsCursor: false,
   contentProtection: true,

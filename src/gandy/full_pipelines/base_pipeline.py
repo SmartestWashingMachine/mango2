@@ -539,7 +539,7 @@ class BasePipeline:
             return target_texts, source_texts
 
     def image_to_line_texts(
-        self, image: Image, use_stream=None, bottom_n_lines=0,
+        self, image: Image, use_stream=None, bottom_n_lines=0, join_lines_until_finds="",
     ):
         all_targets = []
 
@@ -553,7 +553,7 @@ class BasePipeline:
 
             line_rows = get_bottom_rows(boxes=line_bboxes, N=bottom_n_lines)
 
-            source_line_texts = []
+            unjoined_source_lines = []
 
             for idx, row in enumerate(line_rows):
                 # TODO: Add batch for full images (not just lines)?
@@ -563,10 +563,30 @@ class BasePipeline:
                 source_texts = merge_texts(line_texts, [])
 
                 source_texts = replace_terms_source_side([source_texts], config_state.source_terms)
-                source_texts = source_texts[0]
+                source_texts = source_texts[0] # str
 
-                source_line_texts.append(source_texts)
+                unjoined_source_lines.append(source_texts)
 
+            if join_lines_until_finds != "":
+                # Sometimes certain games split sentences e.g: dialogues across multiple text box lines.
+                joined_source_lines = []
+
+                cur_candidate = ""
+                for line in unjoined_source_lines:
+                    cur_candidate += line
+
+                    if join_lines_until_finds in line:
+                        joined_source_lines.append(cur_candidate)
+                        cur_candidate = ""
+
+                if cur_candidate != "":
+                    joined_source_lines.append(cur_candidate)
+
+                ctx.log(f"Joined {len(unjoined_source_lines)} lines into {len(joined_source_lines)} lines", unjoined_source_lines=unjoined_source_lines, joined_source_lines=joined_source_lines)
+            else:
+                joined_source_lines = unjoined_source_lines # This is the case for 99% of users.
+
+            for idx, source_texts in enumerate(joined_source_lines):
                 if use_stream is not None:
                     use_stream.put(f"({idx + 1}): ", already_detokenized=True)
 
@@ -582,6 +602,6 @@ class BasePipeline:
                 all_targets.append(target_texts[0])
 
         output_target = "\n\n".join([f"({idx + 1}): {all_targets[idx]}" for idx in range(len(all_targets))])
-        output_source = " ".join([f"({idx + 1}): {source_line_texts[idx]}" for idx in range(len(source_line_texts))] + ["<LINES>"])
+        output_source = " ".join([f"({idx + 1}): {joined_source_lines[idx]}" for idx in range(len(joined_source_lines))] + ["<LINES>"])
 
         return [output_target], output_source

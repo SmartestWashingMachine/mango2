@@ -42,6 +42,7 @@ export type BoxOptionsBackend = {
   scanAfterEnter: number;
   serverSideActivationKey: boolean;
   translateLinesIndividually: number;
+  joinLinesUntilFinds: string;
 };
 
 export type BoxOptions = BoxOptionsFrontend & BoxOptionsBackend;

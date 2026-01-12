@@ -48,8 +48,9 @@ def translate_task3_background_job(
     use_stream=None,
     already_loaded=False,
     translate_lines_individually=0,
+    join_lines_until_finds="",
 ):
-    with logger.begin_event("Task3", translate_lines_individually=translate_lines_individually) as ctx:
+    with logger.begin_event("Task3", translate_lines_individually=translate_lines_individually, join_lines_until_finds=join_lines_until_finds) as ctx:
         try:
             if already_loaded:
                 opened_images = images
@@ -81,6 +82,7 @@ def translate_task3_background_job(
                         img,
                         use_stream=use_stream,
                         bottom_n_lines=translate_lines_individually,
+                        join_lines_until_finds=join_lines_until_finds,
                     )
                 else:
                     new_texts, source_text = translate_pipeline.image_to_single_text(
@@ -162,7 +164,12 @@ def process_task3_route():
     if box_id is not None and len(box_id) > 0:
         box_id = box_id[0]
 
-    translate_lines_individually = int(data['translateLinesIndividually'][0])
+    translate_lines_individually = int(data["translateLinesIndividually"][0])
+
+    try:
+        join_lines_until_finds = str(data["joinLinesUntilFinds"][0])
+    except:
+        join_lines_until_finds = ""
 
     images = request.files.getlist("file")
 
@@ -174,6 +181,7 @@ def process_task3_route():
         use_stream,
         False,
         translate_lines_individually,
+        join_lines_until_finds,
     )
 
     return {"processing": True}, 202
@@ -209,6 +217,7 @@ def process_task3_faster(data):
                 'use_stream': str(bool(data['use_stream'])), # Can't send use_stream object here as it's over the network. So we set it to "True" and recreate it in the background job function.
                 'already_loaded': str('False'), # Doesn't matter. Remote route always loads it anyways.
                 'translate_lines_individually': str(data['translate_lines_individually']),
+                'join_lines_until_finds': str(data.get('join_lines_until_finds', "")),
             }
 
             image_stream = BytesIO()
@@ -238,7 +247,8 @@ def process_task3_faster(data):
             data['with_text_detect'],
             use_stream,
             True,
-            data['translate_lines_individually']
+            data['translate_lines_individually'],
+            data.get('join_lines_until_finds', ''),
         )
 
 @app.route("/processtask3new", methods=["POST"])
@@ -255,6 +265,11 @@ def process_task3new_route():
 
             translate_lines_individually = int(data['translateLinesIndividually'][0])
 
+            try:
+                join_lines_until_finds = str(data["joinLinesUntilFinds"][0])
+            except:
+                join_lines_until_finds = ""
+
             # It's an array? Huh? TODO
             with_text_detect = text_detect[0] == "on"
             if box_id is not None and len(box_id) > 0:
@@ -269,6 +284,7 @@ def process_task3new_route():
             'with_text_detect': with_text_detect,
             'use_stream': use_stream,
             'translate_lines_individually': translate_lines_individually,
+            'join_lines_until_finds': join_lines_until_finds,
         })
 
     return {"processing": True}, 202

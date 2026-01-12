@@ -105,6 +105,9 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
   const updateStrokeColor = (color: string) =>
     changeValue("strokeColor", color);
 
+  const updateJoinLinesUntilFinds = (e: React.ChangeEvent<HTMLInputElement>) =>
+    changeValue("joinLinesUntilFinds", e.currentTarget.value);
+
   const updatePauseKey = (key: string) => changeValue("pauseKey", key);
 
   const updatePreset = (e: any) => {
@@ -454,6 +457,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               onChange={updateTranslateLinesIndividually}
               defaultValue={props.translateLinesIndividually}
               helperText="If greater than 0, only that many of the bottom-most text lines will be scanned and translated, and each text line will be separately translated. This can be useful when attempting to translate system elements like a battle log."
+            />
+          ),
+          "Join Lines Until String Found": (
+            <TextField
+              label="Join Lines Until String Found"
+              variant="standard"
+              onChange={updateJoinLinesUntilFinds}
+              defaultValue={props.joinLinesUntilFinds}
+              helperText="(Requires 'Activation Key Scanning Bottom N Lines Only' to be greater than 0.) If set to a non-empty string, when scanning the bottom N lines, lines will be joined together until this string is found in a line (inclusive). This can help with games that split sentences across multiple lines."
             />
           ),
         },
