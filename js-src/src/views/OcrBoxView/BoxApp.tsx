@@ -14,6 +14,8 @@ const ACTIVATE_DEFAULT_TEXT = (k: string) =>
   `I will translate anything behind me when "${k}" is pressed. Use the bottom right handle to drag me around!`.trim();
 const ACTIVATE_DEFAULT_WITH_HIDE_TEXT = (k: string, h: string) =>
   `I will translate anything behind me when "${k}" is pressed. I can go invisible when "${h}" is pressed. Use the bottom right handle to drag me around!`.trim();
+const ACTIVATE_LINES_WITH_HIDE_TEXT = (k: string, h: string) =>
+  `I will translate anything line-by-line behind me when "${k}" is pressed. I can go invisible when "${h}" is pressed. Use the bottom right handle to drag me around!`.trim();
 
 const ACTIVATE_ADVANCED_TEXT = (k: string, l: string) =>
   `I will translate anything behind me when "${k}" is pressed. Hide me with "${l}" before translating!`.trim();
@@ -224,12 +226,21 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
             ]);
           } else {
             if (boxOptions.hideKey !== "Escape") {
-              setText([
-                ACTIVATE_DEFAULT_WITH_HIDE_TEXT(
-                  boxOptions.activationKey,
-                  boxOptions.hideKey
-                ),
-              ]);
+              if (boxOptions.translateLinesIndividually !== 0) {
+                setText([
+                  ACTIVATE_LINES_WITH_HIDE_TEXT(
+                    boxOptions.activationKey,
+                    boxOptions.hideKey
+                  ),
+                ]);
+              } else {
+                setText([
+                  ACTIVATE_DEFAULT_WITH_HIDE_TEXT(
+                    boxOptions.activationKey,
+                    boxOptions.hideKey
+                  ),
+                ]);
+              }
             } else setText([ACTIVATE_DEFAULT_TEXT(boxOptions.activationKey)]);
           }
         } else {
