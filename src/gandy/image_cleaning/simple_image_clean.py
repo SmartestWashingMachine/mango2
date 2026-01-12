@@ -14,8 +14,11 @@ class SimpleImageCleanApp(BaseImageClean):
 
         mask_color = (255, 255, 255)
         for s in bboxes:
-            input_draw.rounded_rectangle(
-                s, outline=mask_color, fill=mask_color, width=1, radius=30
-            )
+            try:
+                input_draw.rounded_rectangle(
+                    s, outline=mask_color, fill=mask_color, width=1, radius=30
+                )
+            except:
+                input_draw.rectangle(s, outline=mask_color, fill=mask_color, width=1) # Sometimes the radius is just too much.
 
         return input_image

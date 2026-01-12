@@ -347,8 +347,7 @@ class BasePipeline:
             logger.log_message('Ignoring single words', n_before=old_len, n_after=len(target_texts))
 
         if cb_on_text_done is not None:
-            for (st, tt) in zip(source_texts, target_texts):
-                cb_on_text_done(st, tt)
+            cb_on_text_done(source_texts, target_texts)
 
         if skip_redrawing:
             return {

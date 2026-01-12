@@ -184,6 +184,9 @@ def translate_task1_background_job(
 
             memory_efficient_data_to_translate_later = []
 
+            def _emit_on_text_done(sous, tars):
+                socketio.patched_emit("textitem_task1", { "texts": tars, "sourceTexts": sous, })
+
             for img_idx, (img, img_name) in enumerate(images_data):
                 if debug_state.debug or debug_state.debug_redraw:
                     debug_state.metadata['cur_img_name'] = img_name
@@ -207,9 +210,6 @@ def translate_task1_background_job(
 
                     progress_cb(((((1 + img_idx) / len(images_data)) * 100) // 2) + 5)
                 else:
-                    def _emit_on_text_done(sou: str, tar: str):
-                        socketio.patched_emit("textitem_task1", { "text": tar, "sourceText": sou, })
-
                     with logger.begin_event('Process image'):
                         new_image, is_amg = translate_pipeline.image_to_image(
                             img, progress_cb=progress_cb, cb_on_text_done=_emit_on_text_done,
@@ -247,6 +247,7 @@ def translate_task1_background_job(
                     # The MT model is implicitly loaded as we ask the pipeline to translate each image.
                     new_image, is_amg = translate_pipeline._translate_image_to_image_from_data(
                         progress_cb=progress_cb,
+                        cb_on_text_done=_emit_on_text_done,
                         **mem_eff_data,
                     )
 

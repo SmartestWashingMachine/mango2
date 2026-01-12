@@ -9,6 +9,7 @@ from uuid import uuid4
 from PIL import Image
 from io import BytesIO
 from gandy.utils.try_print import try_print
+from gandy.utils.fancy_logger import logger
 
 if dangerous_config.enable_web_ui:
     print('CWD for WEBUI:')
@@ -112,34 +113,42 @@ if dangerous_config.enable_web_ui:
     # Note that this route uses the main app - not the web app.
     @app.route("/webui/processziptask1", methods=["POST"])
     def process_zipped_images():
-        zip_file = request.files.getlist("file")
-        if zip_file is None or not isinstance(zip_file, list) or len(zip_file) > 1:
-            return {}, 400
-        
-        zip_file = zip_file[0]
+        with logger.begin_event("Received file upload for Task 1"):
+            uploaded_files = request.files.getlist("file")
+            if uploaded_files is None or not isinstance(uploaded_files, list) or len(uploaded_files) < 1:
+                return {}, 400
 
-        files = []
-        with zipfile.ZipFile(zip_file, 'r') as f:
-            for file_name in f.namelist():
-                file_data = f.read(file_name)
-                file_data = BytesIO(file_data)
-                files.append(file_data)
+            zip_file = uploaded_files[0]
+            files = []
 
-        task_id = uuid4().hex
+            if len(uploaded_files) > 1 or zip_file.content_type != "application/zip":
+                # Assume it's a list of image files.
+                for f in uploaded_files:
+                    files.append(f)
+            else:
+                # Read first zip file instead (default behavior).
+                with zipfile.ZipFile(zip_file, 'r') as f:
+                    for file_name in f.namelist():
+                        file_data = f.read(file_name)
+                        file_data = BytesIO(file_data)
+                        files.append(file_data)
 
-        images_folder_path = os.path.expanduser(f"~/Documents/Mango/images/")
+            task_id = uuid4().hex
 
-        def _on_image_done(image: Image.Image, img_idx: int, img_name_no_ext: str):
-            new_fol = f'{images_folder_path}/{task_id}/'
-            os.makedirs(new_fol, exist_ok=True)
+            images_folder_path = os.path.expanduser(f"~/Documents/Mango/images/")
 
-            image.save(f'{new_fol}{img_name_no_ext}.png')
+            def _on_image_done(image: Image.Image, img_idx: int, img_name_no_ext: str):
+                new_fol = f'{images_folder_path}/{task_id}/'
+                os.makedirs(new_fol, exist_ok=True)
 
-        socketio.start_background_task(
-            translate_task1_background_job,
-            files,
-            task_id,
-            _on_image_done
-        )
+                # This will probably break if AMG image redrawing modes are used.
+                image.save(f'{new_fol}{img_name_no_ext}.png')
 
-        return {}, 200
+            socketio.start_background_task(
+                translate_task1_background_job,
+                files,
+                task_id,
+                _on_image_done
+            )
+
+            return {}, 200

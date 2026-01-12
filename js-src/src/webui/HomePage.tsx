@@ -142,11 +142,13 @@ const HomePage = () => {
   const handleZipUpload = async (e: any) => {
     const formData = new FormData() as any;
 
-    if (!e.target.files || e.target.files.length !== 1) return;
-    const foundFile = e.target.files[0];
-    formData.append("file", foundFile);
+    if (!e.target.files || e.target.files.length === 0) return;
 
-    pushAlert("Processing zip file...");
+    for (const foundFile of e.target.files) {
+      formData.append("file", foundFile);
+    }
+
+    pushAlert("Processing files...");
 
     let LOGIC_API_URL = window.location.protocol;
     if (LOGIC_API_URL.includes("http")) LOGIC_API_URL = LOGIC_API_URL + "//";
@@ -208,9 +210,10 @@ const HomePage = () => {
           />
         </div>
         <Button variant="outlined" color="primary" component="label" fullWidth>
-          Upload Zip
+          Translate Images
           <input
             type="file"
+            multiple
             onChange={handleZipUpload}
             style={{ display: "none" }}
             accept="application/zip,application/x-zip,application/x-zip-compressed,application/octet-stream"

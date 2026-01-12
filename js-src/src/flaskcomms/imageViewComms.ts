@@ -97,8 +97,13 @@ export const pollTranslateImagesStatus = (
       // sourceText = str & text = str
       const w = window as any;
 
-      const split = data.sourceText.split("<TSOS>"); // Without preceding context.
-      w.electronAPI.addToTextHistory([[data.text]], [split[split.length - 1]]);
+      const sourceTexts = data.sourceTexts as string[];
+      const texts = data.texts as string[];
+
+      for (let i = 0; i < texts.length; i++) {
+        const split = sourceTexts[i].split("<TSOS>"); // Without preceding context.
+        w.electronAPI.addToTextHistory([[texts[i]]], [split[split.length - 1]]);
+      }
     });
 
     socket.on("done_translating_task1", (data) => {
