@@ -47,6 +47,7 @@ const genericOptions = {
   fullyDraggable: false,
   followsCursor: false,
   contentProtection: true,
+  detectSpeakerName: false,
 };
 
 export const OPTIONS_PRESETS: BoxPreset[] = [

@@ -355,22 +355,13 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               ))}
             </TextField>
           ),
-          "Is Speaker Box": (
+          "Detect Speaker Name": (
             <UpdateCheckbox
               changeValue={changeValue}
-              defaultValue={props.speakerBox}
-              keyName="speakerBox"
-              helperText="If enabled, may improve the translation output of the other boxes. Place this box over the area where the speaker is usually given."
-              label="Is Speaker Box"
-            />
-          ),
-          "Remove Speaker": (
-            <UpdateCheckbox
-              changeValue={changeValue}
-              defaultValue={props.removeSpeaker}
-              keyName="removeSpeaker"
-              helperText="Removes the speaker name from the translated text given by the speaker box."
-              label="Remove Speaker"
+              defaultValue={props.detectSpeakerName}
+              keyName="detectSpeakerName"
+              helperText="Uses rules along with the text line model to automatically format the line containing the 'name' of the person speaking, if there is such a line. This can be very helpful for RPG Maker games."
+              label="Detect Speaker Name"
             />
           ),
           "Enhance Text Recognition": (
@@ -380,6 +371,26 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               keyName="textDetect"
               helperText="Uses the text detection model before the text recognition model to enhance accuracy at the cost of speed. No effect on boxes that listen to the clipboard."
               label="Enhance Text Recognition"
+            />
+          ),
+          "(Deprecated) Is Speaker Box": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.speakerBox}
+              keyName="speakerBox"
+              helperText="If enabled, may improve the translation output of the other boxes. Place this box over the area where the speaker is usually given."
+              label="(Deprecated) Is Speaker Box"
+              opacity={0.5}
+            />
+          ),
+          "(Deprecated) Remove Speaker": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.removeSpeaker}
+              keyName="removeSpeaker"
+              helperText="Removes the speaker name from the translated text given by the speaker box."
+              label="(Deprecated) Remove Speaker"
+              opacity={0.5}
             />
           ),
         },

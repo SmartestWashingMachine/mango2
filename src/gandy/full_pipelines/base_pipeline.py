@@ -260,6 +260,7 @@ class BasePipeline:
         return_line_bboxes=False,
         progress_cb=None,
         use_text_line_app=True,
+        detect_speaker_name=False,
     ):
         source_texts: List[str] = []
         line_bboxes = None
@@ -281,6 +282,7 @@ class BasePipeline:
                 text_line_app_scan_image_if_fails=(not self.text_detection_app.get_sel_app_name() == "none" and use_text_line_app),
                 forced_image=forced_image,
                 on_box_done=on_box_done,
+                detect_speaker_name=detect_speaker_name,
             )
 
         if return_line_bboxes:
@@ -420,8 +422,11 @@ class BasePipeline:
                 # Dump image and detected BBOX coordinates.
                 dump_task1_debug_data(rgb_image, speech_bboxes)
 
+            # detect_speaker_name here is False as we typically only care for it during detached text box translation tasks.
+            # That said, it can still be used in image_to_image tasks if the global setting detect_speaker_name is used (keeping in-line with legacy purposes).
+            # (text recognition app checks for detect_speaker_name and config_state.detect_speaker_name)
             source_texts, line_bboxes, line_texts = self.get_source_texts_from_bboxes(
-                rgb_image, speech_bboxes, return_line_bboxes=True, progress_cb=progress_cb,
+                rgb_image, speech_bboxes, return_line_bboxes=True, progress_cb=progress_cb, detect_speaker_name=False,
             )
             source_texts = replace_terms_source_side(source_texts, config_state.source_terms)
             if progress_cb is not None:
@@ -488,7 +493,7 @@ class BasePipeline:
             return target_texts
 
     def image_to_untranslated_texts(
-        self, image: Image, with_text_detect=False, with_ocr=True,
+        self, image: Image, with_text_detect=False, with_ocr=True, detect_speaker_name=False,
     ):
         with logger.begin_event("Image to untranslated texts") as ctx:
             image = image.convert("RGB")
@@ -508,18 +513,21 @@ class BasePipeline:
             config_state.tile_height = old_tile_height
 
             if with_ocr:
-                source_texts = self.get_source_texts_from_bboxes(image, speech_bboxes)
+                source_texts = self.get_source_texts_from_bboxes(image, speech_bboxes, detect_speaker_name=detect_speaker_name)
                 return source_texts
             else:
                 return image, speech_bboxes
 
     def image_to_single_text(
-        self, image: Image, with_text_detect=False, context_input=[], use_stream=None,
+        self, image: Image, with_text_detect=False, context_input=[], use_stream=None, detect_speaker_name=False,
     ):
         with logger.begin_event("Image to single text") as ctx:
             image = image.convert("RGB")
 
-            source_texts = self.image_to_untranslated_texts(image, with_text_detect)
+            # Each detached text box can specify whether or not it expects a speaker name to be detected.
+            # Or the user can enable it for all boxes (globally via config_state).
+            # In hindsight, rushing into the code without proper test coverage was the worst mistake I've ever made.
+            source_texts = self.image_to_untranslated_texts(image, with_text_detect, detect_speaker_name=detect_speaker_name)
 
             if len(source_texts) == 0:
                 return [None, None]
@@ -548,6 +556,7 @@ class BasePipeline:
             image = image.convert("RGB")
 
             # No text detection app is used - only the line detection app.
+            # NOTE: detect_speaker_name will not work here. It doesn't make sense here anyways.
 
             # Line app .get_images() also handles any custom sorting logic.
             line_bboxes = self.text_line_app.get_sel_app().get_images(image, return_image_if_fails=True).tolist()

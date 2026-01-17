@@ -37,6 +37,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   serverSideActivationKey: false,
   translateLinesIndividually: 0,
   joinLinesUntilFinds: "",
+  detectSpeakerName: false,
   fullyDraggable: false,
   followsCursor: false,
   contentProtection: true,

@@ -85,7 +85,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
         else:
             logger.log_message(msg, text=text)
 
-    def process(self, image: Image.Image, bboxes, text_line_app, forced_image=None, text_line_app_scan_image_if_fails = True, on_box_done=None):
+    def process(self, image: Image.Image, bboxes, text_line_app, forced_image=None, text_line_app_scan_image_if_fails = True, on_box_done=None, detect_speaker_name=False):
         source_texts = []
         if len(bboxes) > 1 and forced_image is not None:
             raise RuntimeError(
@@ -156,12 +156,14 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
 
                             line_texts.append(outp)
 
-                with logger.begin_event("Postprocessing lines.", detect_speaker_name=config_state.detect_speaker_name) as ctx:
+                do_detect_speaker_name = config_state.detect_speaker_name or detect_speaker_name
+
+                with logger.begin_event("Postprocessing lines.", detect_speaker_name=do_detect_speaker_name) as ctx:
                     if self.join_lines_with is not None and len(line_texts) > 1:
                         for lt_idx in range(len(line_texts[:-1])):
                             line_texts[lt_idx] = str(line_texts[lt_idx]) + self.join_lines_with
 
-                    if config_state.detect_speaker_name and len(line_texts) > 1:
+                    if do_detect_speaker_name and len(line_texts) > 1:
                         detected_name_data = name_checker.is_string_only_name(line_texts[0])
 
                         if detected_name_data["is_name"]:

@@ -14,6 +14,7 @@ export type UpdateCheckboxProps = {
   label: string;
   style?: any;
   tooltip?: string; // Unused.
+  opacity?: any;
 };
 
 const UpdateCheckbox = (props: UpdateCheckboxProps) => {
@@ -23,6 +24,9 @@ const UpdateCheckbox = (props: UpdateCheckboxProps) => {
   const contr = (
     <FormGroup style={props.style}>
       <FormControlLabel
+        sx={{
+          opacity: props.opacity || 1,
+        }}
         control={
           <Checkbox
             onChange={handleChange}

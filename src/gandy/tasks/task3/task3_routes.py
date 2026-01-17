@@ -49,6 +49,7 @@ def translate_task3_background_job(
     already_loaded=False,
     translate_lines_individually=0,
     join_lines_until_finds="",
+    detect_speaker_name=False,
 ):
     with logger.begin_event("Task3", translate_lines_individually=translate_lines_individually, join_lines_until_finds=join_lines_until_finds) as ctx:
         try:
@@ -68,11 +69,14 @@ def translate_task3_background_job(
 
             context_input = get_context(box_id)
 
+            do_detect_speaker_name = config_state.detect_speaker_name or detect_speaker_name
+
             for img in opened_images:
                 ctx.log(
                     f"With some vars",
                     with_text_detect=with_text_detect,
                     context_input=context_input,
+                    do_detect_speaker_name=do_detect_speaker_name,
                 )
 
                 # NOTE: The source texts returned are those BEFORE translation app preprocessing, but after terms are replaced.
@@ -90,6 +94,7 @@ def translate_task3_background_job(
                         with_text_detect=with_text_detect,
                         context_input=context_input,
                         use_stream=use_stream,
+                        detect_speaker_name=do_detect_speaker_name,
                     )
 
                 if new_texts is not None: # image_to_single_text sometimes returns None when no text found (with_text_detect=False)
@@ -141,7 +146,8 @@ def translate_task3_background_job_remotely():
             with_text_detect=with_text_detect,
             use_stream=use_stream,
             already_loaded=True, # RemoteRouter loads images via base64_to_pil
-            translate_lines_individually=translate_lines_individually
+            translate_lines_individually=translate_lines_individually,
+            # important TODO: Add do_detect_speaker_name and join_lines_until_finds
         )
 
     return {}, 200
@@ -171,6 +177,11 @@ def process_task3_route():
     except:
         join_lines_until_finds = ""
 
+    try:
+        detect_speaker_name = str(data["detectSpeakerName"][0]) == "on"
+    except:
+        detect_speaker_name = False
+
     images = request.files.getlist("file")
 
     socketio.start_background_task(
@@ -182,6 +193,7 @@ def process_task3_route():
         False,
         translate_lines_individually,
         join_lines_until_finds,
+        detect_speaker_name,
     )
 
     return {"processing": True}, 202
@@ -217,7 +229,8 @@ def process_task3_faster(data):
                 'use_stream': str(bool(data['use_stream'])), # Can't send use_stream object here as it's over the network. So we set it to "True" and recreate it in the background job function.
                 'already_loaded': str('False'), # Doesn't matter. Remote route always loads it anyways.
                 'translate_lines_individually': str(data['translate_lines_individually']),
-                'join_lines_until_finds': str(data.get('join_lines_until_finds', "")),
+                'join_lines_until_finds': str(data.get('join_lines_until_finds', '')),
+                'detect_speaker_name': str(data.get('detect_speaker_name', 'off')),
             }
 
             image_stream = BytesIO()
@@ -249,6 +262,7 @@ def process_task3_faster(data):
             True,
             data['translate_lines_individually'],
             data.get('join_lines_until_finds', ''),
+            data.get('detect_speaker_name', 'off') == 'on',
         )
 
 @app.route("/processtask3new", methods=["POST"])
@@ -270,6 +284,11 @@ def process_task3new_route():
             except:
                 join_lines_until_finds = ""
 
+            try:
+                detect_speaker_name = str(data["detectSpeakerName"][0])
+            except:
+                detect_speaker_name = "off"
+
             # It's an array? Huh? TODO
             with_text_detect = text_detect[0] == "on"
             if box_id is not None and len(box_id) > 0:
@@ -285,6 +304,7 @@ def process_task3new_route():
             'use_stream': use_stream,
             'translate_lines_individually': translate_lines_individually,
             'join_lines_until_finds': join_lines_until_finds,
+            'detect_speaker_name': detect_speaker_name,
         })
 
     return {"processing": True}, 202

@@ -43,6 +43,7 @@ export type BoxOptionsBackend = {
   serverSideActivationKey: boolean;
   translateLinesIndividually: number;
   joinLinesUntilFinds: string;
+  detectSpeakerName: boolean;
 };
 
 export type BoxOptions = BoxOptionsFrontend & BoxOptionsBackend;
