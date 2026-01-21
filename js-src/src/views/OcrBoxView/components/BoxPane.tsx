@@ -72,6 +72,9 @@ const OcrBoxPane = ({
   fullyDraggable,
   enableCuda,
   sourceText,
+  showText,
+  outlineColor,
+  outlineSize,
 }: OcrBoxPaneProps) => {
   const [visible, setVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
@@ -180,6 +183,8 @@ const OcrBoxPane = ({
   );
 
   const renderText = useCallback(() => {
+    if (showText === false) return ""; // === false to maintain backwards compatibility where old versions do not define showText.
+
     const sourceTextComponent =
       !firstLoading && sourceText ? (
         <>
@@ -232,7 +237,15 @@ const OcrBoxPane = ({
         {sourceTextComponent}
       </>
     );
-  }, [text, pause, firstLoading, enableCuda, sourceText, usingFontSize]);
+  }, [
+    text,
+    pause,
+    firstLoading,
+    enableCuda,
+    sourceText,
+    usingFontSize,
+    showText,
+  ]);
 
   const fitTextInBox = useCallback(() => {
     if (!textRef.current) return;
@@ -328,6 +341,11 @@ const OcrBoxPane = ({
   const extraBoxStyles: SxProps = {
     background,
   };
+
+  if (outlineSize && outlineSize > 0) {
+    // outline seems to be rather buggy here.
+    extraBoxStyles["border"] = `${outlineSize}px solid ${outlineColor}`;
+  }
 
   // If options wasn't given, render null.
   if (!fontSize || hide) {

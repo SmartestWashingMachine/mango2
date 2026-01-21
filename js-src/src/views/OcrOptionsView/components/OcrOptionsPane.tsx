@@ -90,6 +90,14 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
 
   const updateHideKey = (key: string) => changeValue("hideKey", key);
 
+  const updateFollowKey = (key: string) => changeValue("followKey", key);
+
+  const updateOutlineSize = (e: React.ChangeEvent<HTMLInputElement>) =>
+    changeValue("outlineSize", e.currentTarget.value);
+
+  const updateOutlineColor = (color: string) =>
+    changeValue("outlineColor", color);
+
   const updateClickThroughKey = (key: string) =>
     changeValue("clickThroughKey", key);
 
@@ -270,6 +278,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               label="Show Source"
             />
           ),
+          "Show Text": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.showText}
+              keyName="showText"
+              helperText="The box will display the text."
+              label="Show Text"
+            />
+          ),
         },
         "Box Appearance": {
           "Background Color": (
@@ -290,6 +307,25 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               onChange={updateBackgroundOpacity}
               defaultValue={props.backgroundOpacity}
             />
+          ),
+          "Outline Size": (
+            <TextField
+              label="Outline Size"
+              variant="standard"
+              type="number"
+              onChange={updateOutlineSize}
+              defaultValue={props.outlineSize}
+            />
+          ),
+          "Outline Color": (
+            <Stack spacing={2} sx={{ alignItems: "center" }}>
+              <Typography variant="body1">Outline Color</Typography>
+              <HexColorPicker
+                color={props.outlineColor}
+                onChange={updateOutlineColor}
+                defaultValue={props.outlineColor}
+              />
+            </Stack>
           ),
           "Fade Away Time": (
             <TextField
@@ -431,6 +467,17 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
           ) : (
             <div></div>
           ),
+          "Follow Key":
+            true || props.followKey ? (
+              <KeySelect
+                label="Follow Key"
+                onKeyChange={updateFollowKey}
+                value={props.followKey}
+                helperText="While following, the box will follow the cursor. Press ESCAPE to disable."
+              />
+            ) : (
+              <div></div>
+            ),
           "Click Through Key":
             true || props.clickThroughKey ? (
               <KeySelect

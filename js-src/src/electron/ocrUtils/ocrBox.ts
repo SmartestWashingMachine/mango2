@@ -55,18 +55,25 @@ export class OcrBoxManager implements BoxOptionsBackend {
   followsCursor: boolean;
   contentProtection: boolean;
 
+  followKey: string;
+  showText: boolean;
+  outlineColor: string;
+  outlineSize: number;
+
   _timerAutoScan?: any;
   _timerClipboard?: any;
   _timerScanAfterEnter?: any;
   _timerFollowsCursor?: any;
   _paused?: boolean;
   _hide?: boolean;
+  _follow?: boolean;
   _clickThrough?: boolean;
   _stateTexts: any[];
 
   _activationKeyCallback: string;
   _pauseKeyCallback: string;
   _hideKeyCallback: string;
+  _followKeyCallback: string;
   _clickThroughKeyCallback: string;
   _spellingCorrectionKeyCallback: string;
 
@@ -108,6 +115,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.joinLinesUntilFinds = DEFAULT_BOX_OPTIONS.joinLinesUntilFinds;
     this.detectSpeakerName = DEFAULT_BOX_OPTIONS.detectSpeakerName;
 
+    this.followKey = DEFAULT_BOX_OPTIONS.followKey;
+    this.showText = DEFAULT_BOX_OPTIONS.showText;
+    this.outlineColor = DEFAULT_BOX_OPTIONS.outlineColor;
+    this.outlineSize = DEFAULT_BOX_OPTIONS.outlineSize;
+
     this.prevImage = null; // For autoScan.
     this.prevText = null; // For listenClipboard.
 
@@ -122,6 +134,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this._timerFollowsCursor = null;
     this._paused = false;
     this._hide = false;
+    this._follow = false;
     this._clickThrough = false;
     this._speakerCallback = async () => new Promise(() => "");
 
@@ -133,6 +146,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this._activationKeyCallback = "";
     this._pauseKeyCallback = "";
     this._hideKeyCallback = "";
+    this._followKeyCallback = "";
     this._clickThroughKeyCallback = "";
     this._spellingCorrectionKeyCallback = "";
   }
@@ -200,6 +214,13 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     this.followsCursor =
       boxSettings.followsCursor || DEFAULT_BOX_OPTIONS.followsCursor;
+
+    this.followKey = boxSettings.followKey || DEFAULT_BOX_OPTIONS.followKey;
+    this.showText = boxSettings.showText || DEFAULT_BOX_OPTIONS.showText;
+    this.outlineColor =
+      boxSettings.outlineColor || DEFAULT_BOX_OPTIONS.outlineColor;
+    this.outlineSize =
+      boxSettings.outlineSize || DEFAULT_BOX_OPTIONS.outlineSize;
 
     if (!boxSettings) {
       this.enabled = true;
@@ -362,6 +383,47 @@ export class OcrBoxManager implements BoxOptionsBackend {
     forgetBoxActivationData(this.getOutputBoxId(), this.boxId);
   }
 
+  follow() {
+    if (!this.ocrWindow) return;
+
+    const sz = this.ocrWindow.getSize();
+
+    // ElectronJS bug requires a fixed size to be used -_-
+    let prevWidth = sz[0];
+    let prevHeight = sz[1];
+
+    this._timerFollowsCursor = setInterval(() => {
+      if (!this.ocrWindow) return;
+
+      try {
+        const windowBounds = this.ocrWindow.getContentBounds();
+        const windowWidth = windowBounds.width;
+        const windowHeight = windowBounds.height;
+
+        const point = screen.getCursorScreenPoint();
+
+        // Center
+        const x = point.x - windowWidth / 2;
+        const y = point.y - windowHeight / 2;
+
+        this.ocrWindow.setBounds({
+          width: prevWidth,
+          height: prevHeight,
+          x: Math.round(x),
+          y: Math.round(y),
+        });
+      } catch (err) {
+        // Sometimes an error happens when moving out of the screen bounds, so we just gotta catch it.
+      }
+    }, 15);
+
+    // Cleanup function.
+    return () => {
+      clearInterval(this._timerFollowsCursor);
+      this._timerFollowsCursor = null;
+    };
+  }
+
   setUpBox(speakerCallback: () => Promise<string>) {
     if (this.ocrWindow !== null) return;
 
@@ -417,6 +479,26 @@ export class OcrBoxManager implements BoxOptionsBackend {
               this.boxId,
               this._hide
             );
+          }
+        }
+      );
+    }
+
+    // Toggle follow mode.
+    if (this.followKey !== DISABLED_KEY_VALUE) {
+      let cleanupFollow: any = null;
+
+      this._followKeyCallback = SharedGlobalShortcuts.register(
+        this.followKey,
+        async () => {
+          this._follow = !this._follow;
+          if (cleanupFollow) {
+            cleanupFollow();
+            cleanupFollow = null;
+          }
+
+          if (this._follow) {
+            cleanupFollow = this.follow();
           }
         }
       );
@@ -568,36 +650,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     }
 
     if (this.followsCursor) {
-      const sz = this.ocrWindow.getSize();
-
-      // ElectronJS bug requires a fixed size to be used -_-
-      let prevWidth = sz[0];
-      let prevHeight = sz[1];
-
-      this._timerFollowsCursor = setInterval(() => {
-        if (!this.ocrWindow) return;
-
-        try {
-          const windowBounds = this.ocrWindow.getContentBounds();
-          const windowWidth = windowBounds.width;
-          const windowHeight = windowBounds.height;
-
-          const point = screen.getCursorScreenPoint();
-
-          // Center
-          const x = point.x - windowWidth / 2;
-          const y = point.y - windowHeight / 2;
-
-          this.ocrWindow.setBounds({
-            width: prevWidth,
-            height: prevHeight,
-            x: Math.round(x),
-            y: Math.round(y),
-          });
-        } catch (err) {
-          // Sometimes an error happens when moving out of the screen bounds, so we just gotta catch it.
-        }
-      }, 15);
+      this.follow();
     }
 
     console.log("Opening OCR BOX:");
@@ -638,6 +691,9 @@ export class OcrBoxManager implements BoxOptionsBackend {
       SharedGlobalShortcuts.unregister(this.pauseKey, this._pauseKeyCallback);
     if (this.hideKey !== DISABLED_KEY_VALUE)
       SharedGlobalShortcuts.unregister(this.hideKey, this._hideKeyCallback);
+    if (this.followKey !== DISABLED_KEY_VALUE) {
+      SharedGlobalShortcuts.unregister(this.followKey, this._followKeyCallback);
+    }
     if (this.clickThroughKey !== DISABLED_KEY_VALUE)
       SharedGlobalShortcuts.unregister(
         this.clickThroughKey,
@@ -674,5 +730,6 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     this._paused = false;
     this._hide = false;
+    this._follow = false;
   }
 }

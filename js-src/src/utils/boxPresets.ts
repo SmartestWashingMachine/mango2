@@ -48,6 +48,10 @@ const genericOptions = {
   followsCursor: false,
   contentProtection: true,
   detectSpeakerName: false,
+  followKey: "Escape",
+  showText: true,
+  outlineColor: "#000000",
+  outlineSize: 0,
 };
 
 export const OPTIONS_PRESETS: BoxPreset[] = [
