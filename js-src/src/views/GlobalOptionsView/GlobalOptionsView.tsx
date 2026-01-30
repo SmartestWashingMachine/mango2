@@ -464,7 +464,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
             ),
           },
           "General Performance": {
-            "Enable CUDA": (
+            "Enable CUDA GPU": (
               <UpdateCheckbox
                 changeValue={setStoreValue}
                 keyName="enableCuda"
