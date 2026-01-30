@@ -96,6 +96,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
 
         line_bboxes = None
         line_texts = None
+        grouped_line_bboxes = []
 
         cropped_image = None
 
@@ -110,6 +111,7 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
 
                 with logger.begin_event('Detecting lines'):
                     line_bboxes = text_line_app.get_images(text_region_image, return_image_if_fails=text_line_app_scan_image_if_fails)
+                    grouped_line_bboxes.append(line_bboxes)
 
                 with logger.begin_event('Actually OCR\'ing'):
                     if config_state.batch_ocr:
@@ -200,4 +202,4 @@ class TrOCRTextRecognitionApp(BaseTextRecognition):
             if on_box_done is not None:
                 on_box_done(bbox_idx)
 
-        return source_texts, line_bboxes, line_texts
+        return source_texts, line_bboxes, line_texts, grouped_line_bboxes

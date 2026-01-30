@@ -266,6 +266,8 @@ class BasePipeline:
         line_bboxes = None
         line_texts = None
 
+        grouped_line_bboxes: List[List[str]] = []
+
         with logger.begin_event("Text recognition"):
             if progress_cb is not None:
                 # Max progress for this part is 50.
@@ -274,7 +276,7 @@ class BasePipeline:
             else:
                 on_box_done = None
 
-            source_texts, line_bboxes, line_texts = self.text_recognition_app.process(
+            source_texts, line_bboxes, line_texts, grouped_line_bboxes = self.text_recognition_app.process(
                 rgb_image,
                 speech_bboxes,
                 text_line_app=self.text_line_app.get_sel_app() if use_text_line_app else None,
@@ -286,7 +288,8 @@ class BasePipeline:
             )
 
         if return_line_bboxes:
-            return source_texts, line_bboxes, line_texts
+            # grouped_line_bboxes is just for a specific image cleaning app - AdaptiveImageCleanLiner
+            return source_texts, line_bboxes, line_texts, grouped_line_bboxes
         return source_texts
 
     def _detect_in_chunk(self, im_chunk):
@@ -324,7 +327,7 @@ class BasePipeline:
 
         return speech_bboxes
     
-    def _translate_image_to_image_from_data(self, source_texts, rgb_image, speech_bboxes, progress_cb=None, return_debug_data=False, skip_redrawing=False, cb_on_text_done=None):
+    def _translate_image_to_image_from_data(self, source_texts, rgb_image, speech_bboxes, progress_cb=None, return_debug_data=False, skip_redrawing=False, cb_on_text_done=None, grouped_line_bboxes=None):
         target_texts = self.get_target_texts_from_str(
             source_texts=source_texts, use_stream=None, progress_cb=progress_cb,
         )
@@ -360,9 +363,13 @@ class BasePipeline:
             }
 
         with logger.begin_event("Image cleaning"):
-            cleaning_output = self.image_cleaning_app.begin_process(
-                rgb_image, speech_bboxes
-            )
+            if self.image_cleaning_app.get_sel_app_name() == "adaptive_clean_liner": # TODO: shouldn't need a manual hack here.
+                cleaning_output = self.image_cleaning_app.begin_process(rgb_image, speech_bboxes, grouped_line_bboxes)
+            else:
+                cleaning_output = self.image_cleaning_app.begin_process(
+                    rgb_image, speech_bboxes
+                )
+
         if isinstance(
             cleaning_output, tuple
         ):  # Quick fix for adaptive_image_clean.
@@ -425,7 +432,7 @@ class BasePipeline:
             # detect_speaker_name here is False as we typically only care for it during detached text box translation tasks.
             # That said, it can still be used in image_to_image tasks if the global setting detect_speaker_name is used (keeping in-line with legacy purposes).
             # (text recognition app checks for detect_speaker_name and config_state.detect_speaker_name)
-            source_texts, line_bboxes, line_texts = self.get_source_texts_from_bboxes(
+            source_texts, line_bboxes, line_texts, grouped_line_bboxes, = self.get_source_texts_from_bboxes(
                 rgb_image, speech_bboxes, return_line_bboxes=True, progress_cb=progress_cb, detect_speaker_name=False,
             )
             source_texts = replace_terms_source_side(source_texts, config_state.source_terms)
@@ -459,6 +466,7 @@ class BasePipeline:
                     'source_texts': source_texts,
                     'rgb_image': rgb_image,
                     'speech_bboxes': speech_bboxes,
+                    'grouped_line_bboxes': grouped_line_bboxes,
                 }
             else:
                 return self._translate_image_to_image_from_data(
@@ -469,6 +477,7 @@ class BasePipeline:
                     return_debug_data=return_debug_data,
                     skip_redrawing=skip_redrawing,
                     cb_on_text_done=cb_on_text_done,
+                    grouped_line_bboxes=grouped_line_bboxes,
                 )
 
     def text_to_text(

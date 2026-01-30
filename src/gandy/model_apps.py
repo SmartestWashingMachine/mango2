@@ -30,6 +30,7 @@ from gandy.image_cleaning.blur_image_clean import BlurImageCleanApp
 from gandy.image_cleaning.blur_and_mask_image_clean import BlurMaskImageCleanApp
 from gandy.image_cleaning.text_fill_clean import TextFillCleanApp
 from gandy.image_cleaning.adaptive_image_clean import AdaptiveImageCleanApp
+from gandy.image_cleaning.adaptive_image_clean_liner import AdaptiveImageCleanLinerApp
 from gandy.image_redrawing.amg_convert import AMGConvertApp
 from gandy.image_redrawing.image_redraw_v2 import ImageRedrawV2App
 from gandy.image_redrawing.neighbor_redraw import NeighborRedrawApp
@@ -274,6 +275,7 @@ IMAGE_CLEANING_APP = SwitchApp(
         BlurMaskImageCleanApp(),
         TextFillCleanApp(),
         AdaptiveImageCleanApp(),
+        AdaptiveImageCleanLinerApp(),
     ],
     app_names=[
         "none",
@@ -285,6 +287,7 @@ IMAGE_CLEANING_APP = SwitchApp(
         "blur_mask",
         "text_clean",
         "adaptive_clean",
+        "adaptive_clean_liner",
     ],
     # default_idx=1,
 )

@@ -22,6 +22,14 @@ export const CLEANING_OPTIONS = [
     `,
   },
   {
+    name: "Line Adaptive",
+    value: "adaptive_clean_liner",
+    desc: `
+    Draws a colored box over detected text lines. The color
+    changes depending on the background color. Recommended for advanced use.
+    `,
+  },
+  {
     name: "Blur",
     value: "blur",
     desc: `
