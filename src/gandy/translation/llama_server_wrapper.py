@@ -190,6 +190,8 @@ class LlamaCppExecutableOpenAIClient:
                 # command.append("--run-time-repack")
                 pass
 
+            command.extend(["-fit off"])
+
             command.extend(self.extra_commands)
 
             command = ' '.join(command)
