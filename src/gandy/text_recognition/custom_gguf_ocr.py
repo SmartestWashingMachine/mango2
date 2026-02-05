@@ -173,7 +173,7 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
         if "jamo" in overrides and overrides["jamo"]:
             prediction = [JamoOverride.postprocess(p.strip()) for p in prediction]
 
-        prediction = [p.strip() for p in prediction]
+        prediction = [p.replace("\n", " ").replace("  ", " ").strip() for p in prediction]
 
         return prediction
 
