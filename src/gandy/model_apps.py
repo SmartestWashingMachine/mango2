@@ -58,6 +58,7 @@ from gandy.text_detection.rtdetr_image_detection import (
 from gandy.text_detection.none_image_detection import NoneImageDetectionApp
 from gandy.text_detection.union_image_detection import UnionImageDetectionApp
 from gandy.text_detection.dfine_image_detection import DFineImageDetectionApp, DFineLineImageDetectionApp, DFineFrameDetectionApp
+from gandy.onnx_models.pp import PpONNX
 from gandy.text_recognition.custom_gguf_ocr import CustomGgufOcrApp
 from gandy.reranking.generic_reranker import BaseRerankingApp
 from gandy.translation.llmcpp_translation import LlmCppTranslationApp, GoliathTranslationApp
@@ -129,6 +130,10 @@ dfine_frame = DFineFrameDetectionApp(
     model_name="dfine_frame", confidence_threshold=0.55, iou_thr=0.4, image_size=1024,
 )
 
+pp_line = DFineLineImageDetectionApp(
+    model_name="pp_line", confidence_threshold=0.15, iou_thr=0.25, image_size=1024, onnx_cls=PpONNX,
+)
+
 
 TEXT_DETECTION_APP = SwitchApp(
     apps=[
@@ -172,6 +177,7 @@ TEXT_DETECTION_APP = SwitchApp(
             line_model_app=dfine_line_emassive_calibrated,
         ),
         dfine_l_group,
+        pp_line,
     ],
     app_names=[
         "yolo_td",
@@ -193,6 +199,7 @@ TEXT_DETECTION_APP = SwitchApp(
         "union_dfine_noisy",
         "union_dfine_denoise",
         "dfine_l_group",
+        "debug_pp_line",
     ],
 )
 
@@ -341,8 +348,9 @@ TEXT_LINE_MODEL_APP = SwitchApp(
         yolo_line_emassive,
         yolo_line_light,
         dfine_line_emassive,
+        pp_line,
     ],
-    app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive", "yolo_line_light", "dfine_line_emassive"],
+    app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive", "yolo_line_light", "dfine_line_emassive", "pp_line"],
 )
 
 # CUSTOM TRANSLATION MODEL GGUFS

@@ -14,6 +14,13 @@ export const TEXT_LINE_OPTIONS = [
     `,
   },
   {
+    name: "(Experimental) PP Line",
+    value: "pp_line",
+    desc: `
+    Sometimes gives more accurate results in certain areas.
+    `,
+  },
+  {
     name: "DETR Line EX-Massive",
     value: "yolo_line_emassive",
     desc: `

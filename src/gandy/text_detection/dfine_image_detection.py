@@ -10,6 +10,10 @@ import copy
 from gandy.utils.speech_sort import sort_frames
 
 class DFineImageDetectionApp(YOLOTDImageDetectionApp):
+    def __init__(self, confidence_threshold=0.5, iou_thr=0.25, model_name="yolo_td", image_size=640, filter_out_overlapping_bboxes=False, onnx_cls=DFineONNX):
+        super().__init__(confidence_threshold, iou_thr, model_name, image_size, filter_out_overlapping_bboxes)
+        self.onnx_cls = onnx_cls
+
     def load_model(self):
         if not self.loaded:
             can_cuda = self.check_cuda()
@@ -17,7 +21,7 @@ class DFineImageDetectionApp(YOLOTDImageDetectionApp):
             logger.info(
                 f"Loading object detection model ({self.model_name})... CUDA: {config_state.use_cuda} FORCE CPU: {config_state.force_td_cpu} WILLCUDA={can_cuda}"
             )
-            self.model = DFineONNX(
+            self.model = self.onnx_cls(
                 f"models/yolo/{self.model_name}.onnx", use_cuda=can_cuda,
             )
 
