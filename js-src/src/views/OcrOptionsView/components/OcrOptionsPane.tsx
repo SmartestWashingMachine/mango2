@@ -370,7 +370,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               changeValue={changeValue}
               defaultValue={props.contentProtection}
               keyName="contentProtection"
-              helperText="The box will not show up in any video recordings or images taken. If disabled, you MUST hide this box with the Hide Key before being able to OCR behind it."
+              helperText="The box will not show up in any video recordings or images taken."
               label="Do Not Record"
             />
           ),

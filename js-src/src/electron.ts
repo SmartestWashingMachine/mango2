@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, Menu, session } from "electron";
+import { app, BrowserWindow, screen, Menu, session, ipcMain } from "electron";
 import path from "path";
 import { ElectronState } from "./types/ElectronState";
 import { initializeModelNames } from "./flaskcomms/setFlaskSettings";
@@ -213,17 +213,23 @@ app.whenReady().then(async () => {
   io.on("connection", (socket) => {
     console.log("Socket connected.");
 
+    const BACKEND_SOCKET_NAME = "task3_image_grabbed";
+
     // Act as a bridge. Cybersecurity says what?
     socket.onAny((evName, ...args) => {
       // console.log(`Emitting ${evName}`);
 
-      const browWindows: BrowserWindow[] = [
-        mainWindow,
-        ...electronState.managers.map((x) => x.ocrWindow),
-      ];
-      for (const win of browWindows) {
-        if (win) {
-          win.webContents.send(`bridge_${evName}`, ...args);
+      if (evName === BACKEND_SOCKET_NAME) {
+        ipcMain.emit(evName, ...args);
+      } else {
+        const browWindows: BrowserWindow[] = [
+          mainWindow,
+          ...electronState.managers.map((x) => x.ocrWindow),
+        ];
+        for (const win of browWindows) {
+          if (win) {
+            win.webContents.send(`bridge_${evName}`, ...args);
+          }
         }
       }
     });

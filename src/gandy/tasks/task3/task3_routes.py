@@ -220,6 +220,14 @@ def process_task3_faster(data):
                 img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
                 images = [img]
 
+    socketio.patched_emit(
+        'task3_image_grabbed',
+        {
+            'boxId': data['box_id'],
+        },
+    )
+    socketio.sleep()
+
     # Used by remember box activations (server_side_box_key_capture) & process_task3new_route.
     if remote_router.is_remote():
         with logger.begin_event("Creating data for remote server.", coords=coords, n_images=len(images)):

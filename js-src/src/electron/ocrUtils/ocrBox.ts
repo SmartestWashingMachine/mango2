@@ -1,4 +1,4 @@
-import { BrowserWindow, screen } from "electron";
+import { BrowserWindow, screen, ipcMain } from "electron";
 import { ElectronState } from "../../types/ElectronState";
 import {
   refineTranslation,
@@ -82,6 +82,9 @@ export class OcrBoxManager implements BoxOptionsBackend {
   _speakerCallback: () => Promise<string>;
   _last_scanned_text: string | null;
 
+  _hideRecordingBoxesCallback: (boxId: string) => void;
+  _revealRecordingBoxesCallback: (_: any, boxId: string) => void; // Removed on cleanup as it interacts with ipcMain.
+
   constructor(boxId: string, store: StoreAdapter, stateTexts: any[]) {
     this.ocrWindow = null;
     // boxIds can never be modified. Only created and removed. I guess in theory we could generate duplicate UUIDs, but if that ever happens we might as well just buy a lottery ticket.
@@ -137,6 +140,9 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this._follow = false;
     this._clickThrough = false;
     this._speakerCallback = async () => new Promise(() => "");
+
+    this._hideRecordingBoxesCallback = () => {};
+    this._revealRecordingBoxesCallback = () => {};
 
     this._last_scanned_text = null;
     this._stateTexts = stateTexts;
@@ -239,13 +245,18 @@ export class OcrBoxManager implements BoxOptionsBackend {
   }
 
   cloakBox() {
-    // no-op: Since we use setContentProtection now we don't need to hide the box - Windows will automatically ignore it when taking pictures.
+    // no-op on self: Since we use setContentProtection now we don't need to hide the box - Windows will automatically ignor
+    // ... instead, we "hide" all the boxes that are configured to be hidden while scanning. This way no box will scan the other.
+    this._hideRecordingBoxesCallback(this.boxId);
   }
 
   revealBox() {
     if (!this.ocrWindow) return;
 
     this.ocrWindow.setOpacity(1);
+
+    // Instead, a websocket is used - this._revealRecordingBoxesCallback(this.boxId);
+    // That way, we can immediately reveal the boxes when the image is grabbed, rather than when the translation is complete.
   }
 
   async takeImage() {
@@ -424,7 +435,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
     };
   }
 
-  setUpBox(speakerCallback: () => Promise<string>) {
+  setUpBox(
+    speakerCallback: () => Promise<string>,
+    hideRecordingBoxesCallback: (boxId: string) => void,
+    revealRecordingBoxesCallback: (boxId: string) => void
+  ) {
     if (this.ocrWindow !== null) return;
 
     this.initializeValues();
@@ -432,6 +447,14 @@ export class OcrBoxManager implements BoxOptionsBackend {
     if (!this.enabled) return;
 
     this.ocrWindow = this.createBoxWindow();
+
+    this._hideRecordingBoxesCallback = hideRecordingBoxesCallback;
+
+    // This one is removed on cleanup as it interacts with IPC main.
+    this._revealRecordingBoxesCallback = (_: any, boxId: string) => {
+      revealRecordingBoxesCallback(boxId);
+    };
+    ipcMain.on("task3_image_grabbed", this._revealRecordingBoxesCallback);
 
     // Prepend speaker info if there is a speaker box.
     this._speakerCallback = speakerCallback;
@@ -722,6 +745,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
     if (this._timerScanAfterEnter) clearTimeout(this._timerScanAfterEnter);
 
     if (this._timerFollowsCursor) clearInterval(this._timerFollowsCursor);
+
+    ipcMain.removeListener(
+      "task3_image_grabbed",
+      this._revealRecordingBoxesCallback
+    );
 
     this._timerAutoScan = null;
     this._timerClipboard = null;

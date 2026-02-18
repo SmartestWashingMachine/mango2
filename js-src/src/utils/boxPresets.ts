@@ -46,7 +46,7 @@ const genericOptions = {
   joinLinesUntilFinds: "",
   fullyDraggable: false,
   followsCursor: false,
-  contentProtection: true,
+  contentProtection: false,
   detectSpeakerName: false,
   followKey: "Escape",
   showText: true,

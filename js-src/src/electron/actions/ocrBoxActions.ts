@@ -24,6 +24,16 @@ const createOcrBox: GatewayAction = {
       speakerCallback = emptySpeakerCallback;
     }
 
+    const setRecordingBoxesContentProtected = (value: boolean) => {
+      return (boxId: string) => {
+        for (const man of state.managers) {
+          if (man.contentProtection) continue;
+
+          man.ocrWindow?.setContentProtection(value);
+        }
+      };
+    };
+
     for (const manager of state.managers) {
       if (manager.ocrWindow !== null) {
         manager.tearDownBox(true, store);
@@ -32,8 +42,11 @@ const createOcrBox: GatewayAction = {
         const isNotSpeakerItself =
           foundSpeakerBox !== undefined &&
           manager.boxId !== foundSpeakerBox.boxId;
+
         manager.setUpBox(
-          isNotSpeakerItself ? speakerCallback : emptySpeakerCallback
+          isNotSpeakerItself ? speakerCallback : emptySpeakerCallback,
+          setRecordingBoxesContentProtected(true), // THe power of curried functions! I forgot they existed for a while...
+          setRecordingBoxesContentProtected(false)
         );
       }
     }

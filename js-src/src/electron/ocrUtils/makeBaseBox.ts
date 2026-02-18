@@ -44,7 +44,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   detectSpeakerName: false,
   fullyDraggable: false,
   followsCursor: false,
-  contentProtection: true,
+  contentProtection: false,
 };
 
 export const makeBaseBox = (boxId: string) => {
