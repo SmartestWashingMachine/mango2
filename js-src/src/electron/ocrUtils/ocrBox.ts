@@ -330,7 +330,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     const coords = this.getCoords();
 
     const isHidden = this._hide;
-    if (!isHidden) this.cloakBox();
+    this.cloakBox();
 
     await translateImageGiveTextFaster(
       coords,
