@@ -103,7 +103,9 @@ const AnnotatedImage = ({
               setViewingAnnotationIdx(0);
             }}
           >
-            <span className="annotation-label">{idx + 1}</span>
+            {!(viewingAnnotationIdx === idx) && (
+              <span className="annotation-label">{idx + 1}</span>
+            )}
           </div>
         ))}
       </div>
