@@ -123,7 +123,9 @@ Download all the `.gguf` and `.json` and any `.txt` files in the link, then drag
 
 # API usage
 
-While Mango 4 is open, you can also translate strings by making a `GET` call to `http://127.0.0.1:5000/translate` with the string to translate being the query parameter `text`. 
+While Mango 4 is open, you can also translate strings by making a `GET` call to `http://127.0.0.1:5000/translate` with the string to translate being the query parameter `text`.
+
+<sub>(Ports 5000 & 5100 are reserved)</sub>
 
 For example:
 

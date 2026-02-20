@@ -7,6 +7,7 @@ from gandy.socket_process import socketio # TODO: Messy import.
 from typing import List
 import os
 from gandy.utils.clean_text_v2 import clean_text_vq
+from gandy.utils.find_free_port import find_tcp_port
 
 # Some caveats:
 # Does not support batch translations. Translations are always done sequentially. (moderate priority)
@@ -39,7 +40,7 @@ class LlmCppTranslationApp(BaseTranslation):
         return 750
     
     def get_server_port(self):
-        return 8000
+        return find_tcp_port()
     
     def get_can_cuda(self):
         can_cuda = config_state.use_cuda and not config_state.force_translation_cpu

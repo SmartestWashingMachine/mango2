@@ -10,6 +10,7 @@ from PIL import Image
 import json
 from gandy.utils.robust_text_line_resize import override_transforms
 import numpy as np
+from gandy.utils.find_free_port import find_tcp_port
 
 """
 The config file here only has these fields:
@@ -56,7 +57,7 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
         return int(self.mango_config["n_context"])
     
     def get_server_port(self):
-        return 7700
+        return find_tcp_port()
     
     def get_model_path_for_llmcpp(self):
         if self.model_sub_path == "config":

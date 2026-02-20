@@ -6,6 +6,7 @@ from gandy.state.config_state import config_state
 from gandy.utils.fancy_logger import logger
 import numpy as np
 from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClient
+from gandy.utils.find_free_port import find_tcp_port
 
 # Vibe coded bro.
 
@@ -44,7 +45,7 @@ class FAISSEmbedder:
         return 750
     
     def get_server_port(self):
-        return 7998
+        return find_tcp_port()
     
     def get_can_cuda(self):
         can_cuda = config_state.use_cuda and not config_state.force_embeddings_cpu
