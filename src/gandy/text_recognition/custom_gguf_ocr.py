@@ -11,6 +11,7 @@ import json
 from gandy.utils.robust_text_line_resize import override_transforms
 import numpy as np
 from gandy.utils.find_free_port import find_tcp_port
+from gandy.utils.pseudo_smart_image_resize import create_pseudo_smart_resize
 
 """
 The config file here only has these fields:
@@ -44,8 +45,11 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
 
                 overrides = mango_config.get("overrides", {})
                 if "transform" in overrides:
-                    found = override_transforms.get(overrides["transform"], self.transform)
-                    self.transform = found
+                    if overrides["transform"] == "pseudo_smart_resize":
+                        self.transform = create_pseudo_smart_resize(overrides["min_pixels"], overrides["max_pixels"], overrides["patch_size"], overrides["merge_size"])
+                    else:
+                        found = override_transforms.get(overrides["transform"], self.transform)
+                        self.transform = found
 
         return mango_config
 
