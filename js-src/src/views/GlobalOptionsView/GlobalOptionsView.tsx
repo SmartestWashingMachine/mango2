@@ -310,26 +310,33 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     setCapturedWindowPreview(imageBase64);
   };
 
-  const getCustomTranslationOptions = (installedModels: string[]) => {
+  const getCustomOptions = (prefix: string, installedModels: string[]) => {
     return installedModels
-      .filter((x) => x.startsWith("(Custom Translator) "))
+      .filter((x) => x.startsWith(`(Custom ${prefix}) `))
       .map((x) => {
+        const [name, desc] = x.split("//", 2);
         return {
-          name: x,
+          name: name.trim(),
+          desc: desc.trim(),
           value: x,
         };
-      });
-  };
-
-  const getCustomOcrOptions = (installedModels: string[]) => {
-    return installedModels
-      .filter((x) => x.startsWith("(Custom OCR) "))
-      .map((x) => {
-        return {
-          name: x,
-          value: x,
-        };
-      });
+      })
+      .map((x) => [
+        <MenuItem value={x.value} dense key={x.name}>
+          {x.name}
+        </MenuItem>,
+        <MenuItem disabled value="" divider dense>
+          <em
+            style={{
+              fontSize: "small",
+              wordWrap: "break-word",
+              whiteSpace: "initial",
+            }}
+          >
+            {x.desc}
+          </em>
+        </MenuItem>,
+      ]);
   };
 
   const updateLensActivationKey = (key: string) =>
@@ -437,11 +444,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
               >
                 {[
                   ...OCR_OPTIONS.map(renderItem),
-                  ...getCustomOcrOptions(installedModels).map((x) => (
-                    <MenuItem value={x.value} dense key={x.name}>
-                      {x.name}
-                    </MenuItem>
-                  )),
+                  ...getCustomOptions("OCR", installedModels),
                 ]}
               </UpdateListField>
             ),
@@ -454,11 +457,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
               >
                 {[
                   ...TRANSLATION_OPTIONS.map(renderItem),
-                  ...getCustomTranslationOptions(installedModels).map((x) => (
-                    <MenuItem value={x.value} dense key={x.name}>
-                      {x.name}
-                    </MenuItem>
-                  )),
+                  ...getCustomOptions("Translator", installedModels),
                 ]}
               </UpdateListField>
             ),

@@ -68,6 +68,8 @@ from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline
 from gandy.utils.robust_text_line_resize import robust_transform, alt_robust_transform, alt_robust_transform_custom
 from gandy.spell_correction.llmcpp_refinement import LlmCppRefinementApp
 import os
+from glob import glob
+import json
 
 yolo_xl = YOLOTDImageDetectionApp(
     model_name="yolo_xl", confidence_threshold=0.4, iou_thr=0.3
@@ -207,18 +209,18 @@ TEXT_RECOGNITION_APP = SwitchApp(
     apps=[
         CustomGgufOcrApp(
             model_sub_path="config",
-            config_sub_path="j_ocr_tiny",
+            config_sub_path=os.path.join("models", "custom_ocrs", "j_ocr_tiny.mango_config"),
             transform=alt_robust_transform_custom, # Intended for use with a line detection model.
         ),
         CustomGgufOcrApp(
             model_sub_path="config",
-            config_sub_path="ko_ocr_tiny",
+            config_sub_path=os.path.join("models", "custom_ocrs", "ko_ocr_tiny.mango_config"),
             transform=alt_robust_transform_custom,
             join_lines_with=" "
         ),
         CustomGgufOcrApp(
             model_sub_path="config",
-            config_sub_path="zh_ocr_tiny",
+            config_sub_path=os.path.join("models", "custom_ocrs", "zh_ocr_tiny.mango_config"),
             transform=alt_robust_transform_custom,
         ),
     ],
@@ -231,19 +233,19 @@ TRANSLATION_APP = SwitchApp(
             model_sub_path="config",
             prepend_fn=lambda s: s,
             lang="Generic",
-            config_sub_path="jam",
+            config_sub_path=os.path.join("models", "custom_translators", "jam.mango_config"),
         ),
         CustomGgufTranslationApp(
             model_sub_path="config",
             prepend_fn=lambda s: s,
             lang="Generic",
-            config_sub_path="kam",
+            config_sub_path=os.path.join("models", "custom_translators", "kam.mango_config"),
         ),
         CustomGgufTranslationApp(
             model_sub_path="config",
             prepend_fn=lambda s: s,
             lang="Generic",
-            config_sub_path="zham",
+            config_sub_path=os.path.join("models", "custom_translators", "zham.mango_config"),
         ),
     ],
     app_names=[
@@ -353,59 +355,51 @@ TEXT_LINE_MODEL_APP = SwitchApp(
     app_names=["none", "yolo_line", "yolo_line_xl", "yolo_line_e", "yolo_line_emassive", "yolo_line_light", "dfine_line_emassive", "pp_line"],
 )
 
-# CUSTOM TRANSLATION MODEL GGUFS
+### LOADING CUSTOM MODELS (OCR + TRANSLATION)
 
-os.makedirs("models/custom_translators", exist_ok=True)
+def get_custom_models(base_path: str, prefix: str, ignore_names: str):
+    os.makedirs(base_path, exist_ok=True)
+    ignore_names = set(ignore_names)
 
-IGNORE_FILES = TRANSLATION_APP.app_names + ["jam", "kam", "zham"] # These are my models.
+    for json_path in glob(f"{base_path}/**/*.json", recursive=True):
+        model_name = json_path[:-len(".json")] # JSON attachment automatically re-added in the CustomGgufApp.
 
-custom_model_suffix = ".mango_config.json"
+        readable_model_name = os.path.basename(model_name.replace(".mango_config", ""))
+        if readable_model_name in ignore_names:
+            continue
 
-for model in os.listdir("models/custom_translators"):
-    if model.endswith(custom_model_suffix):
-        model_name = model[:-len(custom_model_suffix)] # GGUF attachment automatically added
-        if os.path.exists(f"models/custom_translators/{model_name}.mango_config.json"):
-            if model_name in IGNORE_FILES:
-                continue
+        try_print(f'Found custom JSON for model ("{json_path}")')
 
-            try_print(f'Found translation model: "{model}"')
+        with open(json_path, "r", encoding="utf-8") as f:
+            mango_config = json.load(f)
 
-            custom_translation_app = CustomGgufTranslationApp(
-                model_sub_path="config",
-                prepend_fn=lambda s: s,
-                lang="Generic",
-                config_sub_path=model_name,
-            )
+            model_display_name = mango_config.get("display_name", "") or readable_model_name
+            model_display_desc = mango_config.get("description", "") or "A custom model!"
+            user_model_name = f"(Custom {prefix}) {model_display_name} // {model_display_desc}"
 
-            user_model_name = f"(Custom Translator) {model_name}"
-            TRANSLATION_APP.add_app(custom_translation_app, user_model_name)
-        else:
-            try_print(f'WARNING: No config found for "{model}"')
+        yield {
+            "config_sub_path": model_name,
+            "user_model_name": user_model_name,
+        }
 
-os.makedirs("models/custom_ocrs", exist_ok=True)
+for model in get_custom_models(os.path.join("models", "custom_translators"), "Translator", TRANSLATION_APP.app_names + ["jam", "kam", "zham"]):
+    custom_translation_app = CustomGgufTranslationApp(
+        model_sub_path="config",
+        prepend_fn=lambda s: s,
+        lang="Generic",
+        config_sub_path=model["config_sub_path"],
+    )
 
-# IGNORE_FILES = ['q25_j', 'q25_k', 'q25_zh']
-IGNORE_FILES = TEXT_RECOGNITION_APP.app_names
+    TRANSLATION_APP.add_app(custom_translation_app, model["user_model_name"])
 
-for model in os.listdir("models/custom_ocrs"):
-    if model.endswith(custom_model_suffix):
-        model_name = model[:-len(custom_model_suffix)] # GGUF attachment automatically added
-        if os.path.exists(f"models/custom_ocrs/{model_name}.mango_config.json"):
-            if model_name in IGNORE_FILES:
-                continue
+for model in get_custom_models(os.path.join("models", "custom_ocrs"), "OCR", TEXT_RECOGNITION_APP.app_names):
+    custom_ocr_app = CustomGgufOcrApp(
+        model_sub_path="config",
+        config_sub_path=model["config_sub_path"],
+        transform=alt_robust_transform_custom, # Intended for use with a line detection model.
+    )
 
-            try_print(f'Found OCR model: "{model}"')
-
-            custom_ocr_app = CustomGgufOcrApp(
-                model_sub_path="config",
-                config_sub_path=model_name,
-                transform=alt_robust_transform_custom, # Intended for use with a line detection model.
-            )
-
-            user_model_name = f"(Custom OCR) {model_name}"
-            TEXT_RECOGNITION_APP.add_app(custom_ocr_app, user_model_name)
-        else:
-            try_print(f'WARNING: No config found for "{model}"')
+    TEXT_RECOGNITION_APP.add_app(custom_ocr_app, model["user_model_name"])
 
 # disable for debug
 translate_pipeline = AdvancedPipeline(

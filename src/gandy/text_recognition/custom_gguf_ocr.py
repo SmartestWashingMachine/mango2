@@ -61,15 +61,19 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
     
     def get_model_path_for_llmcpp(self):
         if self.model_sub_path == "config":
-            return os.path.join("models", "custom_ocrs", f"{self.mango_config['model_name']}.gguf")
+            return self.locate_in_folder(f"{self.mango_config['model_name']}.gguf")
 
-        return os.path.join("models", "custom_ocrs", f"{self.model_sub_path}.gguf")
+        # TODO - below should never be called anyways.
+        return os.path.join("models", "custom_translators", f"{self.model_sub_path}.gguf")
     
     def get_mmproj_path_for_llmcpp(self):
-        return os.path.join("models", "custom_ocrs", f"{self.mango_config['mmproj_name']}.gguf")
+        return self.locate_in_folder(f"{self.mango_config['mmproj_name']}.gguf")
     
     def get_mango_config_path(self):
-        return f"models/custom_ocrs/{self.config_sub_path}" + ".mango_config.json"
+        return f"{self.config_sub_path}.json"
+    
+    def locate_in_folder(self, file_name: str):
+        return os.path.join(os.path.dirname(self.config_sub_path), file_name)
     
     def can_load(self):
         return os.path.exists(self.get_mango_config_path())

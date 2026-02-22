@@ -71,8 +71,16 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
 
         self.rag = TranslationRAG() # Only used by certain models.
 
+        # mango_config is loaded twice; once on model load and once on app startup (see model_apps).
+        # model load = get fresh data juuuust in case the user changed something.
+        # app startup = basic metadata info (model display name / description) for the UI.
+        # The same logic applies to CustomGgufOcrApp.
+
     def get_mango_config_path(self):
-        return f"models/custom_translators/{self.config_sub_path}" + ".mango_config.json"
+        return f"{self.config_sub_path}.json"
+
+    def locate_in_folder(self, file_name: str):
+        return os.path.join(os.path.dirname(self.config_sub_path), file_name)
 
     def load_mango_config(self):
         with logger.begin_event("Loading Mango config") as ctx:
@@ -84,8 +92,9 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
 
     def get_model_path_for_llmcpp(self):
         if self.model_sub_path == "config":
-            return os.path.join("models", "custom_translators", f"{self.mango_config['model_name']}.gguf")
+            return self.locate_in_folder(f"{self.mango_config['model_name']}.gguf")
 
+        # TODO - below should never be called anyways.
         return os.path.join("models", "custom_translators", f"{self.model_sub_path}.gguf")
 
     def can_load(self):
@@ -108,7 +117,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             if msg in self.file_field_values:
                 return self.file_field_values[msg], do_strip # Cached.
 
-            with open(f"models/custom_translators/{self.config_sub_path}.{msg}.txt", 'r', encoding='utf-8') as f:
+            with open(self.locate_in_folder(f"{os.path.basename(self.config_sub_path.replace('.mango_config', ''))}.{msg}.txt"), 'r', encoding='utf-8') as f:
                 fv = f.read().strip().replace("\\n", "\n")
 
                 self.file_field_values[msg] = fv
