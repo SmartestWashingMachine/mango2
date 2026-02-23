@@ -1,5 +1,7 @@
 import {
   Button,
+  CircularProgress,
+  Collapse,
   Fade,
   ImageList,
   ImageListItem,
@@ -14,6 +16,7 @@ import {
 import React, { useState, useEffect, useCallback } from "react";
 import usePagination from "./usePagination";
 import { useAlerts } from "../components/AlertProvider";
+import { v4 as uuidv4 } from "uuid";
 
 // Yeah, this is messy. It's just for development purposes though.
 
@@ -62,30 +65,56 @@ const HomePage = () => {
 
   const [showImageOptions, setShowImageOptions] = useState(true);
 
+  const [pendingTasks, setPendingTasks] = useState<string[]>([]);
+
   const curFolder =
     selFolder && selFolder in folderMap ? folderMap[selFolder] : null;
 
   const maxCurIdx = curFolder?.length || 1;
 
   // For the "base" list view.
-  const retrieveListOfImages = useCallback(() => {
+  const retrieveListOfImages = useCallback(async () => {
+    const output = await fetch(`${API_URL}/webui/list`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+    if (output.status !== 200) throw Error("Invalid status code.");
+
+    const data = await output.json();
+    if (!data || !data.folderMap) throw Error("Invalid data.");
+
+    return {
+      newFolderMap: data.folderMap,
+      newFolderDates: data.folderDates,
+    };
+  }, []);
+
+  // For new tabs.
+  const retrieveImagesFromRouteParams = useCallback((folderMapToUse: any) => {
+    if (Object.keys(folderMapToUse).length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const routeFolder = params.get("r");
+
+      return routeFolder;
+    }
+  }, []);
+
+  // Called once on page load. For listing all data.
+  useEffect(() => {
     let canceled = false;
 
     const asyncCb = async () => {
-      const output = await fetch(`${API_URL}/webui/list`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-      if (output.status !== 200) throw Error("Invalid status code.");
+      const { newFolderMap, newFolderDates } = await retrieveListOfImages();
+      const newSelFolder = retrieveImagesFromRouteParams(newFolderMap);
 
-      const data = await output.json();
-      if (!data || !data.folderMap) throw Error("Invalid data.");
-      if (canceled) return;
-      setFolderMap(data.folderMap);
-      setFolderDates(data.folderDates);
+      if (!canceled) {
+        setFolderMap(newFolderMap);
+        setFolderDates(newFolderDates);
+        if (newSelFolder) setSelFolder(newSelFolder);
+      }
     };
 
     asyncCb();
@@ -93,40 +122,7 @@ const HomePage = () => {
     return () => {
       canceled = true;
     };
-  }, []);
-
-  // For new tabs.
-  const retrieveImagesFromRouteParams = useCallback(() => {
-    if (Object.keys(folderMap).length > 0) {
-      let canceled = false;
-
-      const params = new URLSearchParams(window.location.search);
-      const routeFolder = params.get("r");
-
-      if (routeFolder && !canceled) {
-        setSelFolder(routeFolder);
-      }
-
-      return () => {
-        canceled = true;
-      };
-    }
-  }, [folderMap]);
-
-  // Called once on page load. For listing all data.
-  useEffect(() => {
-    const noItemsInList = !folderMap || Object.keys(folderMap).length === 0;
-    const currentlyViewingImage = true; //true;//selFolder !== null && selFolder !== undefined;
-
-    if (noItemsInList) {
-      // && !currentlyViewingImage) {
-      retrieveListOfImages();
-    }
-
-    if (currentlyViewingImage) {
-      retrieveImagesFromRouteParams();
-    }
-  }, [retrieveImagesFromRouteParams, selFolder, folderMap]);
+  }, [retrieveImagesFromRouteParams, retrieveListOfImages]);
 
   const selectFolder = (f: string) => {
     setShowImageOptions(true);
@@ -145,7 +141,21 @@ const HomePage = () => {
     if (!e.target.files || e.target.files.length === 0) return;
 
     for (const foundFile of e.target.files) {
-      formData.append("file", foundFile);
+      let correctedFile: any = null;
+      if (
+        foundFile.name.endsWith(".zip") &&
+        foundFile.type !== "application/zip"
+      ) {
+        correctedFile = new File([foundFile], foundFile.name, {
+          type: "application/zip",
+          lastModified: foundFile.lastModified,
+        });
+      } else {
+        correctedFile = foundFile;
+      }
+
+      console.log(`Found file: ${correctedFile.name} (${correctedFile.type})`);
+      formData.append("file", correctedFile);
     }
 
     pushAlert("Processing files...");
@@ -153,6 +163,9 @@ const HomePage = () => {
     let LOGIC_API_URL = window.location.protocol;
     if (LOGIC_API_URL.includes("http")) LOGIC_API_URL = LOGIC_API_URL + "//";
     LOGIC_API_URL += window.location.hostname + ":5000";
+
+    const taskId = uuidv4();
+    setPendingTasks((t) => [...t, taskId]);
 
     const output = await fetch(`${LOGIC_API_URL}/webui/processziptask1`, {
       method: "POST",
@@ -162,6 +175,8 @@ const HomePage = () => {
         Accept: "application/json",
       },
     });
+
+    setPendingTasks((t) => t.filter((itm) => itm !== taskId));
   };
 
   const NUM_COLS = matchDownMd ? 2 : 4;
@@ -219,6 +234,19 @@ const HomePage = () => {
             accept="application/zip,application/x-zip,application/x-zip-compressed,application/octet-stream"
           />
         </Button>
+        <Collapse
+          mountOnEnter
+          unmountOnExit
+          in={pendingTasks.length > 0}
+          timeout={500}
+        >
+          <Stack direction="row" spacing={2}>
+            <CircularProgress size={16} color="info" />
+            <Typography variant="body2" sx={{ color: "lightgray !important" }}>
+              Translating batch... ({pendingTasks.length} remaining)
+            </Typography>
+          </Stack>
+        </Collapse>
         <ImageList
           sx={{
             width: "100%",
