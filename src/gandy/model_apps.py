@@ -37,6 +37,7 @@ from gandy.image_redrawing.neighbor_redraw import NeighborRedrawApp
 from gandy.image_redrawing.image_redraw_global import ImageRedrawGlobalApp
 # from gandy.image_redrawing.image_redraw_global_smart import ImageRedrawGlobalSmartApp
 from gandy.image_redrawing.image_redraw_global_smarter import ImageRedrawGlobalSmarter
+from gandy.image_redrawing.insane_redraw import InsaneRedraw
 from gandy.image_redrawing.smarter.policy import ACTIONS, ACTIONS_SMART_TOON
 from gandy.image_redrawing.image_redraw_global_smart_bg import (
     ImageRedrawGlobalSmartBackgroundApp,
@@ -313,6 +314,7 @@ IMAGE_REDRAWING_APP = SwitchApp(
         ImageRedrawGlobalSmarter(ACTIONS_SMART_TOON),
         ImageRedrawGlobalSmartBackgroundApp(),
         ImageRedrawPhysics(),
+        InsaneRedraw(),
     ],
     app_names=[
         "amg_convert",
@@ -325,6 +327,7 @@ IMAGE_REDRAWING_APP = SwitchApp(
         "smart_toon",
         "smart_bg",
         "physics",
+        "insane",
     ],
     # default_idx=-1
 )
