@@ -187,7 +187,7 @@ class FAISSStore:
                     results.append(self.translations[idx])
                     dists.append(dist)
                 if idx != -1:
-                    ctx.log(f'Found neighbor with similarity score', cosine_similarity=dist, neighbor=self.translations[idx])
+                    ctx.log(f'Found neighbor with similarity score', cosine_similarity=dist, neighbor=self.translations[idx], query=query)
 
         return results, dists, query_embedding
 

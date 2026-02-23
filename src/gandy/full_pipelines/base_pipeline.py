@@ -174,6 +174,7 @@ class BasePipeline:
         # Currently the MT model supports batching (the spelling correction does not).
         all_translation_outputs: List[str] = ["" for _ in source_texts]
         was_found_in_cache: List[bool] = [False for _ in source_texts]
+        cached_embs: List = [None for _ in source_texts] # The query embedding for each source text. Used to save later on as needed.
 
         source_texts_to_batch: List[str] = [] # Non-cached source texts will be collected into a batch.
         source_indices_to_batch: List[int] = [] # Which indices to place the outputs from batching into 'all_translation_outputs'.
@@ -193,6 +194,7 @@ class BasePipeline:
                         on_cache_hit(translation_output)
 
                 was_found_in_cache[idx] = found_in_cache # True
+                cached_embs[idx] = cache_embedding
 
             if not found_in_cache:
                 source_texts_to_batch.append(text)
@@ -228,7 +230,7 @@ class BasePipeline:
             # The cache[idx] is still False, which means after the spelling correction is done the translation will be cached.
 
         # TODO(?): Batching spelling corrections too.
-        for idx, (text, translation_output, found_in_cache) in enumerate(zip(source_texts, all_translation_outputs, was_found_in_cache)):
+        for idx, (text, translation_output, found_in_cache, emb) in enumerate(zip(source_texts, all_translation_outputs, was_found_in_cache, cached_embs)):
 
             # If use_stream is NOT None (OCR'ing with detached text boxes), we don't correct the translation.
             # Instead, users are expected to retype the text in the Text input for corrected translations.
@@ -243,7 +245,7 @@ class BasePipeline:
             target_texts.append(translation_output)
 
             if config_state.cache_mt and not found_in_cache and len(translation_output) > 0:
-                self.mt_cache.add_translation(cache_embedding, translation_output)
+                self.mt_cache.add_translation(emb, translation_output)
 
             if progress_cb is not None:
                 # Max progress for this part is 80.
