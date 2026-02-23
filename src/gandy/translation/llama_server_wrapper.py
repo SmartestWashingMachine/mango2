@@ -286,75 +286,85 @@ class LlamaCppExecutableOpenAIClient:
     def get_model_name(self):
         return self.model_path.split(os.sep)[-1] # Just the model name (e.g., "my_model.gguf")
 
-    async def single_async_call(self, messages, use_stream = None, max_completion_tokens = NOT_GIVEN):
+    async def single_async_call(self, messages, use_stream = None, max_completion_tokens = NOT_GIVEN, return_source_on_error = False):
         """
         Calls the llama.cpp server using the OpenAI client for chat completion.
         Messages should be in OpenAI chat format:
         [{"role": "user", "content": "Hello!"}]
         """
 
-        # Prepend the phrase by adding an assistant message
-        # This makes the model *start* its generation with this phrase
-        if self.prepend_phrase is not None:
-            messages = messages + [{"role": "assistant", "content": self.prepend_phrase}]
+        try:
+            # Prepend the phrase by adding an assistant message
+            # This makes the model *start* its generation with this phrase
+            if self.prepend_phrase is not None:
+                messages = messages + [{"role": "assistant", "content": self.prepend_phrase}]
 
-        model_name = self.get_model_name()
+            model_name = self.get_model_name()
 
-        prediction = ""
-        if use_stream is not None:
-            # Streaming call
-            stream_response = await self.client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                stream=True,
-                temperature=0.02,
-                stop=self.stop,
-                max_completion_tokens=max_completion_tokens,
-                extra_body=self.extra_body if len(self.extra_body) > 0 else None,
-            )
+            prediction = ""
+            if use_stream is not None:
+                # Streaming call
+                stream_response = await self.client.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    stream=True,
+                    temperature=0.02,
+                    stop=self.stop,
+                    max_completion_tokens=max_completion_tokens,
+                    extra_body=self.extra_body if len(self.extra_body) > 0 else None,
+                )
 
-            async for chunk in stream_response:
-                try:
-                    new_word = chunk.choices[0].delta.content or ""
-                    if new_word:
-                        use_stream.put(new_word, already_detokenized=True)
-                        prediction += new_word
-                except Exception as e:
-                    # First entry has nothing, as does last (usually).
-                    # NOTE: This was the case with llcp python. IDK about server. TODO
-                    pass
-        else:
-            # Non-streaming call
-            completion = await self.client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                stream=False,
-                temperature=0.02,
-                stop=self.stop,
-                extra_body=self.extra_body if len(self.extra_body) > 0 else None,
-                max_completion_tokens=max_completion_tokens,
-            )
-            prediction = completion.choices[0].message.content
+                async for chunk in stream_response:
+                    try:
+                        new_word = chunk.choices[0].delta.content or ""
+                        if new_word:
+                            use_stream.put(new_word, already_detokenized=True)
+                            prediction += new_word
+                    except Exception as e:
+                        # First entry has nothing, as does last (usually).
+                        # NOTE: This was the case with llcp python. IDK about server. TODO
+                        pass
+            else:
+                # Non-streaming call
+                completion = await self.client.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    stream=False,
+                    temperature=0.02,
+                    stop=self.stop,
+                    extra_body=self.extra_body if len(self.extra_body) > 0 else None,
+                    max_completion_tokens=max_completion_tokens,
+                )
+                prediction = completion.choices[0].message.content
+        except Exception as err:
+            logger.info("An error happened while translating/OCR'ing!")
+            logger.error(err)
+
+            if return_source_on_error:
+                return ""
+            else:
+                raise
+
 
         return prediction
     
-    async def batch_async(self, batch_inputs, use_stream = None, max_completion_tokens = NOT_GIVEN):
-        tasks = [self.single_async_call(messages, use_stream, max_completion_tokens) for messages in batch_inputs]
+    async def batch_async(self, batch_inputs, use_stream = None, max_completion_tokens = NOT_GIVEN, return_source_on_error = False):
+        tasks = [self.single_async_call(messages, use_stream, max_completion_tokens, return_source_on_error=return_source_on_error) for messages in batch_inputs]
         predictions = await asyncio.gather(*tasks)
 
         return predictions
 
-    def call_llm(self, batch_inputs, use_stream = None, max_completion_tokens = NOT_GIVEN):
-        predictions = loop.run_until_complete(self.batch_async(batch_inputs, use_stream, max_completion_tokens))
+    def call_llm(self, batch_inputs, use_stream = None, max_completion_tokens = NOT_GIVEN, return_source_on_error = False):
+        predictions = loop.run_until_complete(self.batch_async(batch_inputs, use_stream, max_completion_tokens, return_source_on_error))
         return predictions
 
     def call_llm_no_batch(self, messages, use_stream = None):
         # For non-batched inference (99% of the calls go here).
         return self.call_llm([messages], use_stream=use_stream)[0]
 
-    def call_llm_with_batch(self, batch_inputs):
+    def call_llm_with_batch(self, batch_inputs, return_source_on_error = False):
         # For batched inference. batch_inputs should be a List of messages.
-        return self.call_llm(batch_inputs, use_stream=None)
+        return self.call_llm(batch_inputs, use_stream=None, return_source_on_error=return_source_on_error)
 
     async def embed_async(self, msg: str):
         model_name = self.get_model_name()

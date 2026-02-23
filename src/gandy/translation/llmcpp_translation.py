@@ -161,7 +161,7 @@ class LlmCppTranslationApp(BaseTranslation):
         batch_inputs = [self.create_messages(inp) for inp in inputs]
 
         with logger.begin_event("Feeding to LLM") as ctx:
-            predictions = self.llm.call_llm_with_batch(batch_inputs)
+            predictions = self.llm.call_llm_with_batch(batch_inputs, return_source_on_error=True)
 
         ctx.log(
             f"Translated batch",
