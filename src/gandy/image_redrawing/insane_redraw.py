@@ -5,6 +5,7 @@ from gandy.utils.speech_bubble import SpeechBubble
 from gandy.image_redrawing.base_image_redraw import BaseImageRedraw
 from PIL import Image, ImageDraw
 from typing import List, Union
+from functools import partial
 
 # ============================================================
 # CONFIGURATION
@@ -173,7 +174,7 @@ def find_max_size(box, text, font_path, image_rect):
 # ============================================================
 
 def draw_background(font, draw, line, lx, cursor_y, size, fill):
-    stroke_expand = max(1, size // 5)
+    stroke_expand = max(1, size // 2)
 
     for dx in range(-stroke_expand, stroke_expand + 1):
         for dy in range(-stroke_expand, stroke_expand + 1):
@@ -183,8 +184,13 @@ def draw_background(font, draw, line, lx, cursor_y, size, fill):
             draw.text((lx + dx, cursor_y + dy), line, font=font, fill=fill)
 
 def layout_page(image, bubble_boxes, texts, font_path, draw_text_metadatas):
-
     draw = ImageDraw.Draw(image)
+    prepared_background_draws = []
+    prepared_text_draws = []
+
+    # Otherwise np.median() gives NaN which is ane rror.
+    if len(bubble_boxes) == 0 or len(texts) == 0:
+        return image
 
     image_rect = [
         SAFE_IMAGE_MARGIN,
@@ -242,14 +248,15 @@ def layout_page(image, bubble_boxes, texts, font_path, draw_text_metadatas):
                 lw = font.getlength(line)
                 lx = x1 + DEFAULT_MARGIN + (bubble_width - lw) / 2
 
-                draw_background(font, draw, line, lx, cursor_y, size, fill=background_fill)
-                draw.text(
+                prepared_background_draws.append(partial(draw_background, font, draw, line, lx, cursor_y, size, fill=background_fill))
+                prepared_text_draws.append(partial(
+                    draw.text,
                     (lx, cursor_y),
                     line,
                     font=font,
                     stroke_width=stroke_width,
                     **draw_text_metadatas[idx],
-                )
+                ))
 
                 cursor_y += line_height * LINE_SPACING
 
@@ -291,18 +298,25 @@ def layout_page(image, bubble_boxes, texts, font_path, draw_text_metadatas):
                 lw = font.getlength(line)
                 lx = x1 + DEFAULT_MARGIN + (bubble_width - lw) / 2
 
-                draw_background(font, draw, line, lx, cursor_y, 1, background_fill)
-                draw.text(
+                prepared_background_draws.append(partial(draw_background, font, draw, line, lx, cursor_y, MIN_READABLE_SIZE, background_fill))
+                prepared_text_draws.append(partial(
+                    draw.text,
                     (lx, cursor_y),
                     line,
                     font=font,
                     stroke_width=stroke_width,
                     **draw_text_metadatas[idx],
-                )
+                ))
 
                 cursor_y += line_height * 1.05
 
             placed_rects.append(rect)
+
+    for task in prepared_background_draws:
+        task()
+
+    for task in prepared_text_draws:
+        task()
 
     return image
 
