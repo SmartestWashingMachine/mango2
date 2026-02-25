@@ -100,9 +100,11 @@ class ExpandedLineMixin(LineMixin):
                     return super().sort_images(bboxes, image, return_image_if_fails)
 
                 # Here we assume texts are horizontal.
-                # Closest points to the TOP LEFT of the image come first.
+                # The old behavior was that closest points to the TOP LEFT of the image come first.
+                # But this failed for cases where e.g: The top text was horizontally centered, and the bottom text was left centered.
+                # So now we just use vertical distance if we know the texts are horizontal.
 
-                x_comp = (x1)
+                x_comp = 0
                 y_comp = (y1) * 3
 
                 distances = (x_comp + y_comp) ** 0.5
