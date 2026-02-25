@@ -69,7 +69,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
 
         self.file_field_values = {}
 
-        self.rag = TranslationRAG() # Only used by certain models.
+        self.rag = None # Only used by certain models.
 
         # mango_config is loaded twice; once on model load and once on app startup (see model_apps).
         # model load = get fresh data juuuust in case the user changed something.
@@ -102,6 +102,13 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
     
     def load_model(self):
         self.mango_config = self.load_mango_config()
+
+        # Create the language-specific RAG database if possible.
+        with logger.begin_event("Initializing RAG engine") as ctx:
+            suffix = self.mango_config.get("rag_name", "") # "Japanese" | "Chinese" | "Korean" | ""
+
+            ctx.log("Using RAG engine", suffix=suffix)
+            self.rag = TranslationRAG(suffix)
 
         return super().load_model(extra_commands=self.mango_config.get("extra_commands", []), extra_body=self.mango_config.get("extra_body", {}))
     
