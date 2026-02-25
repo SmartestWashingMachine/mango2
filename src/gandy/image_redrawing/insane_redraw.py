@@ -138,6 +138,12 @@ def rect_intersects(a, b):
         a[1] >= b[3]
     )
 
+def aspect_ratio(box):
+    width = box[2] - box[0]
+    height = box[3] - box[1]
+
+    return width / height
+
 # ============================================================
 # FIND MAX FONT SIZE (Binary Search)
 # ============================================================
@@ -172,6 +178,33 @@ def find_max_size(box, text, font_path, image_rect):
 # ============================================================
 # MAIN LAYOUT ENGINE
 # ============================================================
+
+def try_expand_box(box, image_rect, placed_rects, expand_w=0, expand_h=0):
+    x1, y1, x2, y2 = box
+
+    new_box = [
+        x1 - expand_w // 2,
+        y1 - expand_h // 2,
+        x2 + expand_w // 2,
+        y2 + expand_h // 2,
+    ]
+
+    # Clamp to image bounds
+    new_box[0] = max(image_rect[0], new_box[0])
+    new_box[1] = max(image_rect[1], new_box[1])
+    new_box[2] = min(image_rect[2], new_box[2])
+    new_box[3] = min(image_rect[3], new_box[3])
+
+    # Reject invalid box
+    if new_box[2] <= new_box[0] or new_box[3] <= new_box[1]:
+        return None
+
+    # Reject overlaps with already placed text
+    for r in placed_rects:
+        if rect_intersects(new_box, r):
+            return None
+
+    return new_box
 
 def draw_background(font, draw, line, lx, cursor_y, size, fill):
     stroke_expand = max(1, size // 2)
@@ -211,6 +244,8 @@ def layout_page(image, bubble_boxes, texts, font_path, draw_text_metadatas):
 
     # PASS 2: Final layout
     for idx, (box, text, max_size) in enumerate(zip(bubble_boxes, texts, max_sizes)):
+        future_boxes = bubble_boxes[idx+1:]
+
         background_fill = "black" if draw_text_metadatas[idx]["fill"] == "white" else "white"
 
         x1, y1, x2, y2 = box
@@ -266,51 +301,111 @@ def layout_page(image, bubble_boxes, texts, font_path, draw_text_metadatas):
 
         # HARD FALLBACK — GUARANTEED RENDER (FIXED CENTERING)
         if not success:
-            font = ImageFont.truetype(font_path, MIN_READABLE_SIZE)
-            lines = wrap_text(text, font, bubble_width * 0.98)
-            w, h, line_height = measure_block(lines, font)
+            expanded_box = box
+            expansion_step = 8
+            max_total_expansion = 120
+            expanded_success = False
 
-            # Proper centering attempt
-            if h <= bubble_height:
-                text_y = y1 + DEFAULT_MARGIN + (bubble_height - h) / 2
-            else:
-                text_y = y1 + DEFAULT_MARGIN  # cannot center if taller than box
+            num_iterations = max_total_expansion // expansion_step
 
-            text_x = x1 + DEFAULT_MARGIN + (bubble_width - w) / 2
+            for ei, total_expand in enumerate(range(0, max_total_expansion, expansion_step)):
+                x1, y1, x2, y2 = expanded_box
+                bubble_width = x2 - x1 - 2 * DEFAULT_MARGIN
+                bubble_height = y2 - y1 - 2 * DEFAULT_MARGIN
 
-            rect = [text_x, text_y, text_x + w, text_y + h]
+                last_attempt = (ei == num_iterations - 1)
 
-            # Resolve collisions by shifting downward
-            shift = 0
-            while any(rect_intersects(rect, r) for r in placed_rects):
-                shift += 2
-                new_y = text_y + shift
-                rect = [text_x, new_y, text_x + w, new_y + h]
+                # Decide expansion direction based on aspect imbalance
+                if bubble_width < bubble_height:
+                    candidate = try_expand_box(
+                        expanded_box,
+                        image_rect,
+                        placed_rects,
+                        expand_w=expansion_step,
+                        expand_h=0
+                    )
+                else:
+                    candidate = try_expand_box(
+                        expanded_box,
+                        image_rect,
+                        placed_rects,
+                        expand_w=0,
+                        expand_h=expansion_step
+                    )
 
-                # If we exceed image bounds, stop shifting
-                if rect[3] > image_rect[3]:
+                if candidate is None:
+                    if True:
+                        candidate = expanded_box
+                    else:
+                        break
+
+                expanded_box = candidate
+
+                # Recalculate max possible size in new box
+                new_max = find_max_size(expanded_box, text, font_path, image_rect)
+                if new_max <= MIN_READABLE_SIZE:
+                    continue
+
+                # Try full normal placement loop again with expanded box
+                x1, y1, x2, y2 = expanded_box
+                bubble_width = x2 - x1 - 2 * DEFAULT_MARGIN
+                bubble_height = y2 - y1 - 2 * DEFAULT_MARGIN
+
+                for size in range(new_max, MIN_READABLE_SIZE - 1, -1):
+                    font = ImageFont.truetype(font_path, size)
+                    lines = wrap_text(text, font, bubble_width)
+                    w, h, line_height = measure_block(lines, font)
+
+                    if w > bubble_width or h > bubble_height:
+                        continue
+
+                    text_x = x1 + DEFAULT_MARGIN + (bubble_width - w) / 2
+                    text_y = y1 + DEFAULT_MARGIN + (bubble_height - h) / 2
+                    rect = [text_x, text_y, text_x + w, text_y + h]
+
+                    if not last_attempt: # Last attempt allows collisions...
+                        if not rect_contains(image_rect, rect):
+                            continue
+
+                        if any(rect_intersects(rect, r) for r in placed_rects):
+                            continue
+
+                        if any(rect_intersects(rect, fb) for fb in future_boxes):
+                            # When we do try_expand_box above, the expansion can cause the box to take over the space of another box's initial position.
+                            # This check prevents that.
+                            continue
+
+                    # Render
+                    cursor_y = text_y
+                    stroke_width = max(1, size // 15)
+
+                    for line in lines:
+                        lw = font.getlength(line)
+                        lx = x1 + DEFAULT_MARGIN + (bubble_width - lw) / 2
+
+                        prepared_background_draws.append(
+                            partial(draw_background, font, draw, line, lx, cursor_y, size, background_fill)
+                        )
+
+                        prepared_text_draws.append(
+                            partial(
+                                draw.text,
+                                (lx, cursor_y),
+                                line,
+                                font=font,
+                                stroke_width=stroke_width,
+                                **draw_text_metadatas[idx],
+                            )
+                        )
+
+                        cursor_y += line_height * LINE_SPACING
+
+                    placed_rects.append(rect)
+                    expanded_success = True
                     break
 
-            cursor_y = rect[1]
-            stroke_width = 1
-
-            for line in lines:
-                lw = font.getlength(line)
-                lx = x1 + DEFAULT_MARGIN + (bubble_width - lw) / 2
-
-                prepared_background_draws.append(partial(draw_background, font, draw, line, lx, cursor_y, MIN_READABLE_SIZE, background_fill))
-                prepared_text_draws.append(partial(
-                    draw.text,
-                    (lx, cursor_y),
-                    line,
-                    font=font,
-                    stroke_width=stroke_width,
-                    **draw_text_metadatas[idx],
-                ))
-
-                cursor_y += line_height * 1.05
-
-            placed_rects.append(rect)
+                if expanded_success:
+                    break
 
     for task in prepared_background_draws:
         task()
