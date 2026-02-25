@@ -27,7 +27,7 @@ class SwitchApp:
         self.apps.append(app)
         self.app_names.append(app_name)
 
-    def select_app(self, app_name):
+    def select_app(self, app_name, unload_others = True):
         """
         Select the app with the given name. All further process calls on this app will redirect to the newly selected app.
         """
@@ -35,16 +35,17 @@ class SwitchApp:
             idx = self.app_names.index(app_name)
             self.sel_idx = idx
 
-            # Unload the other models to free up memory.
-            for other_idx in range(len(self.apps)):
-                if other_idx == idx:
-                    continue
+            if unload_others:
+                # Unload the other models to free up memory.
+                for other_idx in range(len(self.apps)):
+                    if other_idx == idx:
+                        continue
 
-                try:
-                    self.apps[other_idx].unload_model()
-                except:
-                    pass
-            collect()
+                    try:
+                        self.apps[other_idx].unload_model()
+                    except:
+                        pass
+                collect()
 
         except (IndexError, ValueError):
             logger.error(
