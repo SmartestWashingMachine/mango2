@@ -150,6 +150,7 @@ class YOLOImageDetectionApp(BaseImageDetection):
             if self.model is not None:
                 logger.info("Unloading object detection model...")
 
+            self.model.unload_session()
             del self.model
         except:
             pass
@@ -380,6 +381,7 @@ class YOLOTDImageDetectionApp(YOLOImageDetectionApp):
             if self.model is not None:
                 logger.info("Unloading object detection model...")
 
+            self.model.unload_session()
             del self.model
         except:
             pass

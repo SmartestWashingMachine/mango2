@@ -115,6 +115,7 @@ class NameAdder():
 
     def unload_model(self):
         try:
+            self.model.set_providers([])
             del self.model
             del self.data_dict
         except:

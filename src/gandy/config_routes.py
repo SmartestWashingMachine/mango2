@@ -59,20 +59,21 @@ def change_multiple_models_route():
     with logger.begin_event("Update configuration state") as ctx:
         data = request.json
 
-        translate_pipeline.translation_app.select_app(data["translationModelName"])
+        # Unload is done below (see "requires_reload")
+        translate_pipeline.translation_app.select_app(data["translationModelName"], unload_others=False)
         translate_pipeline.text_recognition_app.select_app(
-            data["textRecognitionModelName"]
+            data["textRecognitionModelName"], unload_others=False
         )
-        translate_pipeline.text_detection_app.select_app(data["textDetectionModelName"])
+        translate_pipeline.text_detection_app.select_app(data["textDetectionModelName"], unload_others=False)
         translate_pipeline.spell_correction_app.select_app(
-            data["spellCorrectionModelName"]
+            data["spellCorrectionModelName"], unload_others=False
         )
 
         reranking_model_name = data["rerankingModelName"]
         decoding_mode = data["decodingMode"]
 
         # Set OCR preprocessor.
-        translate_pipeline.text_line_app.select_app(data["textLineModelName"])
+        translate_pipeline.text_line_app.select_app(data["textLineModelName"], unload_others=False)
 
         if decoding_mode != "beam":
             # Only japanese-2-english models support most forms of reranking.
@@ -88,15 +89,15 @@ def change_multiple_models_route():
                     reranking_model_name=reranking_model_name,
                 )
 
-                translate_pipeline.reranking_app.select_app(reranking_model_name)
+                translate_pipeline.reranking_app.select_app(reranking_model_name, unload_others=False)
             else:
                 ctx.log(
                     f"Unsupported language detected for reranking - disabling reranking"
                 )
-                translate_pipeline.reranking_app.select_app("none")
+                translate_pipeline.reranking_app.select_app("none", unload_others=False)
         else:
             ctx.log(f"Using beam search mode - reranking disabled.")
-            translate_pipeline.reranking_app.select_app("none")
+            translate_pipeline.reranking_app.select_app("none", unload_others=False)
 
         if data["contextAmount"] == "packed":
             c_amount = 100 # Okay I lied. It's up to 100! But that should be waaay more than enough, especially considering truncation...
