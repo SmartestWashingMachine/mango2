@@ -45,11 +45,14 @@ class TranslationRAG():
                         total=total_batches
                     )
                 ):
-                    self.mt_rag._add(
-                        source_texts=[x[0] for x in batch],
-                        translated_texts=batch,
-                        do_log=False,
-                    )
+                    try:
+                        self.mt_rag._add(
+                            source_texts=[x[0] for x in batch],
+                            translated_texts=batch,
+                            do_log=False,
+                        )
+                    except Exception as err:
+                        ctx.log("Error adding RAG entry for batch - likely due to context length being exceeded. Dropping batch.", batch_idx=idx)
 
                     if idx % 200 == 0:
                         ctx.log(f'Processing batch...', last_finished_idx=idx, total_len=total_batches)
@@ -71,12 +74,15 @@ class TranslationRAG():
         with logger.begin_event('Reloading RAG module'):
             self._load_mt_rag()
 
+    def data_file_exists(self):
+        return os.path.exists(f'models/database/rag_input_data_{self.file_suffixes}.jsonl')
+
     def get_hash_path(self):
         return rf'models/database/rag_hash{self.file_suffixes}'
 
     def do_build_index(self):
         with logger.begin_event("Checking whether or not to build RAG data") as ctx:
-            input_path = f'models/database/rag_input_data{self.file_suffixes}.jsonl'
+            input_path = f'models/database/rag_input_data_{self.file_suffixes}.jsonl'
             cur_hash = hash_file_sha256(input_path).strip()
             
             # If the hash of the previous JSONL user input data does not exist or is not equal to the current JSONL user input data, rebuild.
@@ -105,7 +111,7 @@ class TranslationRAG():
 
                 ctx.log('RAG Index file does NOT exist - creating from input data file.')
 
-                input_path = f'models/database/rag_input_data{self.file_suffixes}.jsonl'
+                input_path = f'models/database/rag_input_data_{self.file_suffixes}.jsonl'
                 if not os.path.exists(input_path):
                     ctx.log('Will NOT create RAG data file - input data file not found!')
                     return

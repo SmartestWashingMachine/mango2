@@ -110,6 +110,10 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             ctx.log("Using RAG engine", suffix=suffix)
             self.rag = TranslationRAG(suffix)
 
+            if not self.rag.data_file_exists():
+                ctx.log("Defaulting to generic RAG engine as language-specific suffix does not exist!", suffix=suffix)
+                self.rag = TranslationRAG("")
+
         return super().load_model(extra_commands=self.mango_config.get("extra_commands", []), extra_body=self.mango_config.get("extra_body", {}))
     
     def ignore_field(self, msg: str):
