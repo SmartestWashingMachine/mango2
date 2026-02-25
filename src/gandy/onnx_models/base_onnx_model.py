@@ -53,6 +53,16 @@ class BaseONNXModel:
     def load_session(self, onnx_path):
         self.ort_sess = self.create_session(onnx_path)
 
+    def unload_session(self):
+        try:
+            # See: https://github.com/microsoft/onnxruntime/issues/17142
+            self.ort_sess.set_providers([])
+
+            del self.ort_sess
+            self.ort_sess = None
+        except:
+            pass
+
     def preprocess(self, inp):
         """
         Process the input into a form of data that can be passed to .forward().
