@@ -17,8 +17,8 @@ class NameChecker():
             s = s.translate(self.translation_table_for_cleaning_names).strip() # We don't care for spaces.
             total_s_length = len(s)
 
-            if total_s_length <= 0:
-                return False # Don't wanna divide by 0.
+            if total_s_length <= 0 or total_s_length >= 10:
+                return False # Don't wanna divide by 0 if total_s_length == 0. And long strings are probably not names.
 
             good_length = 0
             for word in self.tagger(s):
