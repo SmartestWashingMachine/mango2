@@ -178,52 +178,74 @@ const openCacheFolder: GatewayAction = {
   },
 };
 
+const importStoreKey = async (store: any, fieldName: string) => {
+  const result = await dialog.showOpenDialog({
+    defaultPath: DOWNLOADS_PATH,
+    properties: ["openFile"],
+  });
+  if (result.canceled || !result.filePaths || result.filePaths.length === 0)
+    return;
+
+  try {
+    const data = await fs.readFile(result.filePaths[0]);
+    const jsonData = JSON.parse(data.toString());
+
+    console.log(`Importing '${fieldName}' as: ${result.filePaths[0]}`);
+    store.set(fieldName, jsonData);
+
+    await initializeModelNames(store.store);
+  } catch (err) {
+    console.log(err);
+    return;
+  }
+};
+
 const importTermsAction: GatewayAction = {
   command: ElectronCommands.IMPORT_TERMS,
   commandType: "handle",
   fn: async (e, win, state, store) => {
-    const terms = store.get("terms");
-
-    const result = await dialog.showOpenDialog({
-      defaultPath: DOWNLOADS_PATH,
-      properties: ["openFile"],
-    });
-    if (result.canceled || !result.filePaths || result.filePaths.length === 0)
-      return;
-
-    try {
-      const data = await fs.readFile(result.filePaths[0]);
-      const jsonData = JSON.parse(data.toString());
-
-      console.log(`Importing terms as: ${result.filePaths[0]}`);
-      store.set("terms", jsonData);
-
-      await initializeModelNames(store.store);
-    } catch (err) {
-      console.log(err);
-      return;
-    }
+    await importStoreKey(store, "terms");
+    return;
   },
+};
+
+const importNamesAction: GatewayAction = {
+  command: ElectronCommands.IMPORT_NAMES,
+  commandType: "handle",
+  fn: async (e, win, state, store) => {
+    await importStoreKey(store, "nameEntries");
+    return;
+  },
+};
+
+const exportStoreKey = async (store: any, fieldName: string) => {
+  const result = await dialog.showSaveDialog({ defaultPath: DOWNLOADS_PATH });
+  if (result.canceled || !result.filePath) return;
+
+  console.log(`Exporting terms as: ${result.filePath}`);
+
+  // Map to JSON
+  const data = JSON.stringify(store.get(fieldName), null, 4);
+  try {
+    await fs.writeFile(result.filePath, data);
+  } catch (err) {
+    console.log(`ERROR: ${err}`);
+  }
 };
 
 const exportTermsAction: GatewayAction = {
   command: ElectronCommands.EXPORT_TERMS,
   commandType: "handle",
   fn: async (e, win, state, store) => {
-    const terms = store.get("terms");
+    await exportStoreKey(store, "terms");
+  },
+};
 
-    const result = await dialog.showSaveDialog({ defaultPath: DOWNLOADS_PATH });
-    if (result.canceled || !result.filePath) return;
-
-    console.log(`Exporting terms as: ${result.filePath}`);
-
-    // Map to JSON
-    const data = JSON.stringify(terms, null, 4);
-    try {
-      await fs.writeFile(result.filePath, data);
-    } catch (err) {
-      console.log(`ERROR: ${err}`);
-    }
+const exportNamesAction: GatewayAction = {
+  command: ElectronCommands.EXPORT_NAMES,
+  commandType: "handle",
+  fn: async (e, win, state, store) => {
+    await exportStoreKey(store, "nameEntries");
   },
 };
 
@@ -242,4 +264,6 @@ export default [
   importTermsAction,
   exportTermsAction,
   openCacheFolder,
+  importNamesAction,
+  exportNamesAction,
 ];

@@ -33,6 +33,8 @@ enum ElectronCommands {
   OPEN_CACHE_FOLDER = "open-cache-folder",
   IMPORT_TERMS = "import-terms",
   EXPORT_TERMS = "export-terms",
+  IMPORT_NAMES = "import-names",
+  EXPORT_NAMES = "export-names",
   RESET_SETTINGS = "reset-settings",
   CONNECTED_OCR_BOX = "connected-ocr-box",
   READ_CLIPBOARD = "read-clipboard",

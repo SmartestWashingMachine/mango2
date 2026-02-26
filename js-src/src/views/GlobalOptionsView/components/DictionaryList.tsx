@@ -18,6 +18,8 @@ export type DictionaryListProps = {
   updateEntry: (uuid: string, k: keyof INameEntry, v: string | boolean) => void;
   createEntry: () => void;
   removeEntry: (termUuid: string) => void;
+  importNames: () => void;
+  exportNames: () => void;
 };
 
 type ItemProps = {
@@ -110,6 +112,8 @@ const DictionaryList = ({
   updateEntry,
   removeEntry,
   createEntry,
+  importNames,
+  exportNames,
 }: DictionaryListProps) => {
   return (
     <Stack spacing={2}>
@@ -139,6 +143,19 @@ const DictionaryList = ({
       <Button variant="outlined" color="primary" onClick={createEntry}>
         Create Entry
       </Button>
+      <Stack direction="row" spacing={2}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={importNames}
+          fullWidth
+        >
+          Import Names
+        </Button>
+        <Button variant="outlined" color="info" onClick={exportNames} fullWidth>
+          Export Names
+        </Button>
+      </Stack>
     </Stack>
   );
 };

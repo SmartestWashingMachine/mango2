@@ -64,6 +64,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openHelpWindow: () => ipcRenderer.invoke('open-help-window'),
   importTerms: () => ipcRenderer.invoke('import-terms'),
   exportTerms: () => ipcRenderer.invoke('export-terms'),
+  importNames: () => ipcRenderer.invoke('import-names'),
+  exportNames: () => ipcRenderer.invoke('export-names'),
   resetSettings: () => ipcRenderer.invoke('reset-settings'),
   openLogsFolder: () => ipcRenderer.invoke('open-logs-folder'),
   openCacheFolder: () => ipcRenderer.invoke('open-cache-folder'),

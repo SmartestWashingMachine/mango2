@@ -128,6 +128,14 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     await MainGateway.exportTerms();
   };
 
+  const importNames = async () => {
+    await MainGateway.importNames();
+  };
+
+  const exportNames = async () => {
+    await MainGateway.exportNames();
+  };
+
   const updateNameEntry = (
     uuid: string,
     k: keyof INameEntry,
@@ -748,6 +756,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 updateEntry={updateNameEntry}
                 createEntry={createNameEntry}
                 removeEntry={removeNameEntry}
+                importNames={importNames}
+                exportNames={exportNames}
               />
             ),
           },
