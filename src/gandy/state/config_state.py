@@ -58,6 +58,8 @@ class ConfigState:
 
         self.detect_speaker_name = False
 
+        self.shorten_translations = False
+
         self._temp_circuit_broken = False # TODO: Use separate state for this.
 
     def set_decoding_params(self, **kwargs):

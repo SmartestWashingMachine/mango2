@@ -3,6 +3,7 @@ from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClien
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
 from gandy.utils.augment_name_entries_with_ner import NameAdder
+from gandy.utils.translation_shortener import TranslationShortener
 from gandy.socket_process import socketio # TODO: Messy import.
 from typing import List
 import os
@@ -32,6 +33,7 @@ class LlmCppTranslationApp(BaseTranslation):
         self.prepend_model_output = prepend_model_output
 
         self.name_adder = NameAdder()
+        self.shortener = TranslationShortener(model_sub_path=os.path.join("shorteners", "jnov_shortener_eq3"))
 
     def can_load(self):
         return super().can_load(f"models/{self.model_sub_path}" + ".gguf")
@@ -93,6 +95,7 @@ class LlmCppTranslationApp(BaseTranslation):
             del self.llm # This should automagically call llm.stop_server() - but juuuuuuust in case we also call it above.
 
             self.name_adder.unload_model()
+            self.shortener.unload_model()
 
             logger.info("Unloading translation model...")
         except:
@@ -172,7 +175,14 @@ class LlmCppTranslationApp(BaseTranslation):
         return predictions
     
     def misc_postprocess(self, output: str):
-        return output.replace("\\'", "'")
+        output = output.replace("\\'", "'")
+
+        if config_state.shorten_translations:
+            with logger.begin_event("Shortening translation", before=output) as ctx:
+                output = self.shortener.process(output)
+                ctx.log("Done shortening", after=output)
+
+        return output
 
     def process(
         self,

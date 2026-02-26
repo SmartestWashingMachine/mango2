@@ -299,6 +299,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     augmentNameEntries,
     detectSpeakerName,
     lensActivationKey,
+    shortenTranslations,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
@@ -621,6 +622,15 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 safeValue={0.5}
                 minValue={0.1}
                 maxValue={150}
+              />
+            ),
+            "Shorten Translations": (
+              <UpdateCheckbox
+                changeValue={setStoreValue}
+                keyName="shortenTranslations"
+                defaultValue={shortenTranslations}
+                label="Shorten Translations"
+                helperText="Uses another model to shorten translations. This can be helpful for image translation jobs. This will require more memory and be somewhat slower."
               />
             ),
             "Augment Dictionary": (

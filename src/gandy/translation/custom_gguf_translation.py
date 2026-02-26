@@ -325,7 +325,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
             output = output.rsplit(stop, maxsplit=1)[0].strip()
         return output
 
-    def misc_postprocess(self, output: str):
+    def misc_postprocess_extract(self, output: str):
         if self.ignore_field(self.mango_config["extract_from_output"]):
             return self.remove_stop_words(output)
 
@@ -344,6 +344,17 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
                     return self.remove_stop_words("")
 
                 return self.remove_stop_words(output).strip()
+            
+    def misc_postprocess(self, output):
+        output = self.misc_postprocess_extract(output)
+
+        if config_state.shorten_translations:
+            # A neat thing about the shortener is that it only sees the translation output (English) - so it works regardless of the input language.
+            with logger.begin_event("Shortening translation", before=output) as ctx:
+                output = self.shortener.process(output)
+                ctx.log("Done shortening", after=output)
+
+        return output
 
     def get_n_context(self):
         return int(self.mango_config["n_context"])

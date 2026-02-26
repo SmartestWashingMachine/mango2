@@ -151,6 +151,7 @@ def change_multiple_models_route():
             augment_name_entries=data["augmentNameEntries"],
             detect_speaker_name=data["detectSpeakerName"],
             sanitize_ascii=data["sanitizeAscii"],
+            shorten_translations=data["shortenTranslations"],
         )
 
         config_state.update_terms(terms=data["terms"])
