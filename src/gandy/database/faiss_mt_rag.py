@@ -37,7 +37,7 @@ class TranslationRAG():
             # Each item should be a tuple of (source STR, target STR).
 
             if self.mt_rag.embedder.get_can_cuda():
-                batch_size = 8192 # 16 also works decently.
+                batch_size = 1024 #8192 has many out-of-context errors. # 16 also works decently.
                 total_batches = ceil(len(items) / batch_size)
 
                 for idx, batch in enumerate(

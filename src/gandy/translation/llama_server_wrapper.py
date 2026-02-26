@@ -168,9 +168,9 @@ class LlamaCppExecutableOpenAIClient:
                         "-np",
                         str(batch_size),
                         "-ub",
-                        "16384",
+                        "512",
                         "-b",
-                        "16384",
+                        "512",
                         "--cache-ram",
                         "0",
                         "--log-disable"
