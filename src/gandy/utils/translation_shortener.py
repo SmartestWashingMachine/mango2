@@ -111,4 +111,8 @@ class TranslationShortener(BaseApp):
             }
         ]
         prediction = self.llm.call_llm_no_batch(messages)
+
+        if isinstance(prediction, str):
+            prediction = prediction.replace("—", "-")
+
         return prediction
