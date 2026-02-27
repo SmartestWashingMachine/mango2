@@ -4,7 +4,9 @@ call .venv\Scripts\activate
 
 set SOURCE_DATE_EPOCH=0
 
-pyinstaller run_server.spec
+python ../scripts/build/py/move_backend_back.py
+
+call deactivate
 
 cd ../scripts/build
 

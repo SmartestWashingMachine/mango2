@@ -1,3 +1,5 @@
+call cache_py_build.bat
+
 call build_js.bat
 
 call build_py.bat
