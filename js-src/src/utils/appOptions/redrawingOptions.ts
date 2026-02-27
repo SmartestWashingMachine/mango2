@@ -43,7 +43,7 @@ export const REDRAWING_OPTIONS = [
     name: "Insanity",
     value: "insane",
     desc: `
-    Draws text with an AI algorithm.
+    Draws text with an AI algorithm. Recommended.
     `,
   },
   {

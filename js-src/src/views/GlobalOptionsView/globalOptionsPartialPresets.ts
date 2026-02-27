@@ -20,6 +20,7 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
       textRecognitionModelName: [
+        "(Custom OCR) Japanese/Chinese Waow // A custom model!",
         "(Custom OCR) j_ocr_mang",
         "j_ocr_small",
         "j_ocr_tiny",
@@ -40,7 +41,11 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       "This preset is good for translating Japanese manga panels or games. It uses an additional text line detection model to improve the OCR quality.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["j_ocr_small", "j_ocr_tiny"],
+      textRecognitionModelName: [
+        "(Custom OCR) Japanese/Chinese Waow // A custom model!",
+        "j_ocr_small",
+        "j_ocr_tiny",
+      ],
       translationModelName: ["llm_jgem_goliath", "gem_uni_ja"],
       textLineModelName: ["dfine_line_emassive", "none"],
       numBeams: 3,
@@ -57,7 +62,11 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
       "This preset is good for translating Japanese videos with text drawn on the screen.",
     opts: {
       textDetectionModelName: ["none"],
-      textRecognitionModelName: ["j_ocr_small", "j_ocr_tiny"],
+      textRecognitionModelName: [
+        "(Custom OCR) Japanese/Chinese Waow // A custom model!",
+        "j_ocr_small",
+        "j_ocr_tiny",
+      ],
       translationModelName: ["llm_jgem_goliath", "gem_uni_ja"],
       textLineModelName: ["dfine_line_emassive", "none"],
       numBeams: 3,
@@ -93,7 +102,11 @@ const GLOBAL_OPTIONS_PARTIAL_PRESETS: PresetItem[] = [
     description: "This preset is good for translating certain Chinese comics.",
     opts: {
       textDetectionModelName: ["dfine_l_denoise", "detr_xl", "yolo_xl"],
-      textRecognitionModelName: ["q25_zh", "zh_ocr_tiny"],
+      textRecognitionModelName: [
+        "(Custom OCR) Japanese/Chinese Waow // A custom model!",
+        "q25_zh",
+        "zh_ocr_tiny",
+      ],
       translationModelName: ["llm_zhgem_goliath", "gem_uni_zh"],
       textLineModelName: ["dfine_line_emassive", "none"],
       numBeams: 3,

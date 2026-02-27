@@ -12,6 +12,7 @@ from gandy.utils.robust_text_line_resize import override_transforms
 import numpy as np
 from gandy.utils.find_free_port import find_tcp_port
 from gandy.utils.pseudo_smart_image_resize import create_pseudo_smart_resize
+import unicodedata
 
 """
 The config file here only has these fields:
@@ -20,6 +21,25 @@ The config file here only has these fields:
 - n_context (integer): Max amount of tokens that the model can parse - not to be confused with context inputs in Mango.
 - mmproj_name (string): The name of the mmproj GGUF file, located in the same folder. If the file was 'mmproj-BF16.gguf' then this should be 'mmproj-BF16'
 """
+
+# Vibe coded this function because I hate emojis.
+def remove_emojis(s: str):
+    result = []
+    for char in s:
+        cat = unicodedata.category(char)
+
+        if cat[0] in ('L', 'N', 'P', 'Z'):
+            result.append(char)
+
+        elif cat[0] == 'S':
+            try:
+                name = unicodedata.name(char).upper()
+                if "HEART" in name:
+                    result.append(char)
+            except ValueError:
+                continue
+                
+    return "".join(result)
 
 # TODO: Redundant code.
 def image_to_base64(new_image, format="PNG"):
@@ -183,6 +203,9 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
             prediction = [JamoOverride.postprocess(p.strip()) for p in prediction]
 
         prediction = [p.replace("\n", " ").replace("  ", " ").strip() for p in prediction]
+
+        if self.mango_config.get("remove_emojis", False):
+            prediction = [remove_emojis(p) for p in prediction]
 
         return prediction
 

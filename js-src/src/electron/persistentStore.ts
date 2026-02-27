@@ -7,7 +7,8 @@ const storeDefaults: IStore = {
   textLineModelName: "dfine_line_emassive",
   translationModelName: "gem_uni_ja",
   textDetectionModelName: "dfine_l_denoise",
-  textRecognitionModelName: "j_ocr_tiny",
+  textRecognitionModelName:
+    "(Custom OCR) Japanese/Chinese Waow // A custom model!",
   spellCorrectionModelName: "default",
   rerankingModelName: "none",
   contextAmount: "three",
