@@ -18,7 +18,11 @@ class NameChecker():
             total_s_length = len(s)
 
             if total_s_length <= 0 or total_s_length >= 10:
-                return False # Don't wanna divide by 0 if total_s_length == 0. And long strings are probably not names.
+                # Don't wanna divide by 0 if total_s_length == 0. And long strings are probably not names.
+                return {
+                    'is_name': False,
+                    'cleaned': s,
+                }
 
             good_length = 0
             for word in self.tagger(s):
