@@ -10,10 +10,11 @@ static
 templates
 
 dist
-build
+js-src/build
+src/build
 models
 Icon.png
-f17c2246a35e5bad01ef912e71a27aae.png
+
 
 js-src/public/*
 !js-src/public/Icon.png

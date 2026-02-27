@@ -19,9 +19,5 @@ if __name__ == '__main__':
 
     os.makedirs(".\\..\js-src\\dist\\win-unpacked\\models", exist_ok=True)
 
+    # NOTE: this renames and moves, so there won't be cachine for successive builds. TODO
     shutil.move('.\\dist\\run_server', '.\\..\js-src\\dist\\win-unpacked\\resources\\backend')
-
-    #os.makedirs(".\\..\js-src\\dist\\Mango", exist_ok=True)
-    #shutil.move(target, ".\\..\js-src\\dist\\Mango")
-
-    #os.makedirs(".\\..\js-src\\dist\\Mango\\models")

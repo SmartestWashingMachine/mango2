@@ -1,4 +1,4 @@
-cd js-src
+cd ../../js-src
 
 call npm run bstart
 
