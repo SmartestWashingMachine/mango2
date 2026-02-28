@@ -22,6 +22,7 @@ import isDev from "./electronDevMode";
 import { readDangerousConfigMain } from "./dangerousConfig/readDangerousConfigMain";
 import dangerousConfigActions from "./electron/actions/dangerousConfigActions";
 import { registerLens } from "./electron/ocrUtils/lensUtils/lens";
+import { hasGpu } from "./electron/hasGpu";
 
 if (!isDev) Menu.setApplicationMenu(null);
 
@@ -167,26 +168,36 @@ app.whenReady().then(async () => {
     store.get("lensActivationKey"),
     electronState
   );
+  let lensDebounce: any = null;
 
   // Emit store data changes to client.
   store.onDidAnyChange((s, oldState) => {
     mainWindow.webContents.send(ElectronChannels.EMIT_STORE_DATA, s, oldState);
 
-    // TODO: Inefficient?
-    if (lensCleanup !== null) {
-      lensCleanup();
-    }
-    if (s?.lensActivationKey !== undefined) {
-      lensCleanup = registerLens(s.lensActivationKey, electronState);
-    }
+    const debounceTime = 3000; // Since state may change rapidly.
+
+    if (lensDebounce) clearTimeout(lensDebounce);
+    lensDebounce = setTimeout(() => {
+      // TODO: Inefficient?
+      if (lensCleanup !== null) {
+        lensCleanup();
+      }
+      if (s?.lensActivationKey !== undefined) {
+        lensCleanup = registerLens(s.lensActivationKey, electronState);
+      }
+    }, debounceTime);
   });
 
   // Initialize OCR box managers.
   let boxes = store.get("boxes") as any[];
 
   if (boxes.length === 0) {
+    // Default post init.
+
     boxes = getDefaultBoxes();
     store.set("boxes", boxes);
+
+    store.set("enableCuda", hasGpu());
   }
 
   electronState.managers = boxes.map(

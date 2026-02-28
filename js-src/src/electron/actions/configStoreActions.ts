@@ -10,6 +10,7 @@ import {
 } from "../../utils/updateItemInStoreArray";
 import { getDefaultBoxes } from "../../utils/boxPresets";
 import { OcrBoxManager } from "../ocrUtils/ocrBox";
+import { hasGpu } from "../hasGpu";
 
 const getStoreData: GatewayAction = {
   command: ElectronCommands.GET_STORE_DATA,
@@ -41,6 +42,8 @@ const resetSettings: GatewayAction = {
   fn: (e, w, state, store, key, value) => {
     // See store defaults in persistentStore.ts
     store.clear();
+
+    store.set("enableCuda", hasGpu());
 
     let boxes = store.get("boxes") as any[];
 
