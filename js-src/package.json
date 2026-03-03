@@ -10,7 +10,7 @@
     "tsc-i": "tsc --init",
     "build": "webpack --config ./webpack.config.js",
     "buildprod": "webpack --config ./webpack.config.prod.js",
-    "bstart": "npm run build && npm run start",
+    "bstart": "npm run webbuild && npm run build && npm run start",
     "opack": "electron-builder --dir",
     "pack": "npm run webbuild && npm run buildprod && npm run opack",
     "pretty": "prettier --write \"./src/**/*.{ts,tsx}\"",
