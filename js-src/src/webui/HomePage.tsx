@@ -320,14 +320,16 @@ const HomePage = () => {
           </Button>
         </div>
       </Fade>
-      {Array.from(new Array(maxCurIdx), (_, idx) => (
-        <img
-          src={getImagePath(idx) || undefined}
-          className="imageInnerInfinite"
-          loading="lazy"
-          key={`${idx}img`}
-        />
-      ))}
+      <div className="imageInnerInfiniteContainer">
+        {Array.from(new Array(maxCurIdx), (_, idx) => (
+          <img
+            src={getImagePath(idx) || undefined}
+            className="imageInnerInfinite"
+            loading="lazy"
+            key={`${idx}img`}
+          />
+        ))}
+      </div>
     </Stack>
   );
 };
