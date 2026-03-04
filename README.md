@@ -4,77 +4,78 @@ Mango 4 is an all-batteries-included tool to machine translate Japanese media su
 
 **All these models are installed locally** - no need to worry about rate limits! My models are also amoral... if you know you know.
 
-Features include:
-
-### Local AI optimized for speed for cheap (no need for killer hardware!)
-
 <video src="https://github.com/user-attachments/assets/b7462028-5500-4496-ad0d-0decda1b3a7a" width="500" controls muted></video>
 
-### Stores translations in case they need to be translated again even faster (such as for user interfaces in games.)
+<details>
+  <summary><h4>Click me to see other examples and features!</h4></summary>
 
-<video src="https://github.com/user-attachments/assets/d6800d99-9920-4b0b-b799-bc8a22128e23" width="500" controls muted></video>
+  ### Stores translations in case they need to be translated again even faster (such as for user interfaces in games.)
 
-### Supports Chinese/Korean OCR'ing and translation to English with my other models (installed separately.)
+  <video src="https://github.com/user-attachments/assets/d6800d99-9920-4b0b-b799-bc8a22128e23" width="500" controls muted></video>
 
-<img src="examples/mainline/zh.png" width="500" />
+  ### Supports Chinese/Korean OCR'ing and translation to English with my other models.
 
-<img src="examples/mainline/ko.png" width="500" />
+  <img src="examples/mainline/zh.png" width="500" />
 
-### Stores past texts as context for future texts to translate (potentially better pronoun resolution.)
+  <img src="examples/mainline/ko.png" width="500" />
 
-<img src="examples/mainline/ctx_history.png" width="500" />
+  ### Stores past texts as context for future texts to translate (potentially better pronoun resolution.)
 
-### Supports translating certain character names with your own dictionary (dictionary-aware!)
+  <img src="examples/mainline/ctx_history.png" width="500" />
 
-<img src="examples/mainline/custom_dictionary.png" width="500" />
+  ### Supports translating certain character names with your own dictionary (dictionary-aware!)
 
-### Supports custom GGUF translation models, and they can be configured to use RAG with your own data - retrieving similar translations to use as examples (in-context learning!)
+  <img src="examples/mainline/custom_dictionary.png" width="500" />
 
-<img src="examples/mainline/custom_mts.png" width="500" />
+  ### Supports custom GGUF models, and they can be configured to use RAG with your own data - retrieving similar translations to use as examples (in-context learning!)
 
-### Supports multiple open OCR windows (for games where text can appear in multiple locations.)
+  <img src="examples/mainline/custom_mts.png" width="500" />
 
-<img src="examples/mainline/multiui.png" width="500" />
+  ### Supports multiple open OCR windows (for games where text can appear in multiple locations.)
 
-<sub>Most of these features can be enabled/disabled in the settings menu.</sub>
+  <img src="examples/mainline/multiui.png" width="500" />
 
-# Other examples
+  <sub>Most of these features can be enabled/disabled in the settings menu.</sub>
 
-### Translating manga
+  # Other examples
 
-<table width="10%">
-  <thead>
-    <tr>
-      <th width="50%">Source</th>
-      <th width="50%">Translation</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td width="50%"><img src="examples/ma1_src.jpg" width="200"/></td>
-      <td width="50%"><img src="examples/ma1.jpg" width="200"/></td>
-    </tr>
-    <tr>
-      <td width="50%"><img src="examples/ma2_src.jpg" width="200"/></td>
-      <td width="50%"><img src="examples/ma2.jpg" width="200"/></td>
-    </tr>
-    <tr>
-      <td width="50%"><img src="examples/ma3_src.jpg" width="200"/></td>
-      <td width="50%"><img src="examples/ma3.jpg"width="200"/></td>
-    </tr>
-  </tbody>
-</table>
+  ### Translating manga
 
-### Translating games in real-time
+  <table width="10%">
+    <thead>
+      <tr>
+        <th width="50%">Source</th>
+        <th width="50%">Translation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td width="50%"><img src="examples/ma1_src.jpg" width="200"/></td>
+        <td width="50%"><img src="examples/ma1.jpg" width="200"/></td>
+      </tr>
+      <tr>
+        <td width="50%"><img src="examples/ma2_src.jpg" width="200"/></td>
+        <td width="50%"><img src="examples/ma2.jpg" width="200"/></td>
+      </tr>
+      <tr>
+        <td width="50%"><img src="examples/ma3_src.jpg" width="200"/></td>
+        <td width="50%"><img src="examples/ma3.jpg"width="200"/></td>
+      </tr>
+    </tbody>
+  </table>
 
-<p float="left">
-    <img src="examples/s1.jpg" width="500" style="margin-bottom: 8px" />
-    <img src="examples/s2.jpg" width="500" style="margin-bottom: 8px" />
-    <img src="examples/s3.jpg" width="500" style="margin-bottom: 8px" />
-    <img src="examples/s4.jpg" width="500" style="margin-bottom: 8px" />
-    <img src="examples/u1.jpg" width="500" style="margin-bottom: 8px" />
-    <img src="examples/u2.jpg" width="500" style="margin-bottom: 8px" />
-</p>
+  ### Translating games in real-time
+
+  <p float="left">
+      <img src="examples/s1.jpg" width="500" style="margin-bottom: 8px" />
+      <img src="examples/s2.jpg" width="500" style="margin-bottom: 8px" />
+      <img src="examples/s3.jpg" width="500" style="margin-bottom: 8px" />
+      <img src="examples/s4.jpg" width="500" style="margin-bottom: 8px" />
+      <img src="examples/u1.jpg" width="500" style="margin-bottom: 8px" />
+      <img src="examples/u2.jpg" width="500" style="margin-bottom: 8px" />
+  </p>
+
+</details>
 
 # Installation
 
@@ -92,7 +93,7 @@ Features include:
 A Nvidia GPU should **NOT** be required for CPU usage. A Nvidia GPU is only required if you want even faster translations, in which case:
 
 - 4 to 6 GB VRAM (for base models)
-- 16 GB VRAM (for stronger translation models)
+- 12 to 16 GB VRAM (for stronger translation models)
 
 # Guides
 
