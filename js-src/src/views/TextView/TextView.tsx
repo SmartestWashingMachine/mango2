@@ -774,7 +774,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
                           onClick={() => {
                             handleProcessTextClick();
                           }}
-                          disabled={loading}
+                          disabled={loading || inputText.length === 0}
                           color="primary"
                           edge="end"
                         >
