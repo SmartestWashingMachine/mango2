@@ -13,7 +13,7 @@ Mango 4 is an all-batteries-included tool to machine translate Japanese media su
 
   <video src="https://github.com/user-attachments/assets/d6800d99-9920-4b0b-b799-bc8a22128e23" width="500" controls muted></video>
 
-  ### Supports Chinese/Korean OCR'ing and translation to English with my other models.
+  ### Supports Chinese/Korean OCR'ing and translation to English too!
 
   <img src="examples/mainline/zh.png" width="500" />
 
@@ -119,8 +119,6 @@ Download all the `.gguf` and `.json` and any `.txt` files in the link, then drag
 
 - [Heavy translation model (12 GB VRAM)](https://huggingface.co/octopusmegalopod/cjk2english-mtmage-24b-trial3/tree/main)
 - (Soon) Heavier translation model (16 GB VRAM)
-- [Korean OCR model](https://huggingface.co/octopusmegalopod/fast-jamo-ko-ocr-gguf/tree/main)
-- [Chinese OCR model](https://huggingface.co/octopusmegalopod/lfm-zh-ocr-plain-test-gguf/tree/main)
 
 # API usage
 

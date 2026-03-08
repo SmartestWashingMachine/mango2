@@ -27,7 +27,7 @@
 
 The first image will likely take longer to translate than the rest as the models have to be loaded into memory.
 
-Mango runs all models on the CPU by default. You can enable GPU CUDA usage in the settings tab.
+You can enable/disable GPU CUDA usage in the settings tab.
 
 ## Profit!
 
