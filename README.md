@@ -118,7 +118,9 @@ Mango 4 comes preinstalled with the necessary models. There are additional model
 Download all the `.gguf` and `.json` and any `.txt` files in the link, then drag them to the `models/custom_ocrs` folder if it's an OCR model, or the `models/custom_translators` folder if it's a translation model.
 
 - [Heavy translation model (12 GB VRAM)](https://huggingface.co/octopusmegalopod/cjk2english-mtmage-24b-trial3/tree/main)
-- (Soon) Heavier translation model (16 GB VRAM)
+- [Heavier translation model (16 GB VRAM)](https://huggingface.co/octopusmegalopod/qwenzelle-mt-cjk2english-gguf/tree/main)
+- (Soon) Flexible translation model (4 - 8 GB VRAM)
+- (Soon) Another heavy translation model (16 GB VRAM)
 
 # API usage
 
