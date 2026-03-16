@@ -69,6 +69,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   resetSettings: () => ipcRenderer.invoke('reset-settings'),
   openLogsFolder: () => ipcRenderer.invoke('open-logs-folder'),
   openCacheFolder: () => ipcRenderer.invoke('open-cache-folder'),
+  openBooksFolder: () => ipcRenderer.invoke('open-books-folder'),
   regenerateBoxManagers: () => ipcRenderer.invoke('regenerate-box-managers'),
   scanOcrBox: (boxId) => ipcRenderer.invoke('scan-ocr-box', boxId),
   readDangerousConfig: () => ipcRenderer.invoke('read-dangerous-config'),

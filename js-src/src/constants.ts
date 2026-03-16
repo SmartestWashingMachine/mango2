@@ -48,3 +48,9 @@ export const APP_DANGEROUS_CONFIG_FILE = path.join(
 export const DOWNLOADS_PATH = app.getPath("downloads");
 
 export const DISABLED_KEY_VALUE = "Escape"; // In ocrBox and BoxApp.
+
+export const APP_BOOKS_PATH = path.join(
+  app.getPath("documents"),
+  "./Mango",
+  "./books"
+);

@@ -8,6 +8,7 @@ import {
   DOWNLOADS_PATH,
   APP_LOGS_PATH,
   APP_CACHE_FOLDER,
+  APP_BOOKS_PATH,
 } from "../../constants";
 import ElectronChannels from "../../types/ElectronChannels";
 import ElectronCommands from "../../types/ElectronCommands";
@@ -170,6 +171,14 @@ const openLogsFolder: GatewayAction = {
   },
 };
 
+const openBooksFolderAction: GatewayAction = {
+  command: ElectronCommands.OPEN_BOOKS_FOLDER,
+  commandType: "handle",
+  fn: async () => {
+    shell.showItemInFolder(APP_BOOKS_PATH);
+  },
+};
+
 const openCacheFolder: GatewayAction = {
   command: ElectronCommands.OPEN_CACHE_FOLDER,
   commandType: "handle",
@@ -266,4 +275,5 @@ export default [
   openCacheFolder,
   importNamesAction,
   exportNamesAction,
+  openBooksFolderAction,
 ];

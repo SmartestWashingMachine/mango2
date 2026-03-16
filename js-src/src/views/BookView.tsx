@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import BaseView from "./BaseView";
-import { LinearProgress, Stack, Typography } from "@mui/material";
+import { Button, LinearProgress, Stack, Typography } from "@mui/material";
 import {
   pollTranslateBookStatus,
   translateBook,
@@ -81,6 +81,23 @@ const BookView = () => {
           </Stack>
         }
       />
+      <Stack
+        sx={{ width: "75%", alignItems: "center" }}
+        justifyContent="flex-end"
+      >
+        <Button
+          variant="outlined"
+          color="secondary"
+          fullWidth
+          sx={{ marginTop: "16px" }}
+          onClick={() => {
+            const w = window as any;
+            w.electronAPI.openBooksFolder();
+          }}
+        >
+          View translated EPUBs
+        </Button>
+      </Stack>
     </BaseView>
   );
 };

@@ -15,6 +15,7 @@ from PIL import Image
 
 # See: https://docs.python.org/3/library/os.path.html#os.path.expanduser
 save_folder_path = os.path.expanduser("~/Documents/Mango/books")
+os.makedirs(save_folder_path, exist_ok=True)
 
 
 def make_folder(folder_path: str):
