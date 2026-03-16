@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import BaseView from "./BaseView";
-import { Typography } from "@mui/material";
+import { LinearProgress, Stack, Typography } from "@mui/material";
 import {
   pollTranslateBookStatus,
   translateBook,
@@ -53,28 +53,34 @@ const BookView = () => {
   return (
     <BaseView>
       <ImageInput
+        paperClassNames="bookInputPromptContainer"
         onFilesSelected={handleSelectFiles}
         selectDisabled={loading}
         loadingProgress={loadingProgress}
         pendingImageNames={[]}
-        helperText={"Drag and drop an EPUB file here."}
+        helperText={
+          <Stack spacing={2}>
+            Drag and drop an EPUB file here.
+            {loading && (
+              <Typography
+                variant="body2"
+                align="center"
+                sx={{
+                  color: "hsl(291, 3%, 74%)",
+                  marginTop: "16px !important",
+                }}
+              >
+                {sentsTotal > 0
+                  ? `Translating... (${sentsDone} / ${sentsTotal})`
+                  : "Translating..."}
+              </Typography>
+            )}
+            {loading && (
+              <LinearProgress variant="determinate" value={loadingProgress} />
+            )}
+          </Stack>
+        }
       />
-      {loading && (
-        <Typography variant="h5" align="center" sx={{ color: "#ba68c8" }}>
-          {loadingProgress}%
-        </Typography>
-      )}
-      {loading && (
-        <Typography
-          variant="body2"
-          align="center"
-          sx={{ color: "hsl(291, 3%, 74%)" }}
-        >
-          {sentsTotal > 0
-            ? `Translating... (${sentsDone} / ${sentsTotal})`
-            : "Translating..."}
-        </Typography>
-      )}
     </BaseView>
   );
 };

@@ -11,9 +11,10 @@ type ImageInputProps = {
   selectDisabled: boolean;
   loadingProgress: number;
   pendingImageNames: string[];
-  helperText?: string;
+  helperText?: string | JSX.Element;
   rightPane?: JSX.Element;
   noCollapse?: boolean;
+  paperClassNames?: string;
 };
 
 const ImageInput = ({
@@ -24,6 +25,7 @@ const ImageInput = ({
   helperText,
   rightPane,
   noCollapse,
+  paperClassNames,
 }: ImageInputProps) => {
   const onDrop = useCallback(
     (acceptedFiles: any) => {
@@ -44,7 +46,11 @@ const ImageInput = ({
 
   const innerContent = (
     <Stack sx={{ width: "75%", alignSelf: "center" }} spacing={4}>
-      <Paper {...getRootProps()} className={divClasses} elevation={2}>
+      <Paper
+        {...getRootProps()}
+        className={`${divClasses} ${paperClassNames || ""}`}
+        elevation={2}
+      >
         <input {...getInputProps()} />
         <FolderIcon className="imageInputIcon" color="primary" />
         <Typography

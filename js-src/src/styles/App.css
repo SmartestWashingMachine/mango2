@@ -87,6 +87,10 @@ body,
   padding: 64px 128px;
 }
 
+.bookInputPromptContainer {
+  padding: 16px !important;
+}
+
 .emptyHistoryImage {
   grid-template-rows: auto auto;
   row-gap: 12px;
