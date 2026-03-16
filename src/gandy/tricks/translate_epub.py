@@ -51,6 +51,9 @@ def translate_one_sentence(
     t: str, app_pipeline: BasePipeline, context_state: ContextState
 ):
     t_o: str = DataCleaner.replace_many(DataCleaner.strip_html([t]))[0].strip()
+    if len(t_o) == 0:
+        return t
+
     # Create input.
     t = add_seps(context_state.prev_source_text_list + [t_o])
 
@@ -144,7 +147,9 @@ def translate_epub(
                 pass
 
         # Now we actually translate the pages.
-        for doc in e_book.get_items():
+        for idx, doc in enumerate(e_book.get_items()):
+            ctx.log("Checking page", page_idx=idx)
+
             # doc.content returns a bytes object. If we simply stringify it, we get... an ugly mess.
             # Instead, we want to utf-8 decode it. This gives us a nice mostly-probably-okay string representation.
             try:
@@ -161,12 +166,14 @@ def translate_epub(
                 # Find text in <p> elements. If too little was found, try in <div> elements instead.
 
                 p_results = soup.find_all("p")
+                ctx.log("<p> elements counted", p_results_len=len(p_results))
+
                 for p in p_results:
                     p_text = p.get_text()  # Strip HTML
                     p_text = p_text.strip()
 
                     if len(p_text) > 0:
-                        # We assume all the text in a HTML paragraph element constitutes a sentence.
+                        # We assume all the text in an HTML paragraph element constitutes a sentence.
                         new_text = translate_one_sentence(
                             p_text, app_pipeline, context_state
                         )
@@ -184,6 +191,8 @@ def translate_epub(
                 if replacement_count < min_per_doc:
                     # If little to no text was extracted, we will assume that the EPUB stores the text in <div> elements instead of <p>.
                     div_results = soup.find_all("div")
+
+                    ctx.log("<div> elements counted", p_results_len=len(div_results))
 
                     for d in div_results:
                         d_text = d.get_text()  # Strip HTML
@@ -210,6 +219,7 @@ def translate_epub(
                     doc.content = str(soup).encode("utf-8")
             except UnicodeDecodeError:
                 # Some pages have no text. They can be ignored and left as is.
+                ctx.log("UnicodeError while parsing page - skipping", page_idx=idx)
                 pass
 
             i += 1
