@@ -426,6 +426,9 @@ class InsaneRedraw(BaseImageRedraw):
         if debug_state.debug or debug_state.debug_redraw:
             self.save_recording(image, bboxes, target_texts, text_colors)
 
+        if text_colors is None:
+            text_colors = ["white"] * len(target_texts)
+
         draw_text_metadatas = []
         for idx in range(len(text_colors)):
             md = {
