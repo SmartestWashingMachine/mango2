@@ -534,7 +534,16 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               defaultValue={props.listenClipboard}
               keyName="listenClipboard"
               label="Listen to Clipboard"
-              helperText="Automatically translate the box contents whenever the clipboard has changed, using the clipboard as the contents."
+              helperText="Automatically translate whenever the clipboard has changed."
+            />
+          ),
+          "Listen to Audio": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.listenAudio}
+              keyName="listenAudio"
+              label="Listen to Audio"
+              helperText="Automatically transcribe and translate when speech audio is detected from the computer. Requires the transcription model to be installed."
             />
           ),
           "Auto Scan Background": (

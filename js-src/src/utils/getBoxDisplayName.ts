@@ -8,6 +8,8 @@ export const getBoxDisplayName = (boxOptions: BoxOptions) => {
     curName = `PRESS > ${boxOptions.activationKey}`;
   } else if (boxOptions.listenClipboard) {
     curName = "CLIPBOARD";
+  } else if (boxOptions.listenAudio) {
+    curName = "AUDIO";
   }
 
   return `Box (${curName.slice(0, 9)})`;

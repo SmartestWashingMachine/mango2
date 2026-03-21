@@ -36,6 +36,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
   store?: StoreAdapter;
   prevImage: Buffer | null;
   listenClipboard: boolean;
+  listenAudio: boolean;
   prevText: string | null;
   textDetect: boolean;
   pauseKey: string;
@@ -102,6 +103,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.pauseKey = DEFAULT_BOX_OPTIONS.pauseKey;
     this.autoScan = DEFAULT_BOX_OPTIONS.autoScan;
     this.listenClipboard = DEFAULT_BOX_OPTIONS.listenClipboard;
+    this.listenAudio = DEFAULT_BOX_OPTIONS.listenAudio;
     this.textDetect = DEFAULT_BOX_OPTIONS.textDetect;
     this.speakerBox = DEFAULT_BOX_OPTIONS.speakerBox;
     this.useStream = DEFAULT_BOX_OPTIONS.useStream;
@@ -186,6 +188,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.autoScan = boxSettings.autoScan || DEFAULT_BOX_OPTIONS.autoScan;
     this.listenClipboard =
       boxSettings.listenClipboard || DEFAULT_BOX_OPTIONS.listenClipboard;
+    this.listenAudio =
+      boxSettings.listenAudio || DEFAULT_BOX_OPTIONS.listenAudio;
     this.textDetect = boxSettings.textDetect || DEFAULT_BOX_OPTIONS.textDetect;
     this.speakerBox = boxSettings.speakerBox || DEFAULT_BOX_OPTIONS.speakerBox;
     this.contentProtection =
@@ -392,6 +396,14 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
   forgetThisBox() {
     forgetBoxActivationData(this.getOutputBoxId(), this.boxId);
+  }
+
+  registerBoxListeningAudio() {
+    // make POST call with boxId
+  }
+
+  unregisterBoxListeningAudio() {
+    // make POST call with boxId
   }
 
   follow() {
@@ -676,6 +688,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
       this.follow();
     }
 
+    if (this.listenAudio) {
+      this.registerBoxListeningAudio();
+    }
+
     console.log("Opening OCR BOX:");
     console.log(`X Offset: ${this.xOffset}`);
     console.log(`Y Offset: ${this.yOffset}`);
@@ -738,6 +754,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
       this.serverSideActivationKey
     ) {
       this.forgetThisBox();
+    }
+
+    if (this.listenAudio) {
+      this.unregisterBoxListeningAudio();
     }
 
     if (this._timerAutoScan) clearInterval(this._timerAutoScan);

@@ -17,6 +17,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   height: 300,
   autoScan: false,
   listenClipboard: false,
+  listenAudio: false,
   backgroundOpacity: 1,
   strokeSize: 0,
   strokeColor: "#FFFFFF",

@@ -24,6 +24,7 @@ const genericOptions = {
   height: 168,
   autoScan: false,
   listenClipboard: true,
+  listenAudio: false,
   backgroundOpacity: 0.8,
   strokeSize: 0,
   strokeColor: "#FFFFFF",

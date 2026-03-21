@@ -10,6 +10,8 @@ import { MainGateway } from "../../utils/mainGateway";
 
 const CLIPBOARD_COPY_DEFAULT_TEXT =
   `I will automatically translate text found in the clipboard. Use the bottom right handle to drag me around!`.trim();
+const AUDIO_COPY_DEFAULT_TEXT =
+  `I will automatically transcribe and translate speech text. Use the bottom right handle to drag me around!`.trim();
 const ACTIVATE_DEFAULT_TEXT = (k: string) =>
   `I will translate anything behind me when "${k}" is pressed. Use the bottom right handle to drag me around!`.trim();
 const ACTIVATE_DEFAULT_WITH_HIDE_TEXT = (k: string, h: string) =>
@@ -216,6 +218,8 @@ const BoxApp = ({ boxId }: BoxAppProps) => {
 
         if (boxOptions.listenClipboard) {
           setText([CLIPBOARD_COPY_DEFAULT_TEXT]);
+        } else if (boxOptions.listenAudio) {
+          setText([AUDIO_COPY_DEFAULT_TEXT]);
         } else if (boxOptions.activationKey !== "Escape") {
           if (boxOptions.serverSideActivationKey) {
             setText([

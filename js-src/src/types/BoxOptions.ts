@@ -32,6 +32,7 @@ export type BoxOptionsBackend = {
   activationKey: string;
   autoScan: boolean;
   listenClipboard: boolean;
+  listenAudio: boolean;
   textDetect: boolean;
   pauseKey: string;
   xOffset: number;
