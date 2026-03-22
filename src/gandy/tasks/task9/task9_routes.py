@@ -49,7 +49,7 @@ def process_task9_background_job(video_file_path: str):
             # First get all speech segments using a VAD.
             # Each output is a dict with start & end timestamps.
             speech_segments = speech_segmenter.process(audio_data)
-            socketio.patched_emit("progress_task5", 1)
+            emit_progress(0.01)
 
             ctx.log("Done with VAD", len_speech_segments=len(speech_segments))
 
@@ -67,8 +67,9 @@ def process_task9_background_job(video_file_path: str):
                     content = speech_to_text.process(segment_audio)
 
                     transcriptions.append(Subtitle(index=i, start=segment.start, end=segment.end, content=content))
-                    socketio.patched_emit("progress_task5", (i + 1) // total_steps + 1)
-                    socketio.sleep()
+
+                    last_prog = ((i + 1) / total_steps) + 0.01
+                    emit_progress(last_prog)
 
         # Save untranslated SRT data if the user needs it in the future.
         # TODO: Refactor - Some duplicated SRT logic; this one uses an SRT library, task5 uses internal SRT logic instead...
@@ -86,8 +87,8 @@ def process_task9_background_job(video_file_path: str):
                     target = target[0]
 
                     target_subs.append(Subtitle(index=i, start=transcription.start, end=transcription.end, content=target))
-                    socketio.patched_emit("progress_task5", (i + 1) // total_steps + 1)
-                    socketio.sleep()
+
+                    emit_progress(((i + 1) / total_steps) + last_prog)
 
         # Save translated SRT data so we can burn it into the video.
         target_srt_path = save_subs(target_subs, video_file_path, "target")
