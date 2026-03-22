@@ -68,6 +68,7 @@ const VideoView = () => {
           selectDisabled={loading || mode === "none"}
           loadingProgress={loadingProgress}
           pendingImageNames={[]}
+          disabled={mode === "none"}
           helperText={
             <Stack spacing={2}>
               {modeHelperText}
@@ -85,7 +86,7 @@ const VideoView = () => {
                 <LinearProgress
                   color="primary"
                   variant="determinate"
-                  value={loadingProgress + 35}
+                  value={loadingProgress}
                 />
               )}
             </Stack>

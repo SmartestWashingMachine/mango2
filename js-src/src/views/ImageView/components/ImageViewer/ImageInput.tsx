@@ -15,6 +15,7 @@ type ImageInputProps = {
   rightPane?: JSX.Element;
   noCollapse?: boolean;
   paperClassNames?: string;
+  disabled?: boolean;
 };
 
 const ImageInput = ({
@@ -26,6 +27,7 @@ const ImageInput = ({
   rightPane,
   noCollapse,
   paperClassNames,
+  disabled,
 }: ImageInputProps) => {
   const onDrop = useCallback(
     (acceptedFiles: any) => {
@@ -36,6 +38,7 @@ const ImageInput = ({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    disabled,
   });
 
   const divClasses = classNames({
@@ -51,7 +54,7 @@ const ImageInput = ({
         className={`${divClasses} ${paperClassNames || ""}`}
         elevation={2}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps()} disabled={disabled} />
         <FolderIcon className="imageInputIcon" color="primary" />
         <Typography
           variant="h5"
