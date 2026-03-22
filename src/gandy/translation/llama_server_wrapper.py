@@ -192,6 +192,10 @@ class LlamaCppExecutableOpenAIClient:
 
             command.extend(["-fit off"])
 
+            # The new auto template parser does some funny things here ._.
+            # It thinks the JAM MT model is a thinking model for example. It's not.
+            command.extend(["--reasoning off"])
+
             command.extend(self.extra_commands)
 
             command = ' '.join(command)
