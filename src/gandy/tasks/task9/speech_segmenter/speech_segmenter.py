@@ -49,7 +49,7 @@ class SpeechSegmenter():
         timestamps = get_speech_timestamps(
             audio, self.model,
             sampling_rate=SAMPLING_RATE,
-            threshold=0.3,
+            threshold=0.12,
             min_speech_duration_ms=250,
             min_silence_duration_ms=300,
             speech_pad_ms=100,

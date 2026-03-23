@@ -4,7 +4,8 @@ from gandy.utils.fancy_logger import logger
 from gandy.tasks.task9.asr_gguf import AsrGgufApp
 from gandy.tasks.task5.video_burner import burn_subs
 from gandy.tasks.task5.task5_logic import working_path, save_videos_path, save_subtitles_path
-from gandy.tasks.task9.speech_segmenter.speech_segmenter import SpeechSegmenter
+#from gandy.tasks.task9.speech_segmenter.speech_segmenter import SpeechSegmenter
+from gandy.tasks.task9.ten_vad.speech_segmenter import SpeechSegmenter
 from gandy.tasks.task9.speech_segmenter.utils_vad import read_audio
 from srt import Subtitle, compose
 import os
@@ -38,12 +39,47 @@ def save_subs(subtitles, video_file_path, side):
 
     return subtitles_file_path
 
+import ffmpeg
+import numpy as np
+
+def read_audio_torchaudio_like(path: str, sampling_rate: int = 16000) -> np.ndarray:
+    try:
+        probe = ffmpeg.probe(path)
+
+        audio_streams = [s for s in probe['streams'] if s['codec_type'] == 'audio']
+        stream = audio_streams[0]
+        channels = int(stream.get('channels', 1))  # fallback to mono
+
+        out, _ = (
+            ffmpeg
+            .input(path)
+            .output(
+                'pipe:',
+                format='f32le',
+                acodec='pcm_f32le',
+                ar=sampling_rate,
+                af='aresample=resampler=soxr:precision=28'
+            )
+            .run(capture_stdout=True, capture_stderr=True)
+        )
+    except ffmpeg.Error as e:
+        raise RuntimeError(f"FFmpeg failed: {e.stderr.decode()}") from e
+
+    audio = np.frombuffer(out, np.float32)
+
+    if channels > 1:
+        audio = audio.reshape(-1, channels)
+        audio = audio.mean(axis=1)  # exact match to torch.mean
+
+    return audio
+
 def process_task9_background_job(video_file_path: str):
     with logger.begin_event("Task9 transcribing and translating video audio", video_file_path=video_file_path):
         with logger.begin_event("Loading audio data"):
             # Both Silero VAD and the ASR support 16000 SR.
             SAMPLING_RATE = 16000
-            audio_data = read_audio(video_file_path, SAMPLING_RATE) # librosa.load(video_file_path, sr=SAMPLING_RATE, mono=True)
+            audio_data = read_audio_torchaudio_like(video_file_path, SAMPLING_RATE) # librosa.load(video_file_path, sr=SAMPLING_RATE, mono=True)
+
 
         with logger.begin_event("Detecting voice activity") as ctx:
             # First get all speech segments using a VAD.
