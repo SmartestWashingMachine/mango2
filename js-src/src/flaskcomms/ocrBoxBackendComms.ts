@@ -246,3 +246,31 @@ export const forgetBoxActivationData = async (boxId: any, thisBoxId: any) => {
     body: JSON.stringify({ box_id: boxId, this_box_id: thisBoxId }),
   });
 };
+
+export const rememberCaptureAudioDataForBox = async (boxId: any) => {
+  // This always goes to local host first - the backend there will then push it to the remote backend.
+  const apiUrl = `http://127.0.0.1:5000/begincaptureaudioforbox`;
+
+  await nodeFetch(apiUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ box_id: boxId }),
+  });
+};
+
+export const forgetCaptureAudioDataForBox = async (boxId: any) => {
+  // This always goes to local host first - the backend there will then push it to the remote backend.
+  const apiUrl = `http://127.0.0.1:5000/stopcaptureaudioforbox`;
+
+  await nodeFetch(apiUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ box_id: boxId }),
+  });
+};

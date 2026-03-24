@@ -60,7 +60,7 @@ export const listenTask3Updates = (
     }
   });
 
-  // This is used when the clipboard listening flag is on. Called when task2 is done only.
+  // This is used when the clipboard listening flag is on. Called when task2 is done or task9 active audio listening is done.
   socket.on("done_translating_task2", (data) => {
     if (!data || !data.text) {
       doneCb([], []);

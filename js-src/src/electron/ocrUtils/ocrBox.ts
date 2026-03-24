@@ -22,6 +22,8 @@ import {
   triggerEnterNodeFetch,
   rememberBoxActivationData,
   forgetBoxActivationData,
+  rememberCaptureAudioDataForBox,
+  forgetCaptureAudioDataForBox,
 } from "../../flaskcomms/ocrBoxBackendComms";
 
 export class OcrBoxManager implements BoxOptionsBackend {
@@ -399,11 +401,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
   }
 
   registerBoxListeningAudio() {
-    // make POST call with boxId
+    rememberCaptureAudioDataForBox(this.getOutputBoxId());
   }
 
   unregisterBoxListeningAudio() {
-    // make POST call with boxId
+    forgetCaptureAudioDataForBox(this.getOutputBoxId());
   }
 
   follow() {

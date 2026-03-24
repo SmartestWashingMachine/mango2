@@ -32,6 +32,7 @@ a = Analysis(
         'faiss',
         'faiss_cpu',
         'encodings',
+        'soundcard',
     ],
     hookspath=[],
     hooksconfig={},
