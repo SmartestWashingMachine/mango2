@@ -54,6 +54,7 @@ class AsrGgufApp():
                 stop=None,
                 mmproj=self.get_mmproj_path_for_llmcpp(),
                 verbose=False,
+                extra_commands=["--skip-media-injection --jinja --chat-template-file \"models/asr/fixed-chat-template.jinja\""]
             )
 
             self.llm.start_server()
@@ -96,6 +97,10 @@ class AsrGgufApp():
             # No streaming since this is a cascaded system (Transcribe -> Translate)
             prediction = self.llm.call_llm_no_batch(messages)
             ctx.log("Transcription result", prediction=prediction)
+
+            if len(prediction.replace("-", "").strip()) == 0: # Just a quirk of this model when it finds no speech.
+                return ""
+
             return prediction
 
 # TODO: No unload...

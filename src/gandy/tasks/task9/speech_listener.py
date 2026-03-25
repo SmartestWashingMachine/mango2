@@ -11,7 +11,7 @@ BLOCK_SIZE = 4096  # 2 seconds of audio per read. Hopefully avoids discontinuiti
 
 # 1 frame = 16ms (hop_size(256) / sample rate(16000)) or 0.016 seconds
 class SystemAudioListener:
-    def __init__(self, on_speech, hop_size=256, threshold=0.5, valid_frames=5, patience_frames=18):
+    def __init__(self, on_speech, hop_size=256, threshold=0.5, valid_frames=8, patience_frames=18):
         self.on_speech = on_speech
         self.hop_size = hop_size
         self.threshold = threshold
@@ -121,4 +121,6 @@ class SystemAudioListener:
             except queue.Empty:
                 continue
 
-            self.on_speech(audio)
+            # VERY IMPORTANT! I FORGOT TO NORMALIZE DOH DOH DOH
+            # TEN vad expects int16 so we're gucchi there.
+            self.on_speech(audio.astype(np.float32) / 32768.0)

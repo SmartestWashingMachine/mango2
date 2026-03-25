@@ -3,22 +3,39 @@ from gandy.app import app, socketio, translate_pipeline
 from gandy.tasks.task9.task9_routes import speech_to_text
 from gandy.tasks.task9.speech_listener import SystemAudioListener
 from gandy.utils.fancy_logger import logger
+from gandy.utils.socket_stream import SocketStreamer
 
 box_states = {}
 
 def on_speech(audio_data):
     with logger.begin_event("Captured audio from PC", n_boxes=len(list(box_states.keys()))) as ctx:
         # TODO: ASR + Translation always uses local, not remote. This is not the case for task5, which properly calls remote route when needed.
-        # TODO: Use streaming here (on translation - not ASR)
-        # TODO: Set loading.
+
+        # TODO: allow more than one box ID to work for loading + streaming.
+        box_id = list(box_states.keys())[0]
+
+        socketio.patched_emit(
+            "begin_translating_task2",
+            {
+                "boxId": box_id,
+            },
+        )
         transcription = speech_to_text.process(audio_data)
         ctx.log(f"Transcription found", transcription=transcription)
 
-        target = translate_pipeline.get_target_texts_from_str(
-            [transcription],
-            use_stream=None,
-        )
-        target = target[0]
+        # For now the box is always assumed to be a streaming box.
+        # I mean I don't see any reason a user would manually disable it... yet. Oh god. TODO: come back to this.
+        use_stream = SocketStreamer(box_id=box_id)
+
+        if len(transcription) == 0:
+            target = ""
+        else:
+            target = translate_pipeline.get_target_texts_from_str(
+                [transcription],
+                use_stream=use_stream,
+            )
+            target = target[0]
+
         ctx.log(f"Translation found", translation=target)
 
         for box_id in box_states.keys():
