@@ -1,7 +1,8 @@
 import os
 
 # Slightly faster TG on GPU usage. Not entirely sure about memory usage.
-os.environ["GGML_CUDA_GRAPH_OPT"] = "1"
+# ... actually this is bad. Qwen3.5 crashes with this flag quite often. Not sure why yet.
+# os.environ["GGML_CUDA_GRAPH_OPT"] = "1"
 
 os.environ['CUDA_MODULE_LOADING'] = "LAZY"
 
