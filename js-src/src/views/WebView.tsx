@@ -5,22 +5,28 @@ import InputAdornment from "@mui/material/InputAdornment";
 import ArrowCircleRightIcon from "@mui/icons-material/ArrowRight";
 import {
   Button,
+  Divider,
   FormControlLabel,
   FormGroup,
+  FormHelperText,
   IconButton,
   List,
   ListItemButton,
   ListItemText,
+  Paper,
   Stack,
   Switch,
   Typography,
 } from "@mui/material";
-import { pollTranslateWebStatus, translateWeb } from "../flaskcomms/webViewComms";
+import {
+  pollTranslateWebStatus,
+  translateWeb,
+} from "../flaskcomms/webViewComms";
 import { useLoader } from "../components/LoaderContext";
 
 const WebView = () => {
   const [text, setText] = useState("");
-  const [contentFilter, setContentFilter] = useState('div[id="novel_honbun"]');
+  const [contentFilter, setContentFilter] = useState("div.p-novel__text > p");
   const [output, setOutput] = useState("");
 
   const [preview, setPreview] = useState(true);
@@ -34,12 +40,9 @@ const WebView = () => {
 
   const handlePreviewChange = (e: any) => setPreview(e.target.checked);
 
-  const doneTranslatingItem = useCallback(
-    async (newOutput: string) => {
-      setOutput(newOutput);
-    },
-    []
-  );
+  const doneTranslatingItem = useCallback(async (newOutput: string) => {
+    setOutput(newOutput);
+  }, []);
 
   const doneTranslatingPage = useCallback(async () => {
     setLoading(false);
@@ -50,10 +53,7 @@ const WebView = () => {
 
     setLoading(true);
 
-    await pollTranslateWebStatus(
-      doneTranslatingItem,
-      doneTranslatingPage,
-    ); // Create a websocket to listen to the server for progress and the end result.
+    await pollTranslateWebStatus(doneTranslatingItem, doneTranslatingPage); // Create a websocket to listen to the server for progress and the end result.
     await translateWeb(text, contentFilter, preview);
   };
 
@@ -85,7 +85,7 @@ const WebView = () => {
                 <InputAdornment position="end">
                   <IconButton
                     onClick={processWeb}
-                    disabled={loading}
+                    disabled={loading || text.length === 0}
                     color="primary"
                     edge="end"
                   >
@@ -101,16 +101,19 @@ const WebView = () => {
             placeholder="Content Filter"
             onKeyDown={handleProcessTextEnter}
             fullWidth
-            helperText="You can specify selectors to only translate the contents of certain HTML elements."
+            helperText="Use CSS selectors to translate the contents of certain HTML elements."
           />
           <Stack spacing={0} sx={{ justifyContent: "center" }}>
-            <FormGroup sx={{ alignContent: "center" }}>
+            <FormGroup>
               <FormControlLabel
                 control={
                   <Switch checked={preview} onChange={handlePreviewChange} />
                 }
-                label="Preview Selected Elements"
+                label="Preview"
               />
+              <FormHelperText>
+                Show the selected texts to translate only.
+              </FormHelperText>
             </FormGroup>
           </Stack>
           {loading && (
@@ -124,6 +127,7 @@ const WebView = () => {
             </Typography>
           )}
         </Stack>
+        <Divider orientation="vertical" sx={{ mx: 2 }} variant="inset" />
         <Stack spacing={2}>
           {output.length > 0 ? (
             <>
