@@ -202,7 +202,7 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
         if "jamo" in overrides and overrides["jamo"]:
             prediction = [JamoOverride.postprocess(p.strip()) for p in prediction]
 
-        prediction = [p.replace("\n", " ").replace("  ", " ").strip() for p in prediction]
+        prediction = [p.replace("\n", " ").replace("  ", " ").replace("❤", "♥").replace("♡", "♥").strip() for p in prediction]
 
         if self.mango_config.get("remove_emojis", False):
             prediction = [remove_emojis(p) for p in prediction]
