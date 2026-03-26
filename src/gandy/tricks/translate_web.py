@@ -103,13 +103,13 @@ def translate_web(link, app_pipeline, content_filter=None, do_preview=False):
         link, content_filter
     )  # Get untranslated texts as list of strings.
 
-    translated_texts = []
+    translated_texts = texts # Initially set to list of source texts to translate.
 
-    for t in texts:
-        if len(t) == 0 or t is None:
-            continue
+    if not do_preview:
+        for idx, t in enumerate(texts):
+            if len(t) == 0 or t is None:
+                continue
 
-        if not do_preview:
             text = add_seps(context_state.prev_source_text_list + [t])
 
             (new_text, processed_src) = app_pipeline.text_to_text(
@@ -127,11 +127,8 @@ def translate_web(link, app_pipeline, content_filter=None, do_preview=False):
                 config_state.n_context,
             )
 
-            translated_texts.extend(new_text)  # Should only be one element.
-        else:
-            translated_texts.append(t)
-
-        socketio.patched_emit('item_taskweb', { 'text': map_texts(translated_texts) })
+            translated_texts[idx] = new_text[0]  # Should only be one element.
+            socketio.patched_emit('item_taskweb', { 'text': map_texts(translated_texts) })
 
     socketio.patched_emit('done_taskweb', { 'text': map_texts(translated_texts) })
     return map_texts(translated_texts)
