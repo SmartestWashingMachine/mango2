@@ -174,16 +174,16 @@ class CustomGgufOcrApp(TrOCRTextRecognitionApp):
             {
                 'role': 'user',
                 'content': [
-                    { 
-                        'type': 'text',
-                        'text': self.mango_config['text_prompt'],
-                    },
                     {
                         'type': 'image_url',
                         'image_url': {
                             'url': image_to_base64(image),
                         }
-                    }
+                    },
+                    { 
+                        'type': 'text',
+                        'text': self.mango_config['text_prompt'],
+                    },
                 ]
             }
         ]
