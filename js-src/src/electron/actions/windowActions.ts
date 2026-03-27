@@ -74,10 +74,26 @@ const readClipboard: GatewayAction = {
   },
 };
 
+const flashFrame: GatewayAction = {
+  command: ElectronCommands.FLASH_FRAME,
+  commandType: "handle",
+  fn: (e, mainWindow) => {
+    const win = mainWindow as BrowserWindow; // TODO: Why is my interface using BasicBrowserWindow again? I forgor.
+    if (win.isFocused()) return;
+
+    win.flashFrame(true);
+
+    win.once("focus", () => {
+      win.flashFrame(false);
+    });
+  },
+};
+
 export default [
   closeWindow,
   expandWindow,
   hideApp,
   openHelpWindow,
   readClipboard,
+  flashFrame,
 ];

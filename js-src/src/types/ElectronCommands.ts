@@ -46,6 +46,7 @@ enum ElectronCommands {
   UPDATE_NAME_ENTRY = "update-name-entry",
   DELETE_NAME_ENTRY = "delete-name-entry",
   DEFINE_DICTIONARY_NAME = "define-dictionary-name",
+  FLASH_FRAME = "flash-frame",
 }
 
 export default ElectronCommands;

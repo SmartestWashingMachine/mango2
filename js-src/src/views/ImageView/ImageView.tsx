@@ -171,6 +171,9 @@ const ImageView = () => {
     // In case of toons: The amount of images processed can be less than the actual amount of images uploaded.
     // (As images are expanded)
     setPendingImageTasks((t) => (t > 0 ? t - 1 : 0));
+
+    const w = window as any;
+    w.electronAPI.flashFrame();
   }, []);
 
   // For use in conjunction with doneTranslatingAll.
