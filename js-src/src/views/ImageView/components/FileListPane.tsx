@@ -63,6 +63,9 @@ const FileListPane = ({
         className="filesList"
         sx={{ height: 240, flexGrow: 1, maxWidth: 400, overflowY: "auto" }}
         expandedItems={expandedItems || undefined}
+        onKeyDownCapture={(e: any) => {
+          e.stopPropagation();
+        }}
       >
         {rootItem && (
           <FileItemPane

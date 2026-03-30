@@ -87,6 +87,9 @@ const FileItemPane = ({
             }
           : undefined
       }
+      onKeyDownCapture={(e: any) => {
+        e.stopPropagation();
+      }}
     >
       {childrenItems.map((c) => (
         <FileItemPane
