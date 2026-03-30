@@ -26,6 +26,7 @@ import os
 import json
 from gandy.database.faiss_mt_cache import MTCache
 from gandy.utils.speech_sort import sort_frames, sort_text_in_sorted_frames, add_frames_for_ghost_text_boxes
+from gandy.utils.sanitize_for_ascii import sanitize_for_ascii
 import regex as re
 
 def dump_task1_debug_data(rgb_image: Image, speech_bboxes):
@@ -383,6 +384,11 @@ class BasePipeline:
 
         if progress_cb is not None:
             progress_cb(progress=90)
+
+        with logger.begin_event("Decoding unicode in translations") as ctx:
+            old_target_texts = target_texts
+            target_texts = [sanitize_for_ascii(t) for t in target_texts]
+            ctx.log("Done decoding to ASCII", unicode=old_target_texts, ascii=target_texts)
 
         with logger.begin_event("Redrawing"):
             rgb_image = self.image_redrawing_app.begin_process(
