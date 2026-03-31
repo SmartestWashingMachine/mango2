@@ -264,6 +264,7 @@ class BasePipeline:
         progress_cb=None,
         use_text_line_app=True,
         detect_speaker_name=False,
+        text_line_app_scan_image_if_fails=True,
     ):
         source_texts: List[str] = []
         line_bboxes = None
@@ -284,7 +285,7 @@ class BasePipeline:
                 speech_bboxes,
                 text_line_app=self.text_line_app.get_sel_app() if use_text_line_app else None,
                 # If no lines are found, fallback to scanning the entire cropped image IF that image was cropped by a text detection app.
-                text_line_app_scan_image_if_fails=(not self.text_detection_app.get_sel_app_name() == "none" and use_text_line_app),
+                text_line_app_scan_image_if_fails=text_line_app_scan_image_if_fails and (not self.text_detection_app.get_sel_app_name() == "none" and use_text_line_app),
                 forced_image=forced_image,
                 on_box_done=on_box_done,
                 detect_speaker_name=detect_speaker_name,
@@ -510,7 +511,7 @@ class BasePipeline:
             return target_texts
 
     def image_to_untranslated_texts(
-        self, image: Image, with_text_detect=False, with_ocr=True, detect_speaker_name=False,
+        self, image: Image, with_text_detect=False, with_ocr=True, detect_speaker_name=False, text_line_app_scan_image_if_fails=True,
     ):
         with logger.begin_event("Image to untranslated texts") as ctx:
             image = image.convert("RGB")
@@ -530,13 +531,13 @@ class BasePipeline:
             config_state.tile_height = old_tile_height
 
             if with_ocr:
-                source_texts = self.get_source_texts_from_bboxes(image, speech_bboxes, detect_speaker_name=detect_speaker_name)
+                source_texts = self.get_source_texts_from_bboxes(image, speech_bboxes, detect_speaker_name=detect_speaker_name, text_line_app_scan_image_if_fails=text_line_app_scan_image_if_fails)
                 return source_texts
             else:
                 return image, speech_bboxes
 
     def image_to_single_text(
-        self, image: Image, with_text_detect=False, context_input=[], use_stream=None, detect_speaker_name=False,
+        self, image: Image, with_text_detect=False, context_input=[], use_stream=None, detect_speaker_name=False, text_line_app_scan_image_if_fails=True,
     ):
         with logger.begin_event("Image to single text") as ctx:
             image = image.convert("RGB")
@@ -544,7 +545,7 @@ class BasePipeline:
             # Each detached text box can specify whether or not it expects a speaker name to be detected.
             # Or the user can enable it for all boxes (globally via config_state).
             # In hindsight, rushing into the code without proper test coverage was the worst mistake I've ever made.
-            source_texts = self.image_to_untranslated_texts(image, with_text_detect, detect_speaker_name=detect_speaker_name)
+            source_texts = self.image_to_untranslated_texts(image, with_text_detect, detect_speaker_name=detect_speaker_name, text_line_app_scan_image_if_fails=text_line_app_scan_image_if_fails)
 
             if len(source_texts) == 0:
                 return [None, None]
@@ -565,7 +566,7 @@ class BasePipeline:
             return target_texts, source_texts
 
     def image_to_line_texts(
-        self, image: Image, use_stream=None, bottom_n_lines=0, join_lines_until_finds="",
+        self, image: Image, use_stream=None, bottom_n_lines=0, join_lines_until_finds="", text_line_app_scan_image_if_fails=True,
     ):
         all_targets = []
 
@@ -584,7 +585,7 @@ class BasePipeline:
 
             for idx, row in enumerate(line_rows):
                 # TODO: Add batch for full images (not just lines)?
-                line_texts = self.get_source_texts_from_bboxes(image, row, use_text_line_app=False)
+                line_texts = self.get_source_texts_from_bboxes(image, row, use_text_line_app=False, text_line_app_scan_image_if_fails=text_line_app_scan_image_if_fails)
                 line_texts = "".join(line_texts)
 
                 source_texts = merge_texts(line_texts, [])

@@ -37,6 +37,8 @@ class BackgroundActivityWatcher:
         return changed_pixels / diff.size
 
     def _watch_loop(self):
+        time.sleep(10.0) # Wait some time for the user to set things up as needed.
+
         with mss.mss() as sct:
             self._last_baseline = self._get_frame(sct)
 
@@ -66,8 +68,7 @@ class BackgroundActivityWatcher:
                     
                     # Stability achieved
                     if stable_count == self.STABILITY_COUNT:
-                        print(f">>>>>> New subtitle...")
-                        # self.ocr_callback()
+                        self.ocr_callback()
                         
                         # Update baseline, cooldown
                         self._last_baseline = tracking_frame

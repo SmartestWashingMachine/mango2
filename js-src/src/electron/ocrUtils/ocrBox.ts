@@ -385,7 +385,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
     return text;
   }
 
-  constructBoxData() {
+  constructBoxData(extras?: any) {
     // Certain backend routes need this box data.
 
     const coords = this.getCoords();
@@ -400,6 +400,7 @@ export class OcrBoxManager implements BoxOptionsBackend {
       use_stream: this.useStream,
       activation_key: this.activationKey,
       translate_lines_individually: this.translateLinesIndividually,
+      ...extras,
     };
   }
 
@@ -414,7 +415,9 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
   registerBoxWatchingBackground() {
     // important TODO: add "joinLinesUntilFinds" and "detectSpeakerName" here too.
-    rememberWatchBackgroundForBox(this.constructBoxData());
+    rememberWatchBackgroundForBox(
+      this.constructBoxData({ text_line_app_scan_image_if_fails: false })
+    );
   }
 
   unregisterBoxWatchingBackground() {

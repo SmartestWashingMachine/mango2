@@ -50,6 +50,7 @@ def translate_task3_background_job(
     translate_lines_individually=0,
     join_lines_until_finds="",
     detect_speaker_name=False,
+    text_line_app_scan_image_if_fails=True,
 ):
     with logger.begin_event("Task3", translate_lines_individually=translate_lines_individually, join_lines_until_finds=join_lines_until_finds) as ctx:
         try:
@@ -77,6 +78,7 @@ def translate_task3_background_job(
                     with_text_detect=with_text_detect,
                     context_input=context_input,
                     do_detect_speaker_name=do_detect_speaker_name,
+                    text_line_app_scan_image_if_fails=text_line_app_scan_image_if_fails,
                 )
 
                 # NOTE: The source texts returned are those BEFORE translation app preprocessing, but after terms are replaced.
@@ -87,6 +89,7 @@ def translate_task3_background_job(
                         use_stream=use_stream,
                         bottom_n_lines=translate_lines_individually,
                         join_lines_until_finds=join_lines_until_finds,
+                        text_line_app_scan_image_if_fails=text_line_app_scan_image_if_fails,
                     )
                 else:
                     new_texts, source_text = translate_pipeline.image_to_single_text(
@@ -95,6 +98,7 @@ def translate_task3_background_job(
                         context_input=context_input,
                         use_stream=use_stream,
                         detect_speaker_name=do_detect_speaker_name,
+                        text_line_app_scan_image_if_fails=text_line_app_scan_image_if_fails,
                     )
 
                 if new_texts is not None: # image_to_single_text sometimes returns None when no text found (with_text_detect=False)
@@ -147,7 +151,7 @@ def translate_task3_background_job_remotely():
             use_stream=use_stream,
             already_loaded=True, # RemoteRouter loads images via base64_to_pil
             translate_lines_individually=translate_lines_individually,
-            # important TODO: Add do_detect_speaker_name and join_lines_until_finds
+            # important TODO: Add do_detect_speaker_name and join_lines_until_finds and text_line_app_scan_image_if_fails
         )
 
     return {}, 200
@@ -182,6 +186,8 @@ def process_task3_route():
     except:
         detect_speaker_name = False
 
+    text_line_app_scan_image_if_fails = True
+
     images = request.files.getlist("file")
 
     socketio.start_background_task(
@@ -194,6 +200,7 @@ def process_task3_route():
         translate_lines_individually,
         join_lines_until_finds,
         detect_speaker_name,
+        text_line_app_scan_image_if_fails,
     )
 
     return {"processing": True}, 202
@@ -239,6 +246,7 @@ def process_task3_faster(data):
                 'translate_lines_individually': str(data['translate_lines_individually']),
                 'join_lines_until_finds': str(data.get('join_lines_until_finds', '')),
                 'detect_speaker_name': str(data.get('detect_speaker_name', 'off')),
+                'text_line_app_scan_image_if_fails': str(data.get('text_line_app_scan_image_if_fails', 'on')),
             }
 
             image_stream = BytesIO()
@@ -271,6 +279,7 @@ def process_task3_faster(data):
             data['translate_lines_individually'],
             data.get('join_lines_until_finds', ''),
             data.get('detect_speaker_name', 'off') == 'on',
+            data.get('text_line_app_scan_image_if_fails', 'on') == 'on'
         )
 
 @app.route("/processtask3new", methods=["POST"])
@@ -297,6 +306,8 @@ def process_task3new_route():
             except:
                 detect_speaker_name = "off"
 
+            text_line_app_scan_image_if_fails = True
+
             # It's an array? Huh? TODO
             with_text_detect = text_detect[0] == "on"
             if box_id is not None and len(box_id) > 0:
@@ -313,6 +324,7 @@ def process_task3new_route():
             'translate_lines_individually': translate_lines_individually,
             'join_lines_until_finds': join_lines_until_finds,
             'detect_speaker_name': detect_speaker_name,
+            'text_line_app_scan_image_if_fails': text_line_app_scan_image_if_fails,
         })
 
     return {"processing": True}, 202
