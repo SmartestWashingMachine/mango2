@@ -46,6 +46,7 @@ export const DEFAULT_BOX_OPTIONS: BoxOptions = {
   fullyDraggable: false,
   followsCursor: false,
   contentProtection: false,
+  watchBackground: false,
 };
 
 export const makeBaseBox = (boxId: string) => {

@@ -26,6 +26,7 @@ export type BoxOptionsFrontend = {
   fullyDraggable: boolean;
   followsCursor: boolean;
   contentProtection: boolean;
+  watchBackground: boolean;
 };
 
 export type BoxOptionsBackend = {

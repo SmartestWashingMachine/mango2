@@ -347,6 +347,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
           ),
         },
         Functions: {
+          "Watch Background": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.watchBackground}
+              keyName="watchBackground"
+              helperText="The box will automatically translate when detecting text behind it."
+              label="Watch Background"
+            />
+          ),
           "Fully Draggable": (
             <UpdateCheckbox
               changeValue={changeValue}

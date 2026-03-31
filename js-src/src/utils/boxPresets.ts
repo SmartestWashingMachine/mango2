@@ -53,6 +53,7 @@ const genericOptions = {
   showText: true,
   outlineColor: "#000000",
   outlineSize: 0,
+  watchBackground: false,
 };
 
 export const OPTIONS_PRESETS: BoxPreset[] = [

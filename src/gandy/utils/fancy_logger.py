@@ -107,6 +107,11 @@ class FancyLogger:
     
     def log_message(self, msg: str, **fields):
         try:
+            if self.do_print:
+                try_print(f'>>>> {msg}')
+                for f in fields.items():
+                    try_print(f'^^ {f[0]}:')
+                    try_print(f[1])
             return log_message(msg, **fields)
         except Exception as e: # Thanks Eliot. What an absolutely miserable logging library you are. A logging library that doesn't work with unicode. wtf?
             try_print('ERROR LOGGING MESSAGE:')

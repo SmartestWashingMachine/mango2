@@ -24,6 +24,8 @@ import {
   forgetBoxActivationData,
   rememberCaptureAudioDataForBox,
   forgetCaptureAudioDataForBox,
+  rememberWatchBackgroundForBox,
+  forgetWatchBackgroundForBox,
 } from "../../flaskcomms/ocrBoxBackendComms";
 
 export class OcrBoxManager implements BoxOptionsBackend {
@@ -57,11 +59,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
   detectSpeakerName: boolean;
   followsCursor: boolean;
   contentProtection: boolean;
-
   followKey: string;
   showText: boolean;
   outlineColor: string;
   outlineSize: number;
+  watchBackground: boolean;
 
   _timerAutoScan?: any;
   _timerClipboard?: any;
@@ -126,6 +128,8 @@ export class OcrBoxManager implements BoxOptionsBackend {
     this.showText = DEFAULT_BOX_OPTIONS.showText;
     this.outlineColor = DEFAULT_BOX_OPTIONS.outlineColor;
     this.outlineSize = DEFAULT_BOX_OPTIONS.outlineSize;
+
+    this.watchBackground = DEFAULT_BOX_OPTIONS.watchBackground;
 
     this.prevImage = null; // For autoScan.
     this.prevText = null; // For listenClipboard.
@@ -233,6 +237,9 @@ export class OcrBoxManager implements BoxOptionsBackend {
       boxSettings.outlineColor || DEFAULT_BOX_OPTIONS.outlineColor;
     this.outlineSize =
       boxSettings.outlineSize || DEFAULT_BOX_OPTIONS.outlineSize;
+
+    this.watchBackground =
+      boxSettings.watchBackground || DEFAULT_BOX_OPTIONS.watchBackground;
 
     if (!boxSettings) {
       this.enabled = true;
@@ -378,11 +385,11 @@ export class OcrBoxManager implements BoxOptionsBackend {
     return text;
   }
 
-  rememberThisBox() {
-    // important TODO: add "joinLinesUntilFinds" and "detectSpeakerName" here too.
+  constructBoxData() {
+    // Certain backend routes need this box data.
 
     const coords = this.getCoords();
-    rememberBoxActivationData({
+    return {
       x1: coords[0],
       y1: coords[1],
       width: coords[2],
@@ -393,11 +400,25 @@ export class OcrBoxManager implements BoxOptionsBackend {
       use_stream: this.useStream,
       activation_key: this.activationKey,
       translate_lines_individually: this.translateLinesIndividually,
-    });
+    };
+  }
+
+  rememberThisBox() {
+    // important TODO: add "joinLinesUntilFinds" and "detectSpeakerName" here too.
+    rememberBoxActivationData(this.constructBoxData());
   }
 
   forgetThisBox() {
     forgetBoxActivationData(this.getOutputBoxId(), this.boxId);
+  }
+
+  registerBoxWatchingBackground() {
+    // important TODO: add "joinLinesUntilFinds" and "detectSpeakerName" here too.
+    rememberWatchBackgroundForBox(this.constructBoxData());
+  }
+
+  unregisterBoxWatchingBackground() {
+    forgetWatchBackgroundForBox(this.boxId);
   }
 
   registerBoxListeningAudio() {
@@ -510,6 +531,9 @@ export class OcrBoxManager implements BoxOptionsBackend {
           this._hide = !this._hide;
           if (this.ocrWindow) {
             this.ocrWindow.setIgnoreMouseEvents(this._hide);
+
+            console.log("WIN:");
+            console.log(this.ocrWindow.setContentProtection(true));
 
             this.ocrWindow.webContents.send(
               ElectronChannels.OCR_HIDDEN,
@@ -680,8 +704,22 @@ export class OcrBoxManager implements BoxOptionsBackend {
         });
 
         this.ocrWindow.on("resized", () => {
-          // The API automatically overrides the box hotkey if the data is updated.
           this.rememberThisBox();
+        });
+      }
+    }
+
+    if (this.watchBackground) {
+      this.registerBoxWatchingBackground();
+
+      if (this.ocrWindow !== null) {
+        this.ocrWindow.on("moved", () => {
+          // The API automatically overrides the box hotkey if the data is updated.
+          this.registerBoxWatchingBackground();
+        });
+
+        this.ocrWindow.on("resized", () => {
+          this.registerBoxWatchingBackground();
         });
       }
     }
@@ -760,6 +798,10 @@ export class OcrBoxManager implements BoxOptionsBackend {
 
     if (this.listenAudio) {
       this.unregisterBoxListeningAudio();
+    }
+
+    if (this.watchBackground) {
+      this.unregisterBoxWatchingBackground();
     }
 
     if (this._timerAutoScan) clearInterval(this._timerAutoScan);

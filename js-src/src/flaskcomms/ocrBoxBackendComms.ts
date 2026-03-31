@@ -274,3 +274,39 @@ export const forgetCaptureAudioDataForBox = async (boxId: any) => {
     body: JSON.stringify({ box_id: boxId }),
   });
 };
+
+export const rememberWatchBackgroundForBox = async (boxData: any) => {
+  // This always goes to local host first - the backend there will then push it to the remote backend.
+  const apiUrl = `http://127.0.0.1:5000/task3watchboxbg`;
+
+  await nodeFetch(apiUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      boxState: {
+        ...boxData,
+        x1: [boxData.x1],
+        y1: [boxData.y1],
+        width: [boxData.width],
+        height: [boxData.height],
+      },
+    }),
+  });
+};
+
+export const forgetWatchBackgroundForBox = async (thisBoxId: any) => {
+  // This always goes to local host first - the backend there will then push it to the remote backend.
+  const apiUrl = `http://127.0.0.1:5000/task3forgetboxbg`;
+
+  await nodeFetch(apiUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ boxState: { this_box_id: thisBoxId } }),
+  });
+};
