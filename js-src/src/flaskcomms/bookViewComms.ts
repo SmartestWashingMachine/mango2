@@ -3,7 +3,8 @@ import { makeSocket } from "./makeSocket";
 
 export const translateBook = async (
   file: any,
-  tgtContextMemory: string | null
+  tgtContextMemory: string | null,
+  outputHtml: boolean
 ) => {
   const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/processbookb64`;
 
@@ -13,6 +14,8 @@ export const translateBook = async (
   if (tgtContextMemory !== null) {
     formData.append("tgt_context_memory", tgtContextMemory);
   }
+
+  formData.append("outputHtml", outputHtml ? "on" : "off");
 
   const output = fetch(apiUrl, {
     method: "POST",

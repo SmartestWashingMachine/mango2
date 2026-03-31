@@ -7,7 +7,7 @@ import ImageView from "./views/ImageView/ImageView";
 import OptionsView from "./views/OcrOptionsView/OptionsView";
 import Header from "./components/Header";
 import WebView from "./views/WebView";
-import BookView from "./views/BookView";
+import BookView from "./views/BookView/BookView";
 import VideoView from "./views/VideoView/VideoView";
 import { CSSTransition, SwitchTransition } from "react-transition-group";
 import LoaderContext from "./components/LoaderContext";

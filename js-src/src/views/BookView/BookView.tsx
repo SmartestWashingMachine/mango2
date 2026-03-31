@@ -1,12 +1,13 @@
 import React, { useCallback, useState } from "react";
-import BaseView from "./BaseView";
+import BaseView from "../BaseView";
 import { Button, LinearProgress, Stack, Typography } from "@mui/material";
 import {
   pollTranslateBookStatus,
   translateBook,
-} from "../flaskcomms/bookViewComms";
-import ImageInput from "./ImageView/components/ImageViewer/ImageInput";
-import { useLoader } from "../components/LoaderContext";
+} from "../../flaskcomms/bookViewComms";
+import ImageInput from "../ImageView/components/ImageViewer/ImageInput";
+import { useLoader } from "../../components/LoaderContext";
+import BookViewOptions, { BookProcessingModes } from "./BookViewOptions";
 
 const BookView = () => {
   const { loading, setLoading } = useLoader();
@@ -14,6 +15,8 @@ const BookView = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [sentsDone, setSentsDone] = useState(0);
   const [sentsTotal, setSentsTotal] = useState(0);
+
+  const [outputMode, setOutputMode] = useState<BookProcessingModes>("epub");
 
   const updateProgress = useCallback(
     (progress: number, sentencesDone: number, sentencesTotal: number) => {
@@ -45,42 +48,45 @@ const BookView = () => {
       await pollTranslateBookStatus(updateProgress, doneTranslating); // Create a websocket to listen to the server for progress and the end result.
 
       // Now we actually begin the translation job on the server.
-      await translateBook(files[0], null);
+      await translateBook(files[0], null, outputMode === "html");
     },
-    [startTranslating, updateProgress, doneTranslating]
+    [startTranslating, updateProgress, doneTranslating, outputMode]
   );
 
   return (
     <BaseView>
-      <ImageInput
-        paperClassNames="bookInputPromptContainer"
-        onFilesSelected={handleSelectFiles}
-        selectDisabled={loading}
-        loadingProgress={loadingProgress}
-        pendingImageNames={[]}
-        helperText={
-          <Stack spacing={2}>
-            Drag and drop an EPUB file here.
-            {loading && (
-              <Typography
-                variant="body2"
-                align="center"
-                sx={{
-                  color: "hsl(291, 3%, 74%)",
-                  marginTop: "16px !important",
-                }}
-              >
-                {sentsTotal > 0
-                  ? `Translating... (${sentsDone} / ${sentsTotal})`
-                  : "Translating..."}
-              </Typography>
-            )}
-            {loading && (
-              <LinearProgress variant="determinate" value={loadingProgress} />
-            )}
-          </Stack>
-        }
-      />
+      <Stack spacing={2} sx={{ alignItems: "center", width: "100%" }}>
+        <BookViewOptions mode={outputMode} setMode={setOutputMode} />
+        <ImageInput
+          paperClassNames="videoInputPromptContainer"
+          onFilesSelected={handleSelectFiles}
+          selectDisabled={loading}
+          loadingProgress={loadingProgress}
+          pendingImageNames={[]}
+          helperText={
+            <Stack spacing={2}>
+              Drag and drop an EPUB file here.
+              {loading && (
+                <Typography
+                  variant="body2"
+                  align="center"
+                  sx={{
+                    color: "hsl(291, 3%, 74%)",
+                    marginTop: "16px !important",
+                  }}
+                >
+                  {sentsTotal > 0
+                    ? `Translating... (${sentsDone} / ${sentsTotal})`
+                    : "Translating..."}
+                </Typography>
+              )}
+              {loading && (
+                <LinearProgress variant="determinate" value={loadingProgress} />
+              )}
+            </Stack>
+          }
+        />
+      </Stack>
       <Stack
         sx={{ width: "75%", alignItems: "center" }}
         justifyContent="flex-end"

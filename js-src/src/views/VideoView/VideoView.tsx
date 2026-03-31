@@ -50,7 +50,7 @@ const VideoView = () => {
       // See: https://github.com/electron/electron/blob/v1.2.8/docs/api/file-object.md
       await translateVideo(files[0].path, mode);
     },
-    [startTranslating, updateProgress, doneTranslating]
+    [startTranslating, updateProgress, doneTranslating, mode]
   );
 
   const modeHelperText =

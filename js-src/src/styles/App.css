@@ -87,10 +87,6 @@ body,
   padding: 64px 128px;
 }
 
-.bookInputPromptContainer {
-  padding: 16px !important;
-}
-
 .videoInputPromptContainer {
   grid-template-rows: auto auto auto;
   row-gap: 12px;

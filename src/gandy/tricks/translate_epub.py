@@ -12,6 +12,7 @@ from gandy.utils.text_processing import add_seps
 from gandy.utils.fancy_logger import logger
 from io import BytesIO
 from PIL import Image
+import html
 
 # See: https://docs.python.org/3/library/os.path.html#os.path.expanduser
 save_folder_path = os.path.expanduser("~/Documents/Mango/books")
@@ -132,9 +133,10 @@ def translate_epub(
     app_pipeline: BasePipeline,
     checkpoint_every_pages=0,
     socketio: SocketIO = None,
+    output_html: bool = False,
 ):
     with logger.begin_event(
-        "Translate EPUB file", checkpoint_every_pages=checkpoint_every_pages, file_path=file_path
+        "Translate EPUB file", checkpoint_every_pages=checkpoint_every_pages, file_path=file_path, output_html=output_html,
     ) as ctx:
         if app_pipeline.image_cleaning_app.get_sel_app_name() == "none":
             app_pipeline.switch_cleaning_app("blur")
@@ -149,7 +151,24 @@ def translate_epub(
         book_folder_path = f"{save_folder_path}/{write_book_id}"
         book_checkpoint_folder_path = f"{save_folder_path}/{write_book_id}/checkpoints"
         make_folder(book_folder_path)
-        make_folder(book_checkpoint_folder_path)
+
+        if not output_html:
+            make_folder(book_checkpoint_folder_path)
+
+        if output_html:
+            images_output_folder = f"{book_folder_path}/images"
+            make_folder(images_output_folder)
+
+
+            html_content_parts = []
+            html_content_parts.append("""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;max-width:800px;margin:0 auto;padding:20px;line-height:1.8;font-size:18px}
+img{max-width:100%;height:auto;display:block;margin:30px auto;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+p{margin:1.5em 0;text-align:justify}
+.chapter{margin-bottom:60px;border-bottom:1px solid #eee;padding-bottom:40px}
+</style></head><body>""")
 
         context_state = ContextState()
 
@@ -173,6 +192,10 @@ def translate_epub(
 
                 soup = BeautifulSoup(content, features="html.parser")
                 replacement_count = 0
+
+                # Just for HTML outputs.
+                page_translations = []
+                page_images = []
 
                 # Find text in <p> elements. If too little was found, try in <div> elements instead.
                 p_results = soup.find_all("p")
@@ -239,11 +262,18 @@ def translate_epub(
                     try:
                         img = Image.open(BytesIO(image_item.content)).convert("RGB")
                         translated_img = translate_img(app_pipeline, img)
-                        buf = BytesIO()
-                        translated_img.save(buf, format="PNG")
-                        image_item.content = buf.getvalue()
-                        processed_image_hrefs.add(href)
 
+                        if output_html:
+                            img_filename = f"page_{idx}_img_{images_replacement_count}.png"
+                            img_path = f"{images_output_folder}/{img_filename}"
+                            translated_img.save(img_path, format="PNG")
+                            page_images.append(f"images/{img_filename}")
+                        else:
+                            buf = BytesIO()
+                            translated_img.save(buf, format="PNG")
+                            image_item.content = buf.getvalue()
+
+                        processed_image_hrefs.add(href)
                         images_replacement_count += 1
                     except Exception as e:
                         ctx.log("Error processing embedded image", page_idx=idx, src=src)
@@ -269,6 +299,8 @@ def translate_epub(
                                 p_text, app_pipeline, context_state
                             )
                             p.string = new_text
+                            page_translations.append(new_text)
+                            
                             replacement_count += 1
                         except Exception as e:
                             # Typically out of context.
@@ -302,6 +334,8 @@ def translate_epub(
                                     d_text, app_pipeline, context_state
                                 )
                                 d.string = new_text
+                                page_translations.append(new_text)
+
                                 replacement_count += 1
                             except Exception as e:
                                 # Typically out of context.
@@ -319,9 +353,23 @@ def translate_epub(
                 if replacement_count > 0:
                     ctx.log("Translated page text", page_idx=idx, sentences_translated=replacement_count)
 
-                    # If some text was translated, then use the modified page as the new page.
-                    # Content must be re-encoded to utf-8.
-                    doc.content = str(soup).encode("utf-8")
+                    if output_html:
+                        if len(page_translations) > 0 or len(page_images) > 0:
+                            # Map to HTML. NOTE: This could introduce vulnerabilities especially with img_src. Users bewarned!
+                            for text in page_translations:
+                                html_content_parts.append(f'<p>{html.escape(text)}</p>')
+
+                            for img_src in page_images:
+                                html_content_parts.append(f'<img src="{html.escape(img_src)}" alt="">')
+
+                            html_content_parts.append('</div>')
+
+                            page_translations = []
+                            page_images = []
+                    else:
+                        # If some text was translated, then use the modified page as the new page.
+                        # Content must be re-encoded to utf-8.
+                        doc.content = str(soup).encode("utf-8")
                 elif images_replacement_count == 0:
                     raise RuntimeError("No text/images found in page (not HTML?) - skipping to image check.")
             except (UnicodeDecodeError, RuntimeError):
@@ -365,13 +413,26 @@ def translate_epub(
             i += 1
 
             if checkpoint_every_pages != 0 and i % checkpoint_every_pages == 0:
-                write_path = f"{book_checkpoint_folder_path}/checkpoint_{i}.epub"
-                ctx.log(f"Saving book checkpoint", write_path=write_path)
-                epub.write_epub(write_path, e_book)
+                if output_html:
+                    # Saved outside checkpoints to keep the images path consistent.
+                    write_path = f"{book_folder_path}/book.html"
+                    ctx.log(f"Saving book checkpoint HTML", write_path=write_path)
+                    with open(write_path, 'w', encoding='utf-8') as f:
+                        f.write(''.join(html_content_parts))
+                else:
+                    write_path = f"{book_checkpoint_folder_path}/checkpoint_{i}.epub"
+                    ctx.log(f"Saving book checkpoint EPUB", write_path=write_path)
+                    epub.write_epub(write_path, e_book)
 
             emit_progress(socketio, j, sentences_len)
             socketio.sleep()
 
-        final_path = f"{book_folder_path}/new_book.epub"
-        epub.write_epub(final_path, e_book)
-        ctx.log(f"Saving final book", write_path=final_path)
+        if output_html:
+            write_path = f"{book_folder_path}/book.html"
+            ctx.log(f"Saving book final HTML", write_path=write_path)
+            with open(write_path, 'w', encoding='utf-8') as f:
+                f.write(''.join(html_content_parts))
+        else:
+            write_path = f"{book_folder_path}/final.epub"
+            ctx.log(f"Saving book final EPUB", write_path=write_path)
+            epub.write_epub(write_path, e_book)
