@@ -84,6 +84,9 @@ def smart_vertical_merging(images: List[Image.Image], detect_in_chunk):
 
       logger.log_message(f'Prepending bottom slice to next image.', bottom_size=bottom_slice.size, other_img_size_before=old_other_img_size, other_img_size_after=new_images[idx + 1].size)
 
+    # TODO: Some images error out. This is a band-aid fix. Figure it out.
+    remaining_y1_crop = min(remaining_y1_crop, remaining_y2_crop)
+
     remaining_slice = img.crop((0, remaining_y1_crop, img.width, remaining_y2_crop))
     new_images[idx] = remaining_slice
 

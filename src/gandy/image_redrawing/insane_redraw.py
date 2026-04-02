@@ -207,7 +207,7 @@ def try_expand_box(box, image_rect, placed_rects, expand_w=0, expand_h=0):
     return new_box
 
 def draw_background(font, draw, line, lx, cursor_y, size, fill):
-    stroke_expand = max(1, size // 2)
+    stroke_expand = max(1, size // 8)
 
     for dx in range(-stroke_expand, stroke_expand + 1):
         for dy in range(-stroke_expand, stroke_expand + 1):
