@@ -602,15 +602,6 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
         </Paper>
       </Tooltip>
       <Tooltip
-        title={contextEnabled ? "Disable Context Push" : "Enable Context Push"}
-      >
-        <Paper elevation={2}>
-          <IconButton onClick={handleContextEnabled} sx={{ borderRadius: 0 }}>
-            <AutoStoriesIcon color={contextEnabled ? "primary" : undefined} />
-          </IconButton>
-        </Paper>
-      </Tooltip>
-      <Tooltip
         title={
           <>
             <Typography color="inherit" sx={{ fontWeight: "bold" }}>
