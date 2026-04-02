@@ -25,6 +25,9 @@ class MTCache():
             # Cut any context. TODO: Sure about this?
             inp = inp.split('<TSOS>')[-1].strip()
 
+            if len(inp) == 0:
+                return [""], None
+
             if self.mt_cache is None:
                 self.load_mt_cache()
 
