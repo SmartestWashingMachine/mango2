@@ -23,8 +23,8 @@ briefly explain them to anybody - or myself in the future - who's curious on how
 
 -- The overall process is simple:
 1. We split the video into frames. Each frame, or every X frames, is an image.
-2. We detect text regions in each frame image.
-3. We OCR each text region.
+2. We detect text regions in each frame image. If no regions are found or no text detection model is used; the entire image is sent.
+3. We (text-line and) OCR each text region.
 4. We translate each OCR'd text region. (Notice that Steps 2/3/4 are similar to Task1 - translating images into text, minus the image cleaning & redrawing part.)
 5. We stitch these translations together into an SRT file.
 6. We burn the SRT file onto the video itself.
