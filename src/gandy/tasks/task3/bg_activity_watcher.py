@@ -3,11 +3,13 @@ import numpy as np
 import cv2
 import threading
 import time
+from PIL import Image
 
 class BackgroundActivityWatcher:
-    def __init__(self, monitor_coords, ocr_callback, sensitivity=0.005):
+    def __init__(self, monitor_coords, ocr_callback, text_lines_stale_callback, sensitivity=0.005):
         self.coords = monitor_coords
         self.ocr_callback = ocr_callback
+        self.text_lines_stale_callback = text_lines_stale_callback
         self.sensitivity = sensitivity  # % of pixels that must change (0.005 = 0.5%)
         
         self._stop_event = threading.Event()
@@ -49,25 +51,35 @@ class BackgroundActivityWatcher:
                 if change_pct > self.sensitivity:
                     # Potential change detected - enter stability tracking
                     stable_count = 0
+                    aggressive_count = 0
                     tracking_frame = current_frame
                     
-                    while (stable_count < self.STABILITY_COUNT and not self._stop_event.is_set()):
+                    while ((stable_count < self.STABILITY_COUNT and aggressive_count < self.STABILITY_COUNT) and not self._stop_event.is_set()):
                         time.sleep(self.STABILITY_INTERVAL)
                         
                         check_frame = self._get_frame(sct)
                         stability_change = self._compute_change_pct(tracking_frame, check_frame)
 
-                        # print(stability_change)
+                        # print(f"checking({stability_change})({change_pct})")
                         
                         if stability_change < 0.0025: #0.005:  # < 0.5% = stable
                             stable_count += 1
                         else:
                             stable_count = 0  # Reset - still changing
+
+                        # >= 0.0025 may be a bad choice - I did it for optimization reasons (line det is laggy).
+                        if stability_change >= 0.0025 and stability_change < 0.35 and self.text_lines_stale_callback(Image.fromarray(current_frame).convert("RGB")):
+                            aggressive_count += 1
+                        else:
+                            aggressive_count = 0
                         
                         tracking_frame = check_frame
                     
                     # Stability achieved
-                    if stable_count == self.STABILITY_COUNT:
+                    if stable_count == self.STABILITY_COUNT or aggressive_count == self.STABILITY_COUNT:
+                        # print("REASON:")
+                        # print(stable_count == self.STABILITY_COUNT)
+                        # print(aggressive_count == self.STABILITY_COUNT)
                         self.ocr_callback()
                         
                         # Update baseline, cooldown
