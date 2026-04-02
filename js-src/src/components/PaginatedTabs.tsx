@@ -31,29 +31,34 @@ const PaginatedTabs = (props: PaginatedTabsProps) => {
     other.toLowerCase().includes(search.toLowerCase().trim());
 
   const lookforElements = () => {
+    const results: React.ReactNode[] = [];
+
     for (const itemKey of keys) {
       const item = props.items[itemKey];
-
       const entries = Object.entries(item);
+
       if (searchInStr(itemKey)) {
-        return entries.map((x) => (
-          <React.Fragment key={x[0]}>{x[1]}</React.Fragment>
-        ));
-      }
-
-      for (let i = 0; i < entries.length; i++) {
-        const searchName = entries[i][0];
-
-        // Return this element and all others after it.
-        if (searchInStr(searchName)) {
-          return entries
-            .slice(i)
-            .map((x) => <React.Fragment key={x[0]}>{x[1]}</React.Fragment>);
+        // Push all in category.
+        results.push(
+          ...entries.map((x) => (
+            <React.Fragment key={x[0]}>{x[1]}</React.Fragment>
+          ))
+        );
+      } else {
+        // Add specific entries instead, regardless of category.
+        for (const [searchName, element] of entries) {
+          if (searchInStr(searchName)) {
+            results.push(
+              <React.Fragment key={`${itemKey}-${searchName}`}>
+                {element}
+              </React.Fragment>
+            );
+          }
         }
       }
     }
 
-    return <div></div>;
+    return results.length > 0 ? results : <div></div>;
   };
 
   const flattenElements = () => {
@@ -148,7 +153,7 @@ const PaginatedTabs = (props: PaginatedTabsProps) => {
         <Grid item xs={9}>
           {props.showItems !== false && (
             <Stack spacing={2} sx={{ padding: 2 }}>
-              {props.items[selCategory] && (
+              {search.length === 0 && props.items[selCategory] && (
                 <Typography align="center" variant="h6">
                   {selCategory}
                 </Typography>
