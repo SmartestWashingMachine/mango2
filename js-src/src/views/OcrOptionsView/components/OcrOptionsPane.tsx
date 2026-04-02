@@ -347,15 +347,6 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
           ),
         },
         Functions: {
-          "Watch Background": (
-            <UpdateCheckbox
-              changeValue={changeValue}
-              defaultValue={props.watchBackground}
-              keyName="watchBackground"
-              helperText="The box will automatically translate when detecting text behind it."
-              label="Watch Background"
-            />
-          ),
           "Fully Draggable": (
             <UpdateCheckbox
               changeValue={changeValue}
@@ -537,6 +528,15 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
           ),
         },
         Auto: {
+          "Watch Background": (
+            <UpdateCheckbox
+              changeValue={changeValue}
+              defaultValue={props.watchBackground}
+              keyName="watchBackground"
+              helperText="The box will automatically translate when detecting text behind it."
+              label="Watch Background"
+            />
+          ),
           "Listen to Clipboard": (
             <UpdateCheckbox
               changeValue={changeValue}
@@ -553,15 +553,6 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               keyName="listenAudio"
               label="Listen to Audio"
               helperText="Automatically transcribe and translate when speech audio is detected from the computer. Requires the transcription model to be installed."
-            />
-          ),
-          "Auto Scan Background": (
-            <UpdateCheckbox
-              changeValue={changeValue}
-              defaultValue={props.autoScan}
-              keyName="autoScan"
-              helperText="Every few seconds, automatically translate the box contents if the contents have changed significantly."
-              label="Auto Scan Background"
             />
           ),
           "Auto Enter": (
