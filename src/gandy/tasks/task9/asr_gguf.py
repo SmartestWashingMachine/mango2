@@ -1,18 +1,11 @@
-from gandy.text_recognition.tr_recognition import TrOCRTextRecognitionApp
 from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClient
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
-from gandy.text_recognition.jamo_override import JamoOverride
 from io import BytesIO
 import base64
 import os
-from PIL import Image
-import json
-from gandy.utils.robust_text_line_resize import override_transforms
 import numpy as np
 from gandy.utils.find_free_port import find_tcp_port
-from gandy.utils.pseudo_smart_image_resize import create_pseudo_smart_resize
-import unicodedata
 from io import BytesIO
 import wave
 
@@ -54,7 +47,7 @@ class AsrGgufApp():
                 stop=None,
                 mmproj=self.get_mmproj_path_for_llmcpp(),
                 verbose=False,
-                extra_commands=["--skip-media-injection --jinja --chat-template-file \"models/asr/fixed-chat-template.jinja\""]
+                extra_commands=["--skip-media-injection -n 1000 --skip-chat-parsing --jinja --chat-template-file \"models/asr/fixed-chat-template.jinja\""]
             )
 
             self.llm.start_server()
