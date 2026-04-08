@@ -190,7 +190,7 @@ class LlamaCppExecutableOpenAIClient:
                 # command.append("--run-time-repack")
                 pass
 
-            command.extend(["-fit off"])
+            command.extend(["-fit off --no-op-offload"])
 
             # The new auto template parser does some funny things here ._.
             # It thinks the JAM MT model is a thinking model for example. It's not.
