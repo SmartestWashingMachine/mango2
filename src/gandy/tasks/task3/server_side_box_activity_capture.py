@@ -62,7 +62,7 @@ def are_lines_stale(img, box_id):
     for idx in range(len(line_bboxes)):
         iou = calculate_iou(line_bboxes[idx], prev_box_lines[idx])
 
-        if iou < 0.97:
+        if iou < 0.96:
             # print(f"IOU too low. Boxes are different!")
             # print(iou)
             return False

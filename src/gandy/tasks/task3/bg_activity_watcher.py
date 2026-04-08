@@ -68,7 +68,7 @@ class BackgroundActivityWatcher:
                             stable_count = 0  # Reset - still changing
 
                         # >= 0.0025 may be a bad choice - I did it for optimization reasons (line det is laggy).
-                        if stability_change >= 0.0025 and stability_change < 0.35 and self.text_lines_stale_callback(Image.fromarray(current_frame).convert("RGB")):
+                        if stability_change >= 0.0025 and stability_change < 0.35 and self.text_lines_stale_callback(Image.fromarray(tracking_frame).convert("RGB")):
                             aggressive_count += 1
                         else:
                             aggressive_count = 0
