@@ -39,6 +39,10 @@ class SpeechSegmenter(BaseApp):
 
     def can_load(self):
         return True
+    
+    def unload_model(self):
+        # Model is so tiny; it shouldn't matter.
+        pass
 
     def load_model(self):
         self.vad = TenVad(self.hop_size, self.threshold)

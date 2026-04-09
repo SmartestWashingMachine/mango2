@@ -99,7 +99,9 @@ class AsrGgufApp(BaseApp):
                 return ""
 
             return prediction
+        
+    def unload_model(self):
+        # TODO
+        self.loaded = False
 
-# TODO: No unload...
-
-ASR = AsrGgufApp()
+ASR = AsrGgufApp("asr/llm-xy", "asr/mmproj-xy")

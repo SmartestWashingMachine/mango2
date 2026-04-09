@@ -1,7 +1,7 @@
 from flask import request
 from gandy.app import app, socketio, translate_pipeline
-from gandy.tasks.task9.task9_routes import speech_to_text
-from gandy.tasks.task9.speech_listener import SystemAudioListener
+from gandy.voice.asr_gguf import ASR
+from gandy.voice.ten_vad.speech_listener import SystemAudioListener
 from gandy.utils.fancy_logger import logger
 from gandy.utils.socket_stream import SocketStreamer
 
@@ -20,7 +20,7 @@ def on_speech(audio_data):
                 "boxId": box_id,
             },
         )
-        transcription = speech_to_text.process(audio_data)
+        transcription = ASR.process(audio_data)
         ctx.log(f"Transcription found", transcription=transcription)
 
         # For now the box is always assumed to be a streaming box.
