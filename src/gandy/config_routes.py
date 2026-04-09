@@ -12,6 +12,7 @@ from uuid import uuid4
 from gandy.utils.translation_shortener import SHORTENER
 from gandy.voice.asr_gguf import ASR
 from gandy.voice.ten_vad.speech_segmenter import VAD
+import shutil
 
 @app.route("/changecleaning", methods=["POST"])
 def change_cleaning_route():
@@ -240,3 +241,15 @@ def recommend_translation_route():
             json.dump(dat, f, ensure_ascii=False, indent=4)
 
     return {}, 200
+
+@app.route("/ffmpeginstalled", methods=["GET"])
+def ffmpeg_installed_route():
+    with logger.begin_event("Checking for FFMPEG installation") as ctx:
+        ffmpeg_path = shutil.which("ffmpeg")
+        ffprobe_path = shutil.which("ffprobe")
+
+        ctx.log(f"Shutil paths for FFMPEG", ffmpeg_path=ffmpeg_path, ffprobe_path=ffprobe_path)
+        
+        return {
+            "installed": ffmpeg_path is not None and ffprobe_path is not None
+        }

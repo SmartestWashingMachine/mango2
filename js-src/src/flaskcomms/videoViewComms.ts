@@ -43,3 +43,18 @@ export const pollTranslateVideoStatus = (
       socket.disconnect();
     });
   });
+
+export const checkFfmpegInstalled = async () => {
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/ffmpeginstalled`;
+
+  const output = await fetch(apiUrl, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (output.status !== 200) throw Error("Invalid status code.");
+
+  return output.json();
+};
