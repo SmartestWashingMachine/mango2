@@ -1,6 +1,7 @@
 from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClient
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
+from gandy.full_pipelines.base_app import BaseApp
 from io import BytesIO
 import base64
 import os
@@ -9,7 +10,7 @@ from gandy.utils.find_free_port import find_tcp_port
 from io import BytesIO
 import wave
 
-class AsrGgufApp():
+class AsrGgufApp(BaseApp):
     def __init__(self, model_sub_path: str, mmproj_sub_path: str):
         self.llm = None
         self.model_sub_path = model_sub_path
@@ -21,6 +22,9 @@ class AsrGgufApp():
     def get_mmproj_path_for_llmcpp(self):
         return os.path.join("models", f"{self.mmproj_sub_path}.gguf")
     
+    def can_load(self):
+        return os.path.exists(self.get_mmproj_path_for_llmcpp()) and os.path.exists(self.get_model_path_for_llmcpp())
+
     def get_n_context(self):
         return 6000
     
@@ -97,3 +101,5 @@ class AsrGgufApp():
             return prediction
 
 # TODO: No unload...
+
+ASR = AsrGgufApp()

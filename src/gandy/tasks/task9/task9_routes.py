@@ -1,12 +1,10 @@
 from flask import request
 from gandy.app import app, translate_pipeline, socketio
 from gandy.utils.fancy_logger import logger
-from gandy.tasks.task9.asr_gguf import AsrGgufApp
 from gandy.tasks.task5.video_burner import burn_subs
 from gandy.tasks.task5.task5_logic import working_path, save_videos_path, save_subtitles_path
-#from gandy.tasks.task9.speech_segmenter.speech_segmenter import SpeechSegmenter
-from gandy.tasks.task9.ten_vad.speech_segmenter import SpeechSegmenter
-from gandy.tasks.task9.speech_segmenter.utils_vad import read_audio
+from gandy.voice.asr_gguf import ASR
+from gandy.voice.ten_vad.speech_segmenter import VAD
 from srt import Subtitle, compose
 import os
 from uuid import uuid4
@@ -18,8 +16,6 @@ os.makedirs(save_videos_path, exist_ok=True)
 os.makedirs(save_subtitles_path, exist_ok=True)
 
 # TODO: Place this somewhere cleaner.
-speech_segmenter = SpeechSegmenter("asr/silero_vad")
-speech_to_text = AsrGgufApp("asr/llm-xy", "asr/mmproj-xy")
 
 def emit_progress(true_progress: float):
     socketio.patched_emit(f"progress_task5", true_progress) # Reuse progress_task5 here.
@@ -84,7 +80,7 @@ def process_task9_background_job(video_file_path: str):
         with logger.begin_event("Detecting voice activity") as ctx:
             # First get all speech segments using a VAD.
             # Each output is a dict with start & end timestamps.
-            speech_segments = speech_segmenter.process(audio_data)
+            speech_segments = VAD.process(audio_data)
             emit_progress(0.01)
 
             ctx.log("Done with VAD", len_speech_segments=len(speech_segments))
@@ -100,7 +96,7 @@ def process_task9_background_job(video_file_path: str):
             for i, segment in enumerate(speech_segments):
                 with logger.begin_event("Transcribing text", start=segment.start.total_seconds(), end=segment.end.total_seconds()):
                     segment_audio = audio_data[int(segment.start.total_seconds() * SAMPLING_RATE):int(segment.end.total_seconds() * SAMPLING_RATE)]
-                    content = speech_to_text.process(segment_audio)
+                    content = ASR.process(segment_audio)
 
                     transcriptions.append(Subtitle(index=i, start=segment.start, end=segment.end, content=content))
 

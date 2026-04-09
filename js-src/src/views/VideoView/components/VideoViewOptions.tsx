@@ -1,5 +1,10 @@
 import React from "react";
 import { MenuItem, Paper, TextField, Typography } from "@mui/material";
+import {
+  asrModelInstalled,
+  useInstalledModelsRetriever,
+} from "../../../utils/useInstalledModelsRetriever";
+import { useState } from "react";
 
 export type VideoProcessingModes = "none" | "visual" | "audio";
 
@@ -9,6 +14,8 @@ export type VideoViewOptionsProps = {
 };
 
 const VideoViewOptions = (props: VideoViewOptionsProps) => {
+  const installedModels = useInstalledModelsRetriever();
+
   const selectMode = async (e: any) => {
     props.setMode(e.target.value);
   };
@@ -37,7 +44,9 @@ const VideoViewOptions = (props: VideoViewOptionsProps) => {
           subtitles.
         </em>
       </MenuItem>
-      <MenuItem value="audio">Audio</MenuItem>
+      <MenuItem value="audio" disabled={!asrModelInstalled(installedModels)}>
+        Audio
+      </MenuItem>
       <MenuItem disabled value="" divider dense>
         <em
           style={{

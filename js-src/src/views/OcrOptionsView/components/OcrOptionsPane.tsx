@@ -9,6 +9,10 @@ import UpdateCheckbox from "../../../components/UpdateCheckbox";
 import PaginatedTabs from "../../../components/PaginatedTabs";
 import { MainGateway } from "../../../utils/mainGateway";
 import BoxPanePreview from "./BoxPanePreview";
+import {
+  asrModelInstalled,
+  useInstalledModelsRetriever,
+} from "../../../utils/useInstalledModelsRetriever";
 
 export type OcrOptionsPaneProps = BoxOptions & {
   boxId: string;
@@ -21,6 +25,8 @@ export type OcrOptionsPaneProps = BoxOptions & {
 };
 
 const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
+  const installedModels = useInstalledModelsRetriever();
+
   const [renderKey, setRenderKey] = React.useState<string>(uuidv4());
 
   const changeValue = (key: string, value: any) => {
@@ -553,6 +559,7 @@ const OcrOptionsPane = (props: OcrOptionsPaneProps) => {
               keyName="listenAudio"
               label="Listen to Audio"
               helperText="Automatically transcribe and translate when speech audio is detected from the computer. Requires the transcription model to be installed."
+              disabled={!asrModelInstalled(installedModels)}
             />
           ),
           "Auto Enter": (

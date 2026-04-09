@@ -29,3 +29,11 @@ export const useInstalledModelsRetriever = () => {
 
   return installedModels;
 };
+
+// Some helper utils for niche models:
+
+export const shortenerModelInstalled = (installedModels: string[]) =>
+  installedModels.indexOf("SHORTENER") > -1;
+
+export const asrModelInstalled = (installedModels: string[]) =>
+  installedModels.indexOf("ASR") > -1;

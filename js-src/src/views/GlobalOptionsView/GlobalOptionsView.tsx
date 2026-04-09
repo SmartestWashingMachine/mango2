@@ -19,9 +19,11 @@ import UpdateListField from "../../components/UpdateListField";
 import { MainGateway } from "../../utils/mainGateway";
 import PaginatedTabs from "../../components/PaginatedTabs";
 import { OCR_OPTIONS } from "../../utils/appOptions/ocrOptions";
-import { getInstalledModels } from "../../flaskcomms/getInstalledModels";
 import { useAlerts } from "../../components/AlertProvider";
-import { useInstalledModelsRetriever } from "../../utils/useInstalledModelsRetriever";
+import {
+  shortenerModelInstalled,
+  useInstalledModelsRetriever,
+} from "../../utils/useInstalledModelsRetriever";
 import GLOBAL_OPTIONS_PARTIAL_PRESETS, {
   PresetItem,
 } from "./globalOptionsPartialPresets";
@@ -351,9 +353,6 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
   const updateLensActivationKey = (key: string) =>
     setStoreValue("lensActivationKey", key, false); // false == Do not send to the Python backend - this is just a frontend concern.
 
-  const shortenerModelInstalled = () =>
-    installedModels.indexOf("SHORTENER") > -1;
-
   return (
     <BaseView>
       <PaginatedTabs
@@ -634,7 +633,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 defaultValue={shortenTranslations}
                 label="Shorten Translations"
                 helperText="Uses another model to shorten translations. This can be helpful for image translation jobs. This will require more memory and be somewhat slower."
-                disabled={!shortenerModelInstalled()}
+                disabled={!shortenerModelInstalled(installedModels)}
               />
             ),
             "Augment Dictionary": (

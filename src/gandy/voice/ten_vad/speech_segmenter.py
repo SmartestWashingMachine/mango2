@@ -1,7 +1,6 @@
 from ten_vad import TenVad
-import os
-from gandy.tasks.task9.speech_segmenter.utils_vad import OnnxWrapper, read_audio, get_speech_timestamps, VADIterator, collect_chunks, drop_chunks
 from srt import Subtitle
+from gandy.full_pipelines.base_app import BaseApp
 from gandy.utils.fancy_logger import logger
 from datetime import timedelta
 from typing import List
@@ -32,18 +31,16 @@ def merge_subtitles(
 
 SAMPLING_RATE = 16000
 
-class SpeechSegmenter():
-    def __init__(self, model_sub_path: str):
-        self.model_sub_path = model_sub_path
+class SpeechSegmenter(BaseApp):
+    def __init__(self):
         self.model = None
         self.hop_size = 256 # 16 ms per frame
         self.threshold = 0.35 # Maybe 0.5 is better?
 
-    def get_model_path(self):
-        return os.path.join("models", f"{self.model_sub_path}.onnx")
+    def can_load(self):
+        return True
 
     def load_model(self):
-        self.model = OnnxWrapper(self.get_model_path(), force_onnx_cpu=True)
         self.vad = TenVad(self.hop_size, self.threshold)
 
     def process(self, audio: np.ndarray):
@@ -57,7 +54,7 @@ class SpeechSegmenter():
         start_i = 0
         buffer = []
         valid_frames = 3 # Wait for this many speech frames to start a speech segment.
-        patience_frames = 3 # Wait for this many silence frames to consider a speech segment done.
+        patience_frames = 18 # Wait for this many silence frames to consider a speech segment done. 16ms per frame, so 18 = 288ms
 
         segments: List[Subtitle] = []
 
@@ -113,9 +110,11 @@ class SpeechSegmenter():
             items.append(item)
             logger.log_message("VAD found activity", start=item.start.total_seconds(), end=item.end.total_seconds())
 
-        items = merge_subtitles(items)
+        items = merge_subtitles(items, max_gap=0.1)
 
         for item in items:
             logger.log_message("Merged found activity", start=item.start.total_seconds(), end=item.end.total_seconds())
 
         return items
+    
+VAD = SpeechSegmenter()
