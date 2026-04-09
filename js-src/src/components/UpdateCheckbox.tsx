@@ -15,6 +15,7 @@ export type UpdateCheckboxProps = {
   style?: any;
   tooltip?: string; // Unused.
   opacity?: any;
+  disabled?: boolean;
 };
 
 const UpdateCheckbox = (props: UpdateCheckboxProps) => {
@@ -31,6 +32,7 @@ const UpdateCheckbox = (props: UpdateCheckboxProps) => {
           <Checkbox
             onChange={handleChange}
             defaultChecked={props.defaultValue}
+            disabled={props.disabled}
           />
         }
         label={props.label}

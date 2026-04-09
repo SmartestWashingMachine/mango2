@@ -116,3 +116,5 @@ class TranslationShortener(BaseApp):
             prediction = prediction.replace("—", "-")
 
         return prediction
+
+SHORTENER = TranslationShortener(model_sub_path=os.path.join("shorteners", "jnov_shortener_eq3"))

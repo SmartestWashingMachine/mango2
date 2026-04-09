@@ -3,18 +3,12 @@ from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClien
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
 from gandy.utils.augment_name_entries_with_ner import NameAdder
-from gandy.utils.translation_shortener import TranslationShortener
+from gandy.utils.translation_shortener import SHORTENER
 from gandy.socket_process import socketio # TODO: Messy import.
 from typing import List
 import os
 from gandy.utils.clean_text_v2 import clean_text_vq
 from gandy.utils.find_free_port import find_tcp_port
-
-# Some caveats:
-# Does not support batch translations. Translations are always done sequentially. (moderate priority)
-# Does not support embed_text for video tasks. (very low priority)
-# Translation server is ignored (it's only CPU / GPU on the one lib). (no priority)
-# Ignores most generation args (including beam search). (low to moderate priority)
 
 class LlmCppTranslationApp(BaseTranslation):
     def __init__(
@@ -32,8 +26,8 @@ class LlmCppTranslationApp(BaseTranslation):
 
         self.prepend_model_output = prepend_model_output
 
-        self.name_adder = NameAdder()
-        self.shortener = TranslationShortener(model_sub_path=os.path.join("shorteners", "jnov_shortener_eq3"))
+        self.name_adder = NameAdder() # Dictionary model comes pre-installed.
+        self.shortener = SHORTENER # Shortener model is NOT pre-installed by default.
 
     def can_load(self):
         return super().can_load(f"models/{self.model_sub_path}" + ".gguf")

@@ -9,6 +9,7 @@ from gc import collect
 import json
 import os
 from uuid import uuid4
+from gandy.utils.translation_shortener import SHORTENER
 
 @app.route("/changecleaning", methods=["POST"])
 def change_cleaning_route():
@@ -207,6 +208,9 @@ def get_allowed_models_route():
                     data[module_name] = module.can_load()
                 except:
                     data[module_name] = True
+
+        # Extra hard-coded apps (not pre-installed by default).
+        data["SHORTENER"] = SHORTENER.can_load()
 
         ctx.log("Installed models", **data)
 

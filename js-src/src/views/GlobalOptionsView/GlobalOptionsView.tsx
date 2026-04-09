@@ -351,6 +351,9 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
   const updateLensActivationKey = (key: string) =>
     setStoreValue("lensActivationKey", key, false); // false == Do not send to the Python backend - this is just a frontend concern.
 
+  const shortenerModelInstalled = () =>
+    installedModels.indexOf("SHORTENER") > -1;
+
   return (
     <BaseView>
       <PaginatedTabs
@@ -631,6 +634,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
                 defaultValue={shortenTranslations}
                 label="Shorten Translations"
                 helperText="Uses another model to shorten translations. This can be helpful for image translation jobs. This will require more memory and be somewhat slower."
+                disabled={!shortenerModelInstalled()}
               />
             ),
             "Augment Dictionary": (
