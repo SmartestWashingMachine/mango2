@@ -1,4 +1,11 @@
-import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import {
+  Button,
+  Collapse,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import React, { useState, useEffect } from "react";
 import ReplaceTermsList from "./components/ReplaceTermsList";
 import {
@@ -51,6 +58,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
   const [capturedWindowPreview, setCapturedWindowPreview] = useState("");
 
   const [curWindowName, setCurWindowName] = useState("");
+  const [selectedTranslationModelName, setSelectedTranslationModelName] =
+    useState("");
 
   const installedModels = useInstalledModelsRetriever();
 
@@ -64,6 +73,9 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
         setLoadedData(data);
         setTerms(data.terms);
         setNameEntries(data.nameEntries);
+
+        // TODO: curWindowName too maybe?
+        setSelectedTranslationModelName(data.translationModelName);
 
         setIsLoading(false);
       }
@@ -184,6 +196,8 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     const data = await MainGateway.getStoreData();
     setLoadedData(data);
 
+    setSelectedTranslationModelName(data.translationModelName);
+
     pushAlert("Settings reset!");
   };
 
@@ -302,6 +316,7 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
     detectSpeakerName,
     lensActivationKey,
     shortenTranslations,
+    outputLanguage,
   } = loadedData;
 
   const decodingParamsIgnored = decodingMode === "beam";
@@ -352,6 +367,9 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
 
   const updateLensActivationKey = (key: string) =>
     setStoreValue("lensActivationKey", key, false); // false == Do not send to the Python backend - this is just a frontend concern.
+
+  const translationModelHasOutputLanguage =
+    selectedTranslationModelName.includes("Universal");
 
   return (
     <BaseView>
@@ -460,17 +478,35 @@ const GlobalOptionsView = ({ goOcrOptionsTab }: GlobalOptionsViewProps) => {
               </UpdateListField>
             ),
             "Translation Model": (
-              <UpdateListField
-                changeValue={setStoreValue}
-                keyName="translationModelName"
-                defaultValue={translationModelName}
-                label="Translation Model"
-              >
-                {[
-                  ...TRANSLATION_OPTIONS.map(renderItem),
-                  ...getCustomOptions("Translator", installedModels),
-                ]}
-              </UpdateListField>
+              <>
+                <UpdateListField
+                  changeValue={(k, v) => {
+                    setSelectedTranslationModelName(v); // For optionally displaying the Output Language field below.
+                    setStoreValue(k, v);
+                  }}
+                  keyName="translationModelName"
+                  defaultValue={translationModelName}
+                  label="Translation Model"
+                >
+                  {[
+                    ...TRANSLATION_OPTIONS.map(renderItem),
+                    ...getCustomOptions("Translator", installedModels),
+                  ]}
+                </UpdateListField>
+                <Collapse in={translationModelHasOutputLanguage} timeout={500}>
+                  <TextField
+                    label="Output Language"
+                    variant="standard"
+                    onBlur={(e: any) => {
+                      setStoreValue("outputLanguage", e.currentTarget.value);
+                    }}
+                    defaultValue={outputLanguage}
+                    fullWidth
+                    multiline
+                    size="small"
+                  />
+                </Collapse>
+              </>
             ),
           },
           "General Performance": {

@@ -63,6 +63,7 @@ export type IStoreClientToServer = {
   augmentNameEntries: boolean;
   detectSpeakerName: boolean;
   shortenTranslations: boolean;
+  outputLanguage: string;
 };
 
 type IStore = IStoreClientOnly & IStoreClientToServer;

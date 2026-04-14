@@ -47,6 +47,7 @@ from gandy.database.faiss_mt_rag import TranslationRAG
 - stop_words (string | array of strings | null): Extra words/phrases to stop generation once reached.
 
 As we can see, there are a few "operators" for templating purposes, like:
+- {{LANGUAGE}}: If present, replaced with the "Language" string literal that the user enters in the option menu.
 - {{PREFIX_EACH_CONTEXT(...)}}: This is used to prefix each context with a string.
 - {{JOIN_EACH_CONTEXT(...)}}: This is used to join each context with a string (in other words: the first context is not prefixed, but the rest are).
 - {{CONTEXT}}: This is used to insert the CURRENT source-side context sentence into the message. Should only be used in create_each_context_message.
@@ -226,6 +227,7 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         msg = re.sub(r"\{\{IF_DICTIONARY_EXISTS\((.*?)\)\}\}", lambda m: self.map_if_dictionary_exists(m, source), msg, flags=re.DOTALL)
 
         msg = msg.replace("{{SOURCE}}", source)
+        msg = msg.replace("{{LANGUAGE}}", config_state.output_language)
 
         # This should ideally only happen in map_each_context_message.
         if len(contexts) > 0:

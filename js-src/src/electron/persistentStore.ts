@@ -61,6 +61,7 @@ const storeDefaults: IStore = {
   augmentNameEntries: false,
   detectSpeakerName: false,
   shortenTranslations: false,
+  outputLanguage: "English",
 };
 
 export const initializeStore = () => {

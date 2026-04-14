@@ -53,6 +53,8 @@ class ConfigState:
 
         self.capture_window = ""
 
+        self.output_language = ""
+
         self.name_entries = []
         self.augment_name_entries = False
 
