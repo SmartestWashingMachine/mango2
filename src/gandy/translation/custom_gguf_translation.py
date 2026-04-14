@@ -365,3 +365,9 @@ class CustomGgufTranslationApp(LlmCppTranslationApp):
         stops = self.mango_config["stop_words"]
         if len(stops) == 0:
             stops = None
+
+    def normalize(self, inp: str):
+        if self.mango_config.get("normalize", True):
+            inp = super().normalize(inp)
+        
+        return inp

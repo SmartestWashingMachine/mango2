@@ -633,3 +633,7 @@ class BasePipeline:
         output_source = " ".join([f"({idx + 1}): {joined_source_lines[idx]}" for idx in range(len(joined_source_lines))] + ["<LINES>"])
 
         return [output_target], output_source
+
+    def normalize(self, inp: str):
+        # Code smell... used for read_text_in_frames.
+        return self.translation_app.get_sel_app().normalize(inp)

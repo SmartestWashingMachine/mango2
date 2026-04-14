@@ -140,9 +140,13 @@ class LlmCppTranslationApp(BaseTranslation):
 
         messages = [{ "role": "user", "content": prompt, }, ]
         return messages
+    
+    def normalize(self, inp: str):
+        inp = clean_text_vq(inp)
+        return inp
 
     def translate_string(self, inp: str, use_stream=None):
-        inp = clean_text_vq(inp)
+        inp = self.normalize(inp)
 
         messages = self.create_messages(inp)
 

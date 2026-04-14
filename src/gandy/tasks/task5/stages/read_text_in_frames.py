@@ -116,7 +116,7 @@ def read_text_in_frames(app_container: AdvancedPipeline, frame_image_paths: List
             # All MT models use clean_text_vq. There's no harm in normalizing twice (once here, once in MT).
             # But it is somewhat inefficient to normalize twice...
             # Why do we need this? Because the OCR model sometimes makes mistakes.
-            source_text = clean_text_vq(source_text)
+            source_text = app_container.normalize(source_text)
 
             frame_source_texts.append(source_text)
 
