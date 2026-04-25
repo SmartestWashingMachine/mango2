@@ -130,6 +130,8 @@ class LlamaCppExecutableOpenAIClient:
                 f'--dry-sequence-breaker "{dry_double_quote_breaker}"', # This will be passed to cmd.exe as "\" hopefully???
                 #"-ctk q8_0",
                 #"-ctv q8_0",
+                "--cache-ram",
+                "128",
             ]
 
             if self.verbose:
@@ -179,6 +181,8 @@ class LlamaCppExecutableOpenAIClient:
                     command.extend([
                         "-c",
                         str(self.n_context),
+                        "--cache-ram",
+                        "128",
                     ])
 
             if self.can_cuda and self.num_gpu_layers > 0:
