@@ -31,26 +31,34 @@ class SwitchApp:
         """
         Select the app with the given name. All further process calls on this app will redirect to the newly selected app.
         """
+        something_to_unload = False
+
         try:
             idx = self.app_names.index(app_name)
             self.sel_idx = idx
 
-            if unload_others:
-                # Unload the other models to free up memory.
-                for other_idx in range(len(self.apps)):
-                    if other_idx == idx:
-                        continue
+            # Unload the other models to free up memory.
+            for other_idx in range(len(self.apps)):
+                if other_idx == idx:
+                    continue
 
-                    try:
+                try:
+                    something_to_unload = something_to_unload or self.apps[other_idx].loaded
+
+                    if unload_others:
                         self.apps[other_idx].unload_model()
-                    except:
-                        pass
+                except:
+                    pass
+
+            if unload_others:
                 collect()
 
         except (IndexError, ValueError):
             logger.error(
                 f"No app with name {app_name} found. Ignoring the call to select new app."
             )
+
+        return something_to_unload
 
     def unload_all(self, do_collect=True):
         # Unload all the other models to free up memory.

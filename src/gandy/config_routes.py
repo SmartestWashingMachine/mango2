@@ -61,23 +61,24 @@ def change_tile_size_route():
 @app.route("/switchmodels", methods=["POST"])
 def change_multiple_models_route():
     with logger.begin_event("Update configuration state") as ctx:
+        any_requires_reload = []
         data = request.json
 
         # Unload is done below (see "requires_reload")
-        translate_pipeline.translation_app.select_app(data["translationModelName"], unload_others=False)
-        translate_pipeline.text_recognition_app.select_app(
+        any_requires_reload.append(translate_pipeline.translation_app.select_app(data["translationModelName"], unload_others=False))
+        any_requires_reload.append(translate_pipeline.text_recognition_app.select_app(
             data["textRecognitionModelName"], unload_others=False
-        )
-        translate_pipeline.text_detection_app.select_app(data["textDetectionModelName"], unload_others=False)
-        translate_pipeline.spell_correction_app.select_app(
+        ))
+        any_requires_reload.append(translate_pipeline.text_detection_app.select_app(data["textDetectionModelName"], unload_others=False))
+        any_requires_reload.append(translate_pipeline.spell_correction_app.select_app(
             data["spellCorrectionModelName"], unload_others=False
-        )
+        ))
 
         reranking_model_name = data["rerankingModelName"]
         decoding_mode = data["decodingMode"]
 
         # Set OCR preprocessor.
-        translate_pipeline.text_line_app.select_app(data["textLineModelName"], unload_others=False)
+        any_requires_reload.append(translate_pipeline.text_line_app.select_app(data["textLineModelName"], unload_others=False))
 
         if decoding_mode != "beam":
             # Only japanese-2-english models support most forms of reranking.
@@ -117,7 +118,7 @@ def change_multiple_models_route():
 
         max_length_a = float(data["maxLengthA"])
 
-        requires_reload = config_state.set_decoding_params(
+        any_requires_reload.append(config_state.set_decoding_params(
             top_p=float(data["topP"]),
             top_k=data["topK"],
             length_penalty=float(data["lengthPenalty"]),
@@ -157,13 +158,14 @@ def change_multiple_models_route():
             sanitize_ascii=data["sanitizeAscii"],
             shorten_translations=data["shortenTranslations"],
             output_language=data["outputLanguage"],
-        )
+        ))
 
         config_state.update_terms(terms=data["terms"])
 
         context_state.reset_list()
 
         # Might lead to unnecessary loading but oh well
+        requires_reload = any(any_requires_reload)
         if requires_reload:
             ctx.log("Reloading all models...")
             translate_pipeline.text_recognition_app.unload_all(do_collect=False)
