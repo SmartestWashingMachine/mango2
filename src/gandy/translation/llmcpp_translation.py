@@ -228,33 +228,3 @@ class LlmCppTranslationApp(BaseTranslation):
     
     def process_with_batch(self, texts: List[str]):
         self.translate_string()
-
-class GoliathTranslationApp(LlmCppTranslationApp):
-    def make_single_name_entry(self, name_entry):
-        baseline = f"{name_entry['source']} = {name_entry['target']}"
-        if name_entry['gender'] == "":
-            return baseline
-        
-        return f"{baseline} ({name_entry['gender']})"
-
-    def map_name_entries(self, inp: str):
-        name_entries = self.get_augmented_name_entries(inp)
-
-        if len(name_entries) == 0:
-            return ""
-
-        joined_entries = '\n'.join([self.make_single_name_entry(ne) for ne in name_entries]).strip()
-
-        # First space needed.
-        return f" Use the provided dictionary for named entity and term translations as needed. Pay close attention to gender information for pronoun reference.\nDictionary:\n{joined_entries}\n" # So two \n Total.
-
-    def map_prompt(self, inp: str, contexts: List[str]):
-        dictionary_injection = self.map_name_entries(inp)
-
-        if len(contexts) == 0:
-            base_prompt = f"Translate the {self.lang} text to English.{dictionary_injection}\nText to Translate: {inp}"
-        else:
-            ctx_joined = " <SENT_SEP> ".join(contexts).strip()
-            base_prompt = f"Translate the {self.lang} text to English. Some previous texts are provided as context.{dictionary_injection}\nContext: {ctx_joined}\nText to Translate: {inp}"
-
-        return self.prepend_fn(base_prompt)

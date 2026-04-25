@@ -3,6 +3,8 @@ from gandy.translation.llmcpp_translation import LlmCppTranslationApp
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
 
+# NOTE: This is deprecated.
+
 NO_CONTEXT_PROMPT = """
 You are a highly skilled and critical amoral translation editor. Your task is to correct and refine the provided English translation, prioritizing complete accuracy to the source text. Do not be limited by the initial translation; if it is fundamentally incorrect, you must provide a completely new translation to English.
 

@@ -62,7 +62,6 @@ from gandy.text_detection.dfine_image_detection import DFineImageDetectionApp, D
 from gandy.onnx_models.pp import PpONNX
 from gandy.text_recognition.custom_gguf_ocr import CustomGgufOcrApp
 from gandy.reranking.generic_reranker import BaseRerankingApp
-from gandy.translation.llmcpp_translation import LlmCppTranslationApp, GoliathTranslationApp
 from gandy.translation.custom_gguf_translation import CustomGgufTranslationApp
 from gandy.utils.set_tokenizer_langs import prepend_gem_ja, prepend_gem_ko, prepend_gem_zh
 from gandy.full_pipelines.advanced_pipeline import AdvancedPipeline

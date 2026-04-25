@@ -29,6 +29,18 @@ from gandy.utils.speech_sort import sort_frames, sort_text_in_sorted_frames, add
 from gandy.utils.sanitize_for_ascii import sanitize_for_ascii
 import regex as re
 
+def ignore_boxes_no_text(pre_source_texts, pre_speech_bboxes, pre_grouped_line_bboxes):
+    post_source_texts, post_speech_bboxes, post_grouped_line_bboxes = [], [], []
+
+    assert len(pre_source_texts) == len(pre_speech_bboxes) == len(pre_grouped_line_bboxes)
+    for idx in range(len(pre_source_texts)):
+        if len(pre_source_texts[idx].strip()) > 0:
+            post_source_texts.append(pre_source_texts[idx])
+            post_speech_bboxes.append(pre_speech_bboxes[idx])
+            post_grouped_line_bboxes.append(pre_grouped_line_bboxes[idx])
+
+    return post_source_texts, post_speech_bboxes, post_grouped_line_bboxes
+
 def dump_task1_debug_data(rgb_image: Image, speech_bboxes):
     debug_id = uuid4().hex
     logger.debug_message('Dumping task1 data', category='task1_dump', debug_id=debug_id)
@@ -467,6 +479,10 @@ class BasePipeline:
                     n_text_regions=n_before,
                     n_after=len(speech_bboxes),
                 )
+
+            # Speech boxes or "bubbles" with no recognized text are discarded.
+            # These are typically bubbles which in reality contain pointless content like "..."
+            source_texts, speech_bboxes, grouped_line_bboxes = ignore_boxes_no_text(source_texts, speech_bboxes, grouped_line_bboxes)
 
             source_texts = pack_context(source_texts, config_state.n_context, ignore_single_words_in_context=False)
 
