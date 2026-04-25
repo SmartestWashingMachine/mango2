@@ -128,7 +128,7 @@ export const defineDictionaryName = async (
   target: string,
   gender: string
 ) => {
-  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/definedictionaryname`;
+  const apiUrl = `http://${dangerousConfig.remoteAddress}:5000/addentryconditionaldictionary`;
 
   const body: any = { source, target, gender };
 

@@ -15,9 +15,11 @@ def process_task8_route():
 
             # Hacky. TODO
             no_ctx_inp = text.split('<TSOS>')[-1].strip()
-            aug_entries = translate_pipeline.translation_app.get_sel_app().name_adder.get_names(no_ctx_inp, config_state.name_entries, add_empty=True, do_memo=False)
+
+            aug_entries = translate_pipeline.translation_app.get_sel_app().get_name_adder().get_names(no_ctx_inp, config_state.name_entries, do_memo=False)
             out_name_entries = config_state.name_entries + aug_entries
 
+            # TODO: Do we need this logic anymore?
             out_text = []
             out_ms = set() # Only show the first source match for each source.
             for o in out_name_entries:
@@ -50,3 +52,20 @@ def process_task8_route():
             socketio.patched_emit("done_translating_task8", {})
 
             return 'ERROR', 400
+
+@app.route("/addentryconditionaldictionary", methods=["POST"]) # <- todo add route in frontend. maybe a flaskcomm for now. TODO: test now. it might work
+def add_entry_for_conditional_dictionary_route():
+    with logger.begin_event("AddEntryConditionalDictionary route called") as ctx:
+            data = request.json
+            entity = {
+                "source": data["source"],
+                "target": data["target"],
+                "gender": data["gender"],
+            }
+
+            name_adder = translate_pipeline.translation_app.get_sel_app().get_name_adder()
+
+            name_adder.conditional_dictionary[entity["source"]] = entity # TODO: we should not be modifying internals...
+            name_adder.save_conditional_dictionary()
+
+    return {}, 200

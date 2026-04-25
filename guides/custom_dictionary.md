@@ -2,7 +2,7 @@
 
 It's well known that translation models suffer when it comes to translating names. We can "patch" that up by using our own dictionary dataset, teaching the model on how certain names should be translated. 
 
-Mango supports two (technically three) general approaches for dictionary augmentation.
+Mango supports three general approaches for dictionary augmentation, but the third is generally the best. 
 
 [Looking for a quick and easy approach?](#collecting-names-into-the-dictionary-at-runtime)
 
@@ -22,7 +22,7 @@ Then, we would just type in the source names and their corresponding translation
 
 Under this approach, whatever dictionary information we want to feed in will **vary** for every translation request.
 
-Each source text will be scanned for names (using an NER model - not mine). For every name found, Mango will check to see if it exists in our dictionary file and add the corresponding translation if so.
+Each source text will be scanned for names using the very same translation model! For every name found, Mango will check to see if it exists in our dictionary file and add the corresponding translation if so.
 
 If the name does not exist in the dictionary, that missing name will be recorded in a missing dictionary file - we can then manually modify this missing dictionary and merge it back to the main dictionary file later on.
 
@@ -34,38 +34,16 @@ Here's an example of what the dictionary should look like:
 
 ```
 {
-    "琉心": [
-        {
-            "name": "Ryuushin",
-            "gender": ""
-        },
-        {
-            "name": "Ryushin",
-            "gender": ""
-        }
-    ],
-    "優惟": [
-        {
-            "name": "Yuui",
-            "gender": ""
-        },
-        {
-            "name": "Yūi",
-            "gender": ""
-        },
-        {
-            "name": "Yuui",
-            "gender": ""
-        },
-        {
-            "name": "Yūi",
-            "gender": ""
-        },
-        {
-            "name": "Yui",
-            "gender": "Female"
-        }
-    ]
+    "琉心": {
+        "source": "琉心",
+        "target": "Ryuushin",
+        "gender": "Male"
+    },
+    "優惟": {
+        "source": "優惟",
+        "target": "Yui",
+        "gender": "Female"
+    }
 }
 ```
 
@@ -87,7 +65,7 @@ We can have a consistent dictionary that should always be used (such as for name
 
 Don't want to bother with all that? There's an even easier way to create our own dictionary!
 
-If "Augment Dictionary" is enabled in the Settings tab, Mango will automatically detect new names from any translation request in the Text tab.
+If "Augment Dictionary" is enabled in the Settings tab, Mango will automatically detect new names from most translation requests in the Text tab.
 
 <p float="left">
     <img src="../examples/tutorials/misc/eset2.jpg" width="500" />
@@ -97,7 +75,11 @@ If "Augment Dictionary" is enabled in the Settings tab, Mango will automatically
 
 </br>
 
-We can then click on these detected names to specify how they should be translated in the future - each entry will be stored in the dictionary for future translations!
+The model will automatically translate each detected name, and "remember" it for future translations!
+
+Don't like the translated name? Click the name to change it!
+
+Each name found with this method will be stored in the conditional dictionary.
 
 <p float="left">
     <img src="../examples/tutorials/misc/eset3.jpg" width="500" />

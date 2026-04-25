@@ -379,11 +379,7 @@ const TextView = ({ onOpenOcrSettings }: TextViewProps) => {
   };
 
   const handleNameModalDone = async () => {
-    // Rather than making an API call...
-    // defineDictionaryName(nameSource, nameTarget, nameGender);
-    // Let's just set the state instead. Then the callback in the Electron Actions API should automagically call the API.
-    const w = window as any;
-    w.electronAPI.defineDictionaryName(nameSource, nameTarget, nameGender);
+    defineDictionaryName(nameSource, nameTarget, nameGender);
 
     // Close the modal.
     setNameTranslationModalId("");

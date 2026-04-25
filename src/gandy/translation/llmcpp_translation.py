@@ -3,6 +3,7 @@ from gandy.translation.llama_server_wrapper import LlamaCppExecutableOpenAIClien
 from gandy.utils.fancy_logger import logger
 from gandy.state.config_state import config_state
 from gandy.utils.augment_name_entries_with_ner import NameAdder
+from gandy.translation.name_agent import NameAgent
 from gandy.utils.translation_shortener import SHORTENER
 from gandy.socket_process import socketio # TODO: Messy import.
 from typing import List
@@ -26,7 +27,6 @@ class LlmCppTranslationApp(BaseTranslation):
 
         self.prepend_model_output = prepend_model_output
 
-        self.name_adder = NameAdder() # Dictionary model comes pre-installed.
         self.shortener = SHORTENER # Shortener model is NOT pre-installed by default.
 
     def can_load(self):
@@ -79,6 +79,8 @@ class LlmCppTranslationApp(BaseTranslation):
         self.llm.start_server()
 
         logger.info("Done loading translation model!")
+
+        self.name_adder = NameAdder(NameAgent(self.llm)) # Dictionary model comes pre-installed.
 
         self.loaded = True
 
@@ -219,12 +221,16 @@ class LlmCppTranslationApp(BaseTranslation):
 
             return final_outputs
         
+    def get_name_adder(self):
+        if not self.loaded:
+            self.load_model()
+
+        return self.name_adder
+
     def get_augmented_name_entries(self, src: str):
         if not config_state.augment_name_entries:
             return config_state.name_entries
 
         # TODO: Un normalize src
-        return config_state.name_entries + self.name_adder.get_names(src, config_state.name_entries, socketio=socketio)
-    
-    def process_with_batch(self, texts: List[str]):
-        self.translate_string()
+        # consistent_dictionary + conditional_dictionary
+        return config_state.name_entries + self.get_name_adder().get_names(src, config_state.name_entries, socketio=socketio)
